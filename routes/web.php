@@ -1257,3 +1257,23 @@ Route::get('/zoho/leads', function (Request $request) {
 // Route::get('auth/microsoft', [MicrosoftAuthController::class, 'redirectToMicrosoft'])->name('microsoft.auth');
 // Route::get('auth/microsoft/callback', [MicrosoftAuthController::class, 'handleMicrosoftCallback']);
 
+Route::post('/admin/api/data-migration-file/{file}/update', function (\App\Models\CustomerDataMigrationFile $file, \Illuminate\Http\Request $request) {
+    $request->validate([
+        'status' => 'required|in:pending,reviewed,accepted,rejected',
+        'implementer_remark' => 'nullable|string|max:1000',
+    ]);
+    $file->update([
+        'status' => $request->status,
+        'implementer_remark' => $request->implementer_remark,
+    ]);
+    return response()->json(['success' => true]);
+})->middleware(['auth'])->name('admin.data-migration-file.update');
+
+Route::get('/admin/data-migration-file/{file}/download', function (\App\Models\CustomerDataMigrationFile $file) {
+    $path = storage_path('app/public/' . $file->file_path);
+    if (!file_exists($path)) {
+        abort(404, 'File not found.');
+    }
+    return response()->download($path, $file->file_name);
+})->middleware(['auth'])->name('admin.data-migration-file.download');
+

@@ -41,6 +41,7 @@ use App\Filament\Pages\HrdfInvoiceListV2;
 use App\Filament\Pages\ImplementationSession;
 use App\Filament\Pages\ImplementerAuditList;
 use App\Filament\Pages\ImplementerCalendar;
+use App\Filament\Pages\DataMigrationFile;
 use App\Filament\Pages\ImplementerDataFile;
 use App\Filament\Pages\ImplementerRequestCount;
 use App\Filament\Pages\ImplementerRequestList;
@@ -311,6 +312,7 @@ class AdminPanelProvider extends PanelProvider
                 OnsiteRepairList::class,
                 ImplementerCalendar::class,
                 ImplementerDataFile::class,
+                DataMigrationFile::class,
                 ProjectAnalysis::class,
                 DemoAnalysisTableForm::class,
                 TechnicianAppointment::class,

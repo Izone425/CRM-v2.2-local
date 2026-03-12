@@ -872,3 +872,4 @@
 
     <div id="tooltip-container"></div>
 </div>
+</div>

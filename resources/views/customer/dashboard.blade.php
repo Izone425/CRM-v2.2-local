@@ -113,17 +113,64 @@
             text-align: center;
         }
 
+        /* Collapsible menu group */
+        .menu-group-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 4px;
+            border-radius: 10px;
+            color: #64748b;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+        .menu-group-header:hover {
+            background: #f1f5f9;
+            color: #667eea;
+        }
+        .menu-group-header.has-active {
+            color: #667eea;
+        }
+        .menu-group-header i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        .menu-group-chevron {
+            width: 14px;
+            height: 14px;
+            margin-left: auto;
+            transition: transform 0.2s;
+            color: #9CA3AF;
+        }
+        .menu-group-chevron.open {
+            transform: rotate(90deg);
+        }
+        .menu-sub-items {
+            padding-left: 20px;
+        }
+        .menu-sub-items .menu-item {
+            padding: 10px 16px;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .menu-sub-items .menu-item i {
+            font-size: 14px;
+            width: 20px;
+        }
+
         /* Main Content with Sidebar */
         .main-wrapper {
             margin-left: 200px;
         }
 
-        .tab-content {
-            display: none;
-        }
-
         .tab-content.active {
-            display: block;
             animation: fadeIn 0.3s ease-in-out;
         }
 
@@ -199,6 +246,7 @@
     <!-- Left Sidebar (Below Header) -->
     <div class="sidebar">
         <div class="sidebar-menu">
+            {{-- Meeting Schedule --}}
             <button onclick="switchTab('calendar')"
                     id="calendar-tab"
                     class="menu-item active">
@@ -206,14 +254,48 @@
                 <span>Meeting Schedule</span>
             </button>
 
-            @if($hasProjectPlan)
-                <button onclick="switchTab('project')"
-                        id="project-tab"
+            {{-- Software Onboarding — collapsible group --}}
+            <button class="menu-group-header" onclick="toggleGroup('onboarding')">
+                <i class="fas fa-laptop-code"></i>
+                <span>Software Onboarding</span>
+                <svg id="onboarding-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="onboarding-sub" class="menu-sub-items" style="display: none;">
+                @if($hasProjectPlan)
+                    <button onclick="switchTab('project')"
+                            id="project-tab"
+                            class="menu-item">
+                        <i class="fas fa-tasks"></i>
+                        <span>Project Plan</span>
+                    </button>
+                @endif
+                <button onclick="switchTab('dataMigration')"
+                        id="dataMigration-tab"
                         class="menu-item">
-                    <i class="fas fa-tasks"></i>
-                    <span>Project Plan</span>
+                    <i class="fas fa-database"></i>
+                    <span>Data Migration Templates</span>
                 </button>
-            @endif
+                <button onclick="switchTab('webinar')"
+                        id="webinar-tab"
+                        class="menu-item">
+                    <i class="fas fa-video"></i>
+                    <span>Webinar Recording & Training Decks</span>
+                </button>
+                <button onclick="switchTab('reviewSession')"
+                        id="reviewSession-tab"
+                        class="menu-item">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Review Session Recordings</span>
+                </button>
+            </div>
+
+            {{-- Ticketing — links to Filament Customer panel --}}
+            <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Ticketing</span>
+            </a>
         </div>
     </div>
 
@@ -223,16 +305,39 @@
         <main class="relative">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <!-- Calendar Tab Content -->
-                <div id="calendar-content" class="p-8 tab-content active">
+                <div id="calendar-content" class="p-8 tab-content" style="display: block;">
                     @livewire('customer-calendar')
                 </div>
 
                 <!-- Project Plan Tab Content -->
                 @if($hasProjectPlan)
-                    <div id="project-content" class="p-8 tab-content" style="min-height: 600px;">
+                    <div id="project-content" class="p-8 tab-content" style="display: none; min-height: 600px;">
                         @livewire('customer-project-plan')
                     </div>
                 @endif
+
+                {{-- Data Migration Templates --}}
+                <div id="dataMigration-content" class="p-8 tab-content" style="display: none;">
+                    @livewire('customer-data-migration-templates')
+                </div>
+
+                {{-- Webinar Recording & Training Decks --}}
+                <div id="webinar-content" class="p-8 tab-content" style="display: none;">
+                    <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+                        <i class="fas fa-video" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #475569;">Webinar Recording & Training Decks</h3>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                {{-- Review Session Recordings --}}
+                <div id="reviewSession-content" class="p-8 tab-content" style="display: none;">
+                    <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+                        <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #475569;">Review Session Recordings</h3>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -254,10 +359,26 @@
     <!-- Enhanced JavaScript -->
     <script>
         const hasProjectPlan = @json($hasProjectPlan);
+        const onboardingTabs = ['project', 'dataMigration', 'webinar', 'reviewSession'];
+
+        function toggleGroup(group) {
+            const sub = document.getElementById(group + '-sub');
+            const chevron = document.getElementById(group + '-chevron');
+            if (sub.style.display === 'none') {
+                sub.style.display = 'block';
+                chevron.classList.add('open');
+                localStorage.setItem(group + 'Open', 'true');
+            } else {
+                sub.style.display = 'none';
+                chevron.classList.remove('open');
+                localStorage.setItem(group + 'Open', 'false');
+            }
+        }
 
         function switchTab(tab) {
-            // Hide all tab contents
+            // Hide all tab contents using inline !important
             document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.setProperty('display', 'none', 'important');
                 content.classList.remove('active');
             });
 
@@ -266,15 +387,28 @@
                 button.classList.remove('active');
             });
 
-            // Show selected tab content
+            // Auto-expand parent group if sub-item selected
+            if (onboardingTabs.includes(tab)) {
+                const sub = document.getElementById('onboarding-sub');
+                const chevron = document.getElementById('onboarding-chevron');
+                if (sub) sub.style.display = 'block';
+                if (chevron) chevron.classList.add('open');
+            }
+
+            // Highlight parent group header
+            const groupHeader = document.querySelector('.menu-group-header');
+            if (groupHeader) {
+                groupHeader.classList.toggle('has-active', onboardingTabs.includes(tab));
+            }
+
+            // Show selected tab content using inline !important
             const tabContent = document.getElementById(tab + '-content');
             const tabButton = document.getElementById(tab + '-tab');
 
             if (tabContent && tabButton) {
+                tabContent.style.setProperty('display', 'block', 'important');
                 tabContent.classList.add('active');
                 tabButton.classList.add('active');
-
-                // Store active tab in localStorage
                 localStorage.setItem('activeTab', tab);
             }
         }
@@ -288,9 +422,39 @@
                 localStorage.setItem('activeTab', 'calendar');
             }
 
+            // Force initial display state via inline !important
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.setProperty('display', 'none', 'important');
+            });
+
+            // Restore onboarding group state
+            if (localStorage.getItem('onboardingOpen') === 'true' || onboardingTabs.includes(activeTab)) {
+                const sub = document.getElementById('onboarding-sub');
+                const chevron = document.getElementById('onboarding-chevron');
+                if (sub) sub.style.display = 'block';
+                if (chevron) chevron.classList.add('open');
+            }
+
             if (activeTab !== 'calendar') {
                 switchTab(activeTab);
+            } else {
+                const cal = document.getElementById('calendar-content');
+                if (cal) {
+                    cal.style.setProperty('display', 'block', 'important');
+                    cal.classList.add('active');
+                }
+                const calBtn = document.getElementById('calendar-tab');
+                if (calBtn) calBtn.classList.add('active');
             }
+
+            // Diagnostic — check in browser console
+            setTimeout(function() {
+                var dbg = 'TAB DEBUG: ';
+                document.querySelectorAll('.tab-content').forEach(function(el) {
+                    dbg += el.id + '=' + window.getComputedStyle(el).display + ' | ';
+                });
+                console.log(dbg);
+            }, 2000);
 
             // Smooth scroll to calendar
             const calendarLink = document.querySelector('a[href="#calendar"]');

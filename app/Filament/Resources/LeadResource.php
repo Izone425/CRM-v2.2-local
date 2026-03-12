@@ -39,6 +39,7 @@ use App\Filament\Resources\LeadResource\Tabs\ARQuotationTabs;
 use App\Filament\Resources\LeadResource\Tabs\CommercialItemTabs;
 use App\Filament\Resources\LeadResource\Tabs\CompanyTabs;
 use App\Filament\Resources\LeadResource\Tabs\DataFileTabs;
+use App\Filament\Resources\LeadResource\Tabs\DataMigrationTabs;
 use App\Filament\Resources\LeadResource\Tabs\HandoverDetailTabs;
 use App\Filament\Resources\LeadResource\Tabs\HardwareHandoverTabs;
 use App\Filament\Resources\LeadResource\Tabs\ImplementerAppointmentTabs;
@@ -135,11 +136,11 @@ class LeadResource extends Resource
             } elseif ($user->role_id === 4) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover', 'implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'project_plan'];
+                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'data_migration'];
             } elseif ($user->role_id === 5) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover','implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan'];
+                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration'];
             } elseif ($user->role_id === 9) { // Technician
                 $activeTabs = ['company', 'quotation', 'repair_appointment'];
             } else { // Manager (role_id = 3) or others
@@ -234,6 +235,11 @@ class LeadResource extends Resource
         if (in_array('project_plan', $activeTabs)) {
             $tabs[] = Tabs\Tab::make('Project Plan')
                 ->schema(ProjectPlanTabs::getSchema());
+        }
+
+        if (in_array('data_migration', $activeTabs)) {
+            $tabs[] = Tabs\Tab::make('Data Migration')
+                ->schema(DataMigrationTabs::getSchema());
         }
 
         // if (in_array('data_file', $activeTabs)) {

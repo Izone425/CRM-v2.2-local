@@ -72,11 +72,11 @@ class ViewLeadRecord extends ViewRecord
         } elseif ($user->role_id === 4) { // Implementer
             return ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
             'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan'];
+            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration'];
         } elseif ($user->role_id === 5) { // Implementer
             return ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
             'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan'];
+            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration'];
         } elseif ($user->role_id === 9) { // Technician
             return ['company', 'quotation', 'repair_appointment'];
         } else { // Manager (role_id = 3) or others
@@ -224,7 +224,7 @@ class ViewLeadRecord extends ViewRecord
                         case 'implementer':
                             $tabs = ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
                                 'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                                'implementer_service_form', 'data_file', 'other_form', 'ticketing', 'project_plan'];
+                                'implementer_service_form', 'data_file', 'other_form', 'ticketing', 'project_plan', 'data_migration'];
                             break;
                         case 'admin_repair':
                             $tabs = ['company', 'quotation', 'repair_appointment'];

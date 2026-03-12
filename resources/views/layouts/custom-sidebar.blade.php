@@ -1718,6 +1718,30 @@
                             </div>
                         </div>
                     @endif
+
+                    <!-- Data Migration V1 Section -->
+                    @if(auth()->user()->hasRouteAccess('filament.admin.pages.implementer-data-file'))
+                        <div class="menu-block">
+                            <div class="menu-item" onclick="window.location='{{ route('filament.admin.pages.implementer-data-file') }}'" style="cursor: pointer;">
+                                <div class="menu-icon-wrapper">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i>
+                                </div>
+                                <span class="menu-text">Data Migration V1</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Data Migration V2 Section -->
+                    @if(auth()->user()->hasRouteAccess('filament.admin.pages.data-migration-file'))
+                        <div class="menu-block">
+                            <div class="menu-item" onclick="window.location='{{ route('filament.admin.pages.data-migration-file') }}'" style="cursor: pointer;">
+                                <div class="menu-icon-wrapper">
+                                    <i class="bi bi-file-earmark-arrow-up"></i>
+                                </div>
+                                <span class="menu-text">Data Migration V2</span>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Support Section -->

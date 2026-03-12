@@ -411,4 +411,9 @@ class Lead extends Model
     {
         return $this->hasMany(ProjectPlan::class);
     }
+
+    public function customerDataMigrationFiles(): HasMany
+    {
+        return $this->hasMany(CustomerDataMigrationFile::class);
+    }
 }
