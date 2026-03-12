@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(php artisan:*)",
+      "Bash(php -l resources/views/filament/pages/implementer-ticketing-dashboard.blade.php)",
+      "Bash(find 'c:/Users/Muhammad Izzuwan/Documents/TT CRM v2 latest/vendor/filament' -type f -name *topbar* -o -name *header* -o -name *layout*)",
+      "Read(//c/Users/Muhammad Izzuwan/.claude/**)",
+      "Bash(find 'C:\\\\Users\\\\Muhammad Izzuwan\\\\Documents\\\\TT CRM v2 latest\\\\resources\\\\views\\\\filament' -type f -name *.blade.php)",
+      "Bash(grep -r ^class.*extends 'C:\\\\Users\\\\Muhammad Izzuwan\\\\Documents\\\\TT CRM v2 latest\\\\app\\\\Models\\\\User.php')"
+    ]
+  }
+}

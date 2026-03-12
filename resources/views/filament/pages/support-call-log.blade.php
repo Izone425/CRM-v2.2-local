@@ -1,0 +1,907 @@
+<x-filament::page>
+    <style>
+        /* Summary cards styling */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: stretch;
+        }
+
+        .summary-card {
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .card-total { background: linear-gradient(to bottom right, #ebf5ff, #dbeafe); border: 1px solid #bfdbfe; }
+        .card-completed { background: linear-gradient(to bottom right, #ecfdf5, #d1fae5); border: 1px solid #a7f3d0; }
+        .card-pending { background: linear-gradient(to bottom right, #fee2e2, #fecaca); border: 1px solid #fca5a5; }
+        .card-time { background: linear-gradient(to bottom right, #fffbeb, #fef3c7); border: 1px solid #fde68a; }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-total .card-value { color: #2563eb; }
+        .card-completed .card-value { color: #059669; }
+        .card-pending .card-value { color: #dc2626; }
+        .card-time .card-value { color: #d97706; }
+
+        .card-label {
+            font-size: 0.875rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .group-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* width: 1.5rem;
+            height: 1.5rem;
+            background-color: #2563eb; */
+            color: red;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 9999px;
+            margin-right: 0.5rem;
+        }
+
+        .staff-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            min-width: 3rem;
+            text-align: center;
+        }
+
+        .staff-number-total {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .staff-number-completed {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        .staff-number-pending {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Update the staff-name to not have a margin-bottom since they're on the same line now */
+        .staff-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0; /* Changed from 0.5rem */
+        }
+
+        .slide-over-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 99999 !important;
+        }
+
+        .slide-over-modal {
+            position: fixed !important; /* Change from relative to fixed */
+            top: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            max-width: 500px !important;
+            height: 100vh !important;
+            background-color: white;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.25);
+            z-index: 100000 !important; /* Extremely high z-index */
+            border-radius: 12px 0 0 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-over-header {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 100001 !important; /* Even higher than modal */
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1.25rem 1.5rem;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .slide-over-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            padding-bottom: 80px;
+        }
+
+        .staff-stats-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .staff-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+
+        .staff-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            background-color: #f9fafb;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+
+        .stat-item-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .stat-item-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .summary-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .staff-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .staff-stats-card {
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .staff-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0;
+        }
+
+        .staff-number {
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .staff-number-time {
+            /* background-color: #fef3c7; */
+            color: #d97706;
+            font-size: 0.875rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .total-time-day {
+            background-color: #c8c7fe;
+            color: #0637d9;
+            font-size: 0.875rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            min-width: 2.5rem;
+            text-align: center;
+        }
+
+        .slide-over-total {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-radius: 0.375rem;
+        }
+
+        .slide-over-total-medium {
+            background-color: rgba(217, 119, 6, 0.1);
+            border: 1px solid rgba(217, 119, 6, 0.2);
+        }
+
+        .slide-over-total-label {
+            font-size: 0.875rem;
+            color: rgb(107, 114, 128);
+        }
+
+        .slide-over-total-value {
+            margin-left: 0.25rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: rgb(55, 65, 81);
+        }
+
+        .implementer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.25rem;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            cursor: pointer;  /* Add cursor pointer since it's clickable now */
+        }
+
+        .implementer-name {
+            font-weight: 600;
+            color: rgb(55, 65, 81);
+            display: flex;
+            align-items: center;
+        }
+
+        .implementer-name svg {
+            margin-left: 0.5rem;
+            width: 0.875rem;
+            height: 0.875rem;
+            transition: transform 0.15s ease;
+        }
+
+        .implementer-name.expanded svg {
+            transform: rotate(180deg);
+        }
+
+        .date-list {
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
+            margin-left: 1rem;
+            padding-left: 0.5rem;
+            border-left: 2px solid #e5e7eb;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .date-list.expanded {
+            max-height: 1000px;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .date-list table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+
+        .date-list th {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-align: left;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .date-list td {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .date-list tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Make sure the expanded state works correctly with the table */
+        .date-list.expanded {
+            max-height: 1500px; /* Increased to accommodate table */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Swap arrow button */
+        .swap-arrow-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .swap-arrow-btn:hover {
+            background: linear-gradient(to bottom right, #e5e7eb, #d1d5db);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .swap-arrow-btn svg {
+            width: 24px;
+            height: 24px;
+            color: #4b5563;
+            transition: transform 0.3s ease;
+        }
+
+        .swap-arrow-btn:hover svg {
+            color: #3b82f6;
+        }
+
+        .swap-arrow-btn.to-extension svg {
+            transform: rotate(0deg);
+        }
+
+        .swap-arrow-btn.to-logs svg {
+            transform: rotate(180deg);
+        }
+
+        /* Extension status grid - horizontal scroll */
+        .extension-grid {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        .extension-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .extension-grid::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .extension-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .extension-grid::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .extension-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            width: 205px;
+            flex-shrink: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+        }
+
+        .extension-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .extension-card .status-indicator {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 40px 40px 0;
+        }
+
+        .extension-card.status-available .status-indicator {
+            border-color: transparent #10b981 transparent transparent;
+        }
+
+        .extension-card.status-in-use .status-indicator {
+            border-color: transparent #f59e0b transparent transparent;
+        }
+
+        .extension-card.status-unavailable .status-indicator {
+            border-color: transparent #ef4444 transparent transparent;
+        }
+
+        .extension-card.status-ringing .status-indicator {
+            border-color: transparent #8b5cf6 transparent transparent;
+        }
+
+        .extension-card .ext-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .extension-card .ext-name {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            flex: 1;
+        }
+
+        .extension-card .ext-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .extension-card .ext-status.available {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .extension-card .ext-status.in-use {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .extension-card .ext-status.unavailable {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .extension-card .ext-status.ringing {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .extension-card .ext-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .extension-card .ext-status.available .status-dot { background: #10b981; }
+        .extension-card .ext-status.in-use .status-dot { background: #f59e0b; animation: pulse-dot 1.5s infinite; }
+        .extension-card .ext-status.unavailable .status-dot { background: #ef4444; }
+        .extension-card .ext-status.ringing .status-dot { background: #8b5cf6; animation: pulse-dot 0.5s infinite; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .extension-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .extension-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .extension-summary {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ext-summary-card {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .ext-summary-card.available {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #a7f3d0;
+        }
+
+        .ext-summary-card.in-use {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid #fde68a;
+        }
+
+        .ext-summary-card.unavailable {
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border: 1px solid #fca5a5;
+        }
+
+        .ext-summary-card .count {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .ext-summary-card.available .count { color: #059669; }
+        .ext-summary-card.in-use .count { color: #d97706; }
+        .ext-summary-card.unavailable .count { color: #dc2626; }
+
+        .ext-summary-card .label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+    </style>
+
+    <div class="mb-6">
+        <h2 class="section-title">Call Log List</h2>
+
+        {{-- TOP SECTION: Swaps between Summary Cards and Extension Status Cards --}}
+        @if($activeTab === 'call_logs')
+        <div class="summary-grid">
+            <div class="summary-card card-total" wire:click="openStaffStatsSlideOver('all')">
+                <div class="card-value">
+                    @php
+                        // Get support staff extensions dynamically
+                        $supportExtensions = \App\Models\PhoneExtension::where('is_support_staff', true)
+                            ->where('is_active', true)
+                            ->pluck('extension')
+                            ->toArray();
+
+                        // Get reception extension
+                        $receptionExtension = \App\Models\PhoneExtension::where('extension', '100')
+                            ->value('extension') ?? '100';
+
+                        $totalCount = \App\Models\CallLog::query()
+                            ->where(function ($query) use ($supportExtensions, $receptionExtension) {
+                                $query->whereIn('caller_number', array_merge([$receptionExtension], $supportExtensions))
+                                    ->orWhereIn('receiver_number', $supportExtensions);
+                            })
+                            ->where('call_status', '!=', 'NO ANSWER')
+                            // Exclude calls with duration less than 5 seconds
+                            ->where(function($query) {
+                                $query->where('call_duration', '>=', 5)
+                                    ->orWhereNull('call_duration');
+                            })
+                            ->count();
+                    @endphp
+                    {{ $totalCount }}
+                </div>
+                <div class="card-label">Total Tasks</div>
+            </div>
+
+            <div class="summary-card card-completed" wire:click="openStaffStatsSlideOver('completed')">
+                <div class="card-value">
+                    @php
+                        // Reuse the extensions from above
+                        $completedCount = \App\Models\CallLog::query()
+                            ->where(function ($query) use ($supportExtensions, $receptionExtension) {
+                                $query->whereIn('caller_number', array_merge([$receptionExtension], $supportExtensions))
+                                    ->orWhereIn('receiver_number', $supportExtensions);
+                            })
+                            ->where('call_status', '!=', 'NO ANSWER')
+                            ->where(function($query) {
+                                $query->where('call_duration', '>=', 5)
+                                    ->orWhereNull('call_duration');
+                            })
+                            ->where('task_status', 'Completed')
+                            ->count();
+                    @endphp
+                    {{ $completedCount }}
+                </div>
+                <div class="card-label">Completed Tasks</div>
+            </div>
+
+            <div class="summary-card card-pending" wire:click="openStaffStatsSlideOver('pending')">
+                <div class="card-value">
+                    @php
+                        // Reuse the extensions from above
+                        $pendingCount = \App\Models\CallLog::query()
+                            ->where(function ($query) use ($supportExtensions, $receptionExtension) {
+                                $query->whereIn('caller_number', array_merge([$receptionExtension], $supportExtensions))
+                                    ->orWhereIn('receiver_number', $supportExtensions);
+                            })
+                            ->where('call_status', '!=', 'NO ANSWER')
+                            ->where(function($query) {
+                                $query->where('call_duration', '>=', 5)
+                                    ->orWhereNull('call_duration');
+                            })
+                            ->where('task_status', 'Pending')
+                            ->count();
+                    @endphp
+                    {{ $pendingCount }}
+                </div>
+                <div class="card-label">Pending Tasks</div>
+            </div>
+
+            <div class="summary-card card-time" wire:click="openStaffStatsSlideOver('duration')">
+                <div class="card-value">
+                    @php
+                        // Reuse the extensions from above
+                        $totalDuration = \App\Models\CallLog::query()
+                            ->where(function ($query) use ($supportExtensions, $receptionExtension) {
+                                $query->whereIn('caller_number', array_merge([$receptionExtension], $supportExtensions))
+                                    ->orWhereIn('receiver_number', $supportExtensions);
+                            })
+                            ->where('call_status', '!=', 'NO ANSWER')
+                            ->where(function($query) {
+                                $query->where('call_duration', '>=', 5)
+                                    ->orWhereNull('call_duration');
+                            })
+                            ->sum('call_duration');
+
+                        $hours = floor($totalDuration / 3600);
+                        $minutes = floor(($totalDuration % 3600) / 60);
+                    @endphp
+                    {{ $hours }}h {{ $minutes }}m
+                </div>
+                <div class="card-label">Total Call Time</div>
+            </div>
+
+            <!-- Swap Arrow Button -->
+            <button
+                wire:click="toggleTab"
+                class="swap-arrow-btn to-extension"
+                title="View Extension Status"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+        @endif
+
+        @if($activeTab === 'extension_status')
+        <div class="extension-row" style="display: flex; align-items: stretch; gap: 1rem;" wire:poll.10s="loadExtensionStatuses">
+            @if(count($extensionStatuses) > 0)
+                <div class="extension-grid" style="flex: 1;">
+                    @foreach($extensionStatuses as $ext)
+                        @php
+                            $statusClass = match($ext['deviceState']) {
+                                'Not in use' => 'available',
+                                'In use', 'On hold' => 'in-use',
+                                'Ringing' => 'ringing',
+                                default => 'unavailable'
+                            };
+                            $statusLabel = match($ext['deviceState']) {
+                                'Not in use' => 'Available',
+                                'In use' => 'In Use',
+                                'On hold' => 'On Hold',
+                                'Ringing' => 'Ringing',
+                                'Unavailable' => 'Offline',
+                                default => $ext['deviceState']
+                            };
+                        @endphp
+                        <div class="extension-card status-{{ $statusClass }}">
+                            <div class="status-indicator"></div>
+                            <div class="ext-number">{{ $ext['extension'] }}</div>
+                            <div class="ext-name">{{ $ext['name'] }}</div>
+                            <div class="ext-status {{ $statusClass }}">
+                                <span class="status-dot"></span>
+                                {{ $statusLabel }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="p-8 text-center text-gray-500" style="flex: 1;">
+                    <p>Loading extension status...</p>
+                </div>
+            @endif
+
+            <!-- Swap Arrow Button (back to call logs) -->
+            <button
+                wire:click="toggleTab"
+                class="swap-arrow-btn to-logs"
+                title="View Call Logs Summary"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+        @endif
+    </div>
+
+    {{-- Slide Over Panel for Staff Stats - ALWAYS visible --}}
+    <template x-teleport="body">
+        <div
+            x-data="{ open: @entangle('showStaffStats') }"
+            x-show="open"
+            @keydown.window.escape="open = false"
+            class="slide-over-overlay"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            style="display: none;"
+        >
+            <div
+                class="slide-over-modal"
+                @click.away="open = false"
+            >
+                <!-- Header -->
+                <div class="slide-over-header">
+                    <h2 class="text-lg font-bold text-gray-800">{{ $slideOverTitle }}</h2>
+                    <button @click="open = false" class="p-1 text-2xl leading-none text-gray-500 hover:text-gray-700">&times;</button>
+                </div>
+
+                <!-- Scrollable content -->
+                <div class="slide-over-content">
+                    @if($type === 'duration')
+                        <!-- Total count - similar to project-priority style -->
+                        <div class="slide-over-total slide-over-total-medium">
+                            <span class="slide-over-total-label">Total Call Time:</span>
+                            <span class="slide-over-total-value">
+                                @php
+                                    $totalHours = 0;
+                                    $totalMinutes = 0;
+
+                                    foreach($staffStats as $staff) {
+                                        if (isset($staff['total_duration'])) {
+                                            $hours = floor($staff['total_duration'] / 3600);
+                                            $minutes = floor(($staff['total_duration'] % 3600) / 60);
+                                            $totalHours += $hours;
+                                            $totalMinutes += $minutes;
+                                        }
+                                    }
+
+                                    // Convert excess minutes to hours
+                                    $totalHours += floor($totalMinutes / 60);
+                                    $totalMinutes = $totalMinutes % 60;
+                                @endphp
+                                {{ $totalHours }}h {{ $totalMinutes }}m
+                            </span>
+                        </div>
+
+                        <!-- Staff list with expandable date lists -->
+                        <div class="space-y-0">
+                            @foreach($staffStats as $staff)
+                                @if(isset($staff['name']))
+                                    <!-- Staff item -->
+                                    <div class="implementer-item" wire:click="toggleStaff('{{ $staff['name'] }}')">
+                                        <div class="implementer-name {{ in_array($staff['name'], $expandedStaff ?? []) ? 'expanded' : '' }}">
+                                            {{ $staff['name'] }}
+
+                                            <!-- Chevron icon -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="implementer-count">
+                                            {{ isset($staff['formatted_time']) ? $staff['formatted_time'] : '0h 0m' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Date list - expandable -->
+                                    <div class="date-list {{ in_array($staff['name'], $expandedStaff ?? []) ? 'expanded' : '' }}">
+                                        @if(isset($staffDateTimes[$staff['name']]))
+                                            <table class="w-full">
+                                                <tbody>
+                                                    @foreach($staffDateTimes[$staff['name']] as $dateData)
+                                                        <tr class="date-item">
+                                                            <td class="py-1" style= "width: 25%; text-align: right;">{{ $dateData['display_date'] }}</td>
+                                                            <td class="py-1" style= "width: 10%">
+                                                                @php
+                                                                    // Convert the display date to a DateTime object and get day name
+                                                                    $date = \DateTime::createFromFormat('j M Y', $dateData['display_date']);
+                                                                    $dayName = $date ? $date->format('D') : '';
+                                                                @endphp
+                                                                <span class="text-gray-600">{{ $dayName }}</span>
+                                                            </td>
+                                                            <td style= "width: 45%"></td>
+                                                            <td class="py-1 text-right" style= "width: 20%">
+                                                                <span class="px-2 py-1 text-xs staff-number-time">{{ $dateData['formatted_time'] }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <!-- Regular non-hierarchical view for other stats -->
+                        @foreach ($staffStats as $staff)
+                            <div class="px-3 py-2 mb-1 staff-stats-card">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm staff-name">{{ $staff['name'] }}</div>
+
+                                    <!-- Show the right number based on type -->
+                                    @if($type === 'completed')
+                                        <div class="w-5 h-5 text-xs group-badge">{{ $staff['completed_calls'] }}</div>
+                                    @elseif($type === 'pending')
+                                        <div class="w-5 h-5 text-xs group-badge">{{ $staff['pending_calls'] }}</div>
+                                    @else
+                                        <div class="w-5 h-5 text-xs group-badge">{{ $staff['total_calls'] }}</div>
+                                    @endif
+                                </div>
+
+                                <div class="mt-0.5 text-xs text-gray-500">
+                                    Extension: {{ $staff['extension'] }}
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- TABLE - ALWAYS visible --}}
+    {{ $this->table }}
+</x-filament::page>
