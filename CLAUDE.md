@@ -33,9 +33,13 @@ Required env vars (see `.env.example`):
 ## Architecture
 - `app/Filament/` — Admin panel (Resources, Pages, Actions, Filters)
 - `app/Filament/Customer/` — Customer portal
+- `app/Filament/Resources/LeadResource/Tabs/` — Tab classes for lead view (e.g., `ProjectPlanTabs.php`, `DataMigrationTabs.php`)
+- `app/Livewire/` — Livewire components used in customer portal (e.g., `CustomerDataMigrationTemplates.php`)
 - `app/Models/` — Eloquent models
 - `app/Helpers/general_helpers.php` — Global helper functions
 - `resources/views/filament/pages/` — Custom Blade views for Filament pages
+- `resources/views/filament/resources/lead-resource/tabs/` — Blade views for lead view tabs
+- `resources/views/livewire/` — Blade views for Livewire components
 - `app/Console/Commands/` — 35 custom artisan commands (scheduled tasks, syncs, reminders)
 - `config/` — Includes custom configs: imap.php, reverb.php, invoices.php, notification-scenarios.php
 - `routes/api.php` — API routes (Sanctum-authenticated)
@@ -50,6 +54,13 @@ Required env vars (see `.env.example`):
 - Livewire events (`$this->dispatch()`) communicate from PHP to Alpine; sync data at submission boundaries only
 - CSS is inline `<style>` within Blade views, using `imp-` prefix for Implementer Ticketing components
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
+- Sidebar navigation is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false`
+- Lead view tabs follow pattern: `class TabName { public static function getSchema(): array }` returning Filament form components
+- Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
+- When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
+- Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead
+- `foreignId()->constrained()` may fail if DB column types don't match — use `unsignedBigInteger()` without FK constraints as fallback
+- MySQL index names have 64-char limit — use short custom names for long composite indexes
 
 ## Key Integrations
 - Microsoft OAuth + Graph SDK
@@ -70,3 +81,14 @@ Required env vars (see `.env.example`):
 - Alpine.js is bundled via Filament, not installed as npm dependency
 - Many commands are scheduled (`app/Console/Kernel.php`) — ensure `schedule:run` is in cron
 - `.env.example` contains some hardcoded values — always review before copying
+- Customer portal uses `customer` guard with `Customer` model (has `lead_id` for linking to leads)
+- `Storage::disk('public')->url()` may not include the port in dev — use `response()->download()` via named routes instead
+- User roles: 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician
+
+## Data Migration System
+- **V1 (nested subsections):** `ImplementerDataFile.php` — 5 sections with sub-items, storage at `templates/data-migration-v1/`
+- **V2 (flat sections):** `DataMigrationFile.php` — 5 simple sections, storage at `templates/data-migration/`
+- **Customer portal:** `CustomerDataMigrationTemplates.php` — downloads V1 templates, uploads filled files with versioning
+- **Implementer review:** `DataMigrationTabs.php` — lead view tab showing customer uploads with slide-over for status/remarks
+- **Model:** `CustomerDataMigrationFile` — tracks versions per lead+section+item with customer remark, implementer remark, status
+- **API routes:** `/admin/api/data-migration-file/{file}/update` (POST), `/admin/data-migration-file/{file}/download` (GET)
