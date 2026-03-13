@@ -361,6 +361,38 @@
             font-weight: 600;
             color: #111827;
         }
+        .imp-ticket-id-wrap {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .imp-ticket-id-wrap::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: #1E293B;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 6px;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s, visibility 0.15s;
+            z-index: 10;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .imp-ticket-id-wrap:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
 
         .imp-priority-badge {
             padding: 2px 8px;
@@ -1182,39 +1214,62 @@
             background-color: #F9FAFB !important;
         }
 
-        /* === Ticket Detail Drawer === */
+        /* Create drawer: hide topbar when open */
         body.imp-drawer-open {
             overflow: hidden !important;
         }
         body.imp-drawer-open .fi-topbar {
             display: none !important;
         }
-        .imp-detail-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 200;
-            display: flex;
-            justify-content: flex-end;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            overflow: hidden;
-        }
-        .imp-detail-drawer {
-            width: 100%;
-            max-width: 920px;
-            height: 100vh;
-            background: white;
-            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+
+        /* === Ticket Detail Full Page === */
+        .imp-fullpage-detail {
+            background: transparent;
+            border-radius: 0;
+            border: none;
             display: flex;
             flex-direction: column;
-            border-radius: 0;
+            height: calc(100vh - 120px);
             overflow: hidden;
+            box-shadow: none;
+            padding: 0 4px;
+        }
+        .imp-fullpage-detail::before {
+            display: none;
+        }
+        .imp-back-row {
+            padding: 8px 4px;
+            border-bottom: none;
+            background: transparent;
+            flex-shrink: 0;
+        }
+        .imp-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748B;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .imp-back-btn:hover {
+            color: #1A1D26;
+            background: rgba(0, 0, 0, 0.04);
         }
 
         /* Detail Header */
         .imp-detail-header {
-            border-bottom: 1px solid #E5E7EB;
-            padding: 16px 20px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 18px 24px 16px;
+            margin: 0 0 16px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
             flex-shrink: 0;
         }
         .imp-detail-header-top {
@@ -1231,18 +1286,23 @@
             min-width: 0;
         }
         .imp-detail-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #111827;
+            font-size: 17px;
+            font-weight: 700;
+            color: #1A1D26;
             margin: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: -0.01em;
         }
         .imp-detail-ticket-id {
             font-size: 12px;
-            color: #6B7280;
+            color: #94A3B8;
+            font-weight: 500;
             flex-shrink: 0;
+            background: #F1F3F8;
+            padding: 2px 8px;
+            border-radius: 4px;
         }
         .imp-detail-close {
             background: none;
@@ -1266,19 +1326,21 @@
         .imp-detail-sla-badge {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 12px;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.01em;
         }
-        .imp-detail-sla-badge.on_track { background: #DCFCE7; color: #166534; }
-        .imp-detail-sla-badge.at_risk { background: #FEF3C7; color: #92400E; }
-        .imp-detail-sla-badge.overdue { background: #FEE2E2; color: #991B1B; }
-        .imp-detail-sla-badge.resolved { background: #F3F4F6; color: #374151; }
+        .imp-detail-sla-badge.on_track { background: #ECFDF5; color: #065F46; box-shadow: inset 0 0 0 1px rgba(6, 95, 70, 0.12); }
+        .imp-detail-sla-badge.at_risk { background: #FFFBEB; color: #854D0E; box-shadow: inset 0 0 0 1px rgba(133, 77, 14, 0.15); }
+        .imp-detail-sla-badge.overdue { background: #FEF2F2; color: #991B1B; box-shadow: inset 0 0 0 1px rgba(153, 27, 27, 0.12); }
+        .imp-detail-sla-badge.resolved { background: #F1F3F8; color: #475569; box-shadow: inset 0 0 0 1px rgba(71, 85, 105, 0.1); }
         .imp-detail-company-name {
             font-size: 13px;
-            color: #6B7280;
+            color: #64748B;
+            font-weight: 500;
         }
         .imp-detail-actions-bar {
             display: flex;
@@ -1309,6 +1371,7 @@
         .imp-detail-content {
             flex: 1;
             display: flex;
+            gap: 16px;
             overflow: hidden;
             min-height: 0;
         }
@@ -1317,33 +1380,53 @@
         .imp-detail-sidebar {
             width: 280px;
             flex-shrink: 0;
-            border-right: 1px solid #E5E7EB;
-            background: #F9FAFB;
-            padding: 16px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 20px 16px;
             overflow-y: auto;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
         }
         .imp-detail-sidebar-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #111827;
-            margin: 0 0 16px 0;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748B;
+            margin: 0 0 18px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
         .imp-detail-section {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+        }
+        .imp-detail-section::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #D8DCE5, transparent);
+            margin-top: 16px;
+        }
+        .imp-detail-section:last-child::after {
+            display: none;
         }
         .imp-detail-label {
             display: block;
             font-size: 10px;
-            font-weight: 600;
-            color: #6B7280;
-            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #94A3B8;
+            letter-spacing: 0.06em;
             margin-bottom: 6px;
+            text-transform: uppercase;
         }
         .imp-detail-card {
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            padding: 10px;
+            background: #F8FAFC;
+            border: 1px solid #EEF0F4;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: none;
+            transition: background 0.2s ease;
+        }
+        .imp-detail-card:hover {
+            background: #F1F5F9;
         }
         .imp-detail-card-row {
             display: flex;
@@ -1351,26 +1434,27 @@
             gap: 8px;
         }
         .imp-detail-avatar {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
-        .imp-detail-avatar.blue { background: #DBEAFE; color: #2563EB; }
-        .imp-detail-avatar.purple { background: #EDE9FE; color: #7C3AED; }
-        .imp-detail-avatar.yellow { background: #FEF3C7; color: #92400E; }
+        .imp-detail-avatar.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1D4ED8; }
+        .imp-detail-avatar.purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); color: #6D28D9; }
+        .imp-detail-avatar.yellow { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; }
         .imp-detail-name {
             font-size: 13px;
-            font-weight: 500;
-            color: #111827;
+            font-weight: 600;
+            color: #1A1D26;
             margin: 0;
         }
         .imp-detail-sublabel {
             font-size: 11px;
-            color: #6B7280;
+            color: #94A3B8;
             margin: 0;
         }
         .imp-detail-email-row {
@@ -1379,7 +1463,7 @@
             gap: 6px;
             margin-top: 8px;
             font-size: 11px;
-            color: #6B7280;
+            color: #64748B;
         }
 
         /* Status Dropdown */
@@ -1388,18 +1472,20 @@
         }
         .imp-detail-status-btn {
             width: 100%;
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            padding: 8px 10px;
+            background: #F8FAFC;
+            border: 1px solid #EEF0F4;
+            border-radius: 10px;
+            padding: 9px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
         .imp-detail-status-btn:hover {
-            background: #F9FAFB;
+            border-color: #CBD5E1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
         }
         .imp-detail-status-dropdown {
             position: absolute;
@@ -1407,12 +1493,12 @@
             left: 0;
             right: 0;
             margin-top: 4px;
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: #FFFFFF;
+            border: 1px solid #E2E5EB;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
             z-index: 20;
-            padding: 4px 0;
+            padding: 4px;
         }
         .imp-detail-status-option {
             display: block;
@@ -1423,56 +1509,62 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: #374151;
-            transition: background 0.1s;
+            color: #475569;
+            border-radius: 6px;
+            transition: all 0.15s ease;
         }
-        .imp-detail-status-option:hover { background: #F9FAFB; }
-        .imp-detail-status-option.active { background: #F5F3FF; font-weight: 500; color: #7C3AED; }
+        .imp-detail-status-option:hover { background: #F1F5F9; }
+        .imp-detail-status-option.active { background: #F0EDFA; font-weight: 600; color: #5B5FC7; }
 
         /* Key Dates */
         .imp-detail-dates-card {
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
+            background: #F8FAFC;
+            border: 1px solid #EEF0F4;
+            border-radius: 10px;
+            box-shadow: none;
+            overflow: hidden;
         }
         .imp-detail-date-item {
-            padding: 10px;
+            padding: 11px 12px;
         }
         .imp-detail-date-item + .imp-detail-date-item {
-            border-top: 1px solid #F3F4F6;
+            border-top: 1px solid #F1F3F8;
         }
         .imp-detail-date-label {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             font-size: 11px;
-            color: #6B7280;
-            margin-bottom: 2px;
+            color: #94A3B8;
+            margin-bottom: 3px;
+            font-weight: 500;
         }
         .imp-detail-date-value {
             font-size: 13px;
-            color: #111827;
+            font-weight: 600;
+            color: #1A1D26;
             margin: 0;
         }
 
         /* Details Props */
         .imp-detail-props-card {
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            padding: 10px;
+            background: #F8FAFC;
+            border: 1px solid #EEF0F4;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: none;
         }
         .imp-detail-prop-row {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
-            padding: 3px 0;
+            padding: 4px 0;
         }
-        .imp-detail-prop-label { color: #6B7280; }
-        .imp-detail-prop-value { color: #111827; }
-        .imp-detail-prop-value.priority-high { color: #DC2626; font-weight: 500; }
-        .imp-detail-prop-value.priority-medium { color: #D97706; font-weight: 500; }
-        .imp-detail-prop-value.priority-low { color: #2563EB; font-weight: 500; }
+        .imp-detail-prop-label { color: #94A3B8; font-weight: 500; }
+        .imp-detail-prop-value { color: #1A1D26; font-weight: 500; }
+        .imp-detail-prop-value.priority-high { color: #DC2626; font-weight: 600; }
+        .imp-detail-prop-value.priority-medium { color: #D97706; font-weight: 600; }
+        .imp-detail-prop-value.priority-low { color: #2563EB; font-weight: 600; }
 
         /* Right Panel - Thread */
         .imp-detail-thread-panel {
@@ -1481,41 +1573,50 @@
             flex-direction: column;
             overflow: hidden;
             min-width: 0;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.03);
         }
         .imp-detail-thread {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 16px;
-            background: #F0F2F5;
+            padding: 24px 20px;
+            background: #F4F2EF;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
         .imp-detail-message {
-            max-width: 78%;
-            padding: 8px 12px;
+            max-width: 75%;
+            padding: 10px 14px;
             margin-bottom: 2px;
             position: relative;
-            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: box-shadow 0.2s ease;
+        }
+        .imp-detail-message:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
         }
         .imp-detail-message.client {
             align-self: flex-start;
-            background: #ffffff;
+            background: #FFFFFF;
             border: none;
-            border-radius: 0 12px 12px 12px;
+            border-radius: 4px 16px 16px 16px;
         }
         .imp-detail-message.staff {
             align-self: flex-end;
-            background: #EEF2FF;
+            background: #EDEAF7;
             border: none;
-            border-radius: 12px 0 12px 12px;
+            border-radius: 16px 4px 16px 16px;
         }
         .imp-detail-message.internal {
             align-self: center;
-            background: #FFFBEB;
-            border: 1.5px dashed #FCD34D;
+            background: #FEF9EE;
+            border: 1.5px dashed #E5C76B;
             border-radius: 12px;
             max-width: 85%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
         .imp-detail-msg-header {
             display: flex;
@@ -1527,21 +1628,22 @@
             flex-direction: row-reverse;
         }
         .imp-detail-msg-avatar {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .imp-detail-msg-avatar svg {
             width: 14px !important;
             height: 14px !important;
         }
-        .imp-detail-msg-avatar.blue { background: #DBEAFE; color: #2563EB; }
-        .imp-detail-msg-avatar.purple { background: #EDE9FE; color: #7C3AED; }
-        .imp-detail-msg-avatar.yellow { background: #FEF3C7; color: #92400E; }
+        .imp-detail-msg-avatar.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1D4ED8; }
+        .imp-detail-msg-avatar.purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); color: #6D28D9; }
+        .imp-detail-msg-avatar.yellow { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; }
         .imp-detail-msg-info {
             display: flex;
             align-items: center;
@@ -1553,23 +1655,24 @@
         }
         .imp-detail-msg-name {
             font-size: 12px;
-            font-weight: 600;
-            color: #111827;
+            font-weight: 700;
+            color: #1A1D26;
         }
         .imp-detail-msg-badge {
             font-size: 10px;
-            padding: 1px 7px;
-            border-radius: 4px;
-            font-weight: 500;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 600;
         }
-        .imp-detail-msg-badge.blue { background: #DBEAFE; color: #1D4ED8; }
-        .imp-detail-msg-badge.purple { background: #EDE9FE; color: #6D28D9; }
-        .imp-detail-msg-badge.yellow { background: #FEF3C7; color: #92400E; }
+        .imp-detail-msg-badge.blue { background: #DBEAFE; color: #1E40AF; }
+        .imp-detail-msg-badge.purple { background: #EDE9FE; color: #5B21B6; }
+        .imp-detail-msg-badge.yellow { background: #FEF3C7; color: #854D0E; }
         .imp-detail-msg-time {
             font-size: 10px;
-            color: #9CA3AF;
+            color: #94A3B8;
             display: block;
-            margin-top: 4px;
+            margin-top: 6px;
+            font-weight: 500;
         }
         .imp-detail-message.client .imp-detail-msg-time {
             text-align: left;
@@ -1578,9 +1681,9 @@
             text-align: right;
         }
         .imp-detail-msg-body {
-            font-size: 13px;
-            color: #374151;
-            line-height: 1.6;
+            font-size: 13.5px;
+            color: #334155;
+            line-height: 1.65;
             padding: 0;
         }
         .imp-note-edit-btn {
@@ -1716,21 +1819,26 @@
         .imp-detail-attachment-link {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             font-size: 12px;
+            font-weight: 500;
             color: #2563EB;
             text-decoration: none;
-            padding: 3px 8px;
+            padding: 4px 10px;
             background: #EFF6FF;
-            border-radius: 4px;
+            border-radius: 6px;
+            border: 1px solid #DBEAFE;
+            transition: all 0.15s ease;
         }
         .imp-detail-attachment-link:hover {
             background: #DBEAFE;
+            border-color: #BFDBFE;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1);
         }
         .imp-detail-no-messages {
             text-align: center;
             padding: 40px 20px;
-            color: #6B7280;
+            color: #94A3B8;
             font-size: 13px;
         }
 
@@ -1739,13 +1847,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
-            background: #fff;
-            border-bottom: 1px solid #E5E7EB;
+            padding: 10px 20px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E5EB;
+            border-radius: 12px 12px 0 0;
             flex-shrink: 0;
         }
         .imp-thread-search i {
-            color: #9CA3AF;
+            color: #94A3B8;
             font-size: 14px;
             flex-shrink: 0;
         }
@@ -1754,11 +1863,11 @@
             border: none;
             outline: none;
             font-size: 13px;
-            color: #374151;
+            color: #334155;
             background: transparent;
         }
         .imp-thread-search input::placeholder {
-            color: #9CA3AF;
+            color: #94A3B8;
         }
         .imp-thread-search-clear {
             border: none;
@@ -1774,11 +1883,13 @@
             color: #6B7280;
         }
         .imp-msg-dimmed {
-            opacity: 0.12 !important;
+            opacity: 0.08 !important;
             pointer-events: none;
+            transition: opacity 0.3s ease;
         }
         .imp-msg-highlight {
-            box-shadow: 0 0 0 2px #667eea44;
+            box-shadow: 0 0 0 2px rgba(91, 95, 199, 0.25);
+            transition: box-shadow 0.3s ease;
         }
 
         /* Split Button */
@@ -1789,25 +1900,28 @@
             position: absolute;
             top: 6px;
             right: 6px;
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border: none;
-            background: #EFF6FF;
-            color: #3B82F6;
-            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #5B5FC7;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.15s, background 0.15s;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
         .imp-detail-message.client:hover .imp-split-btn {
             opacity: 1;
         }
         .imp-split-btn:hover {
-            background: #DBEAFE;
-            color: #1D4ED8;
+            background: #EDEAF7;
+            color: #4F46E5;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         .imp-split-btn svg {
             width: 14px;
@@ -1818,8 +1932,9 @@
         .imp-split-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.25);
+            background: rgba(15, 23, 42, 0.3);
             z-index: 1100;
+            backdrop-filter: blur(2px);
         }
         .imp-split-drawer {
             position: fixed;
@@ -1828,13 +1943,13 @@
             bottom: 0;
             width: 440px;
             max-width: 92vw;
-            background: #fff;
+            background: #FFFFFF;
             z-index: 1101;
-            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12), -2px 0 8px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
             transform: translateX(100%);
-            transition: transform 0.25s ease;
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
         }
         .imp-split-drawer.open {
             transform: translateX(0);
@@ -1973,10 +2088,12 @@
 
         /* Reply Box */
         .imp-detail-reply-box {
-            border-top: 1px solid #E5E7EB;
-            padding: 12px 16px;
-            background: white;
+            border-top: 1px solid #E2E5EB;
+            padding: 14px 20px;
+            background: #FFFFFF;
             flex-shrink: 0;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
+            border-radius: 0 0 12px 12px;
         }
         .imp-reply-chevron {
             width: 16px;
@@ -1995,8 +2112,8 @@
         }
         .imp-detail-reply-label {
             font-size: 13px;
-            font-weight: 500;
-            color: #374151;
+            font-weight: 600;
+            color: #334155;
         }
         .imp-detail-internal-toggle {
             display: flex;
@@ -2062,8 +2179,8 @@
         }
         .imp-detail-reply-field-row input:focus {
             outline: none;
-            border-color: #7C3AED;
-            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+            border-color: #5B5FC7;
+            box-shadow: 0 0 0 2px rgba(91, 95, 199, 0.1);
         }
         .imp-detail-reply-field-row input[readonly] {
             color: #6B7280;
@@ -2072,7 +2189,7 @@
         .imp-ccbcc-toggle {
             background: none;
             border: none;
-            color: #7C3AED;
+            color: #5B5FC7;
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
@@ -2082,7 +2199,7 @@
             flex-shrink: 0;
         }
         .imp-ccbcc-toggle:hover {
-            background: #F3F0FF;
+            background: #F0EDFA;
         }
         .imp-detail-reply-field-row select {
             flex: 1;
@@ -2095,8 +2212,8 @@
         }
         .imp-detail-reply-field-row select:focus {
             outline: none;
-            border-color: #7C3AED;
-            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+            border-color: #5B5FC7;
+            box-shadow: 0 0 0 2px rgba(91, 95, 199, 0.1);
         }
 
         /* Reply rich text editor */
@@ -2104,71 +2221,74 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 6px 10px;
-            background: #F9FAFB;
-            border: 1px solid #D1D5DB;
-            border-radius: 8px 8px 0 0;
+            padding: 7px 12px;
+            background: #F6F7FA;
+            border: 1px solid #E2E5EB;
+            border-radius: 10px 10px 0 0;
         }
         .imp-detail-reply-toolbar button {
             padding: 5px;
             border: none;
             background: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            color: #6B7280;
-            transition: all 0.15s;
+            color: #64748B;
+            transition: all 0.15s ease;
         }
         .imp-detail-reply-toolbar button:hover {
-            background: #E5E7EB;
+            background: #E2E5EB;
+            color: #1A1D26;
         }
         .imp-detail-reply-toolbar button.imp-toolbar-active {
-            background: #E5E7EB;
-            color: #111827;
+            background: #E0DEF5;
+            color: #5B5FC7;
         }
         .imp-detail-reply-toolbar .imp-toolbar-divider {
             width: 1px;
             height: 18px;
-            background: #D1D5DB;
+            background: #E2E5EB;
             margin: 0 3px;
         }
         .imp-detail-reply-editor[contenteditable] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #D1D5DB;
+            padding: 12px;
+            border: 1px solid #E2E5EB;
             border-top: none;
-            border-radius: 0 0 8px 8px;
-            font-size: 13px;
+            border-radius: 0 0 10px 10px;
+            font-size: 13.5px;
             font-family: inherit;
             min-height: 120px;
             max-height: 250px;
             overflow-y: auto;
-            line-height: 1.6;
+            line-height: 1.65;
+            color: #334155;
             cursor: text;
             outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .imp-detail-reply-editor[contenteditable]:focus {
-            border-color: #7C3AED;
-            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+            border-color: #5B5FC7;
+            box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.08);
         }
         .imp-detail-reply-editor[contenteditable]:empty:before {
             content: attr(data-placeholder);
-            color: #9CA3AF;
+            color: #94A3B8;
             pointer-events: none;
         }
         .imp-detail-reply-editor[contenteditable] p {
             margin: 0 0 8px 0;
         }
         .imp-detail-reply-editor[contenteditable] a {
-            color: #7C3AED;
+            color: #5B5FC7;
             text-decoration: underline;
         }
         .imp-detail-reply-editor.internal {
-            border-color: #FDE68A;
-            background: #FFFBEB;
+            border-color: #E5C76B;
+            background: #FEFCF5;
         }
         .imp-detail-reply-editor.internal:focus {
             border-color: #D97706;
-            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1);
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.08);
         }
         .imp-detail-reply-footer {
             display: flex;
@@ -2179,31 +2299,76 @@
         .imp-detail-send-btn {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #7C3AED, #2563EB);
+            gap: 7px;
+            padding: 9px 20px;
+            background: #5B5FC7;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(91, 95, 199, 0.3);
         }
         .imp-detail-send-btn:hover {
-            opacity: 0.9;
+            background: #4F46E5;
+            box-shadow: 0 4px 12px rgba(91, 95, 199, 0.35);
             transform: translateY(-1px);
         }
         .imp-detail-send-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         .imp-detail-send-btn.internal {
-            background: linear-gradient(135deg, #D97706, #B45309);
+            background: #B45309;
+            box-shadow: 0 1px 3px rgba(180, 83, 9, 0.3);
+        }
+        .imp-detail-send-btn.internal:hover {
+            background: #92400E;
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.35);
+        }
+
+        /* Custom Scrollbars */
+        .imp-detail-thread::-webkit-scrollbar {
+            width: 6px;
+        }
+        .imp-detail-thread::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .imp-detail-thread::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+        .imp-detail-thread::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        .imp-detail-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .imp-detail-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .imp-detail-sidebar::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 2px;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .imp-detail-message,
+            .imp-detail-card,
+            .imp-detail-send-btn,
+            .imp-split-drawer,
+            .imp-back-btn {
+                transition: none !important;
+            }
         }
     </style>
 
+    @if(!$showTicketDetail || !$selectedTicket)
     <div class="imp-dashboard-wrapper">
         <!-- Header -->
         <div class="imp-dashboard-header">
@@ -2376,7 +2541,9 @@
                         @foreach($tickets as $ticket)
                             <tr wire:click="openTicketDetail({{ $ticket->id }})" class="imp-clickable-row">
                                 <td>
-                                    <span class="imp-ticket-id">{{ $ticket->formatted_ticket_number }}</span>
+                                    <div class="imp-ticket-id-wrap" data-tooltip="{{ $ticket->subject }}">
+                                        <span class="imp-ticket-id">{{ $ticket->formatted_ticket_number }}</span>
+                                    </div>
                                     @if($ticket->priority)
                                         <span class="imp-priority-badge {{ strtolower($ticket->priority) }}">
                                             {{ ucfirst($ticket->priority) }}
@@ -2950,48 +3117,30 @@
             </div>
         </div>
     </div>
+    @else
 
-    <!-- Ticket Detail Drawer -->
-    @if($showTicketDetail && $selectedTicket)
-        <div class="imp-detail-overlay"
-             x-data="{ open: true }"
-             x-init="document.body.classList.add('imp-drawer-open')"
-             x-on:remove="document.body.classList.remove('imp-drawer-open')"
-             x-show="open"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click.self="document.body.classList.remove('imp-drawer-open'); $wire.closeTicketDetail()"
-             @keydown.window.escape="document.body.classList.remove('imp-drawer-open'); $wire.closeTicketDetail()"
-             wire:ignore.self>
+    <!-- Ticket Detail Full Page -->
+    <div class="imp-fullpage-detail">
+        <!-- Back Button -->
+        <div class="imp-back-row">
+            <button wire:click="closeTicketDetail" class="imp-back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+                {{ $returnUrl ? 'Back to Client Profile' : 'Back to Tickets' }}
+            </button>
+        </div>
 
-            <div class="imp-detail-drawer"
-                 x-show="open"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="translate-x-full"
-                 x-transition:enter-end="translate-x-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="translate-x-0"
-                 x-transition:leave-end="translate-x-full">
-
-                <!-- Header -->
-                <div class="imp-detail-header">
-                    <div class="imp-detail-header-top">
-                        <div class="imp-detail-header-info">
-                            <h2 class="imp-detail-title">
-                                {{ $selectedTicket->subject ?? 'No Subject' }}
-                            </h2>
-                            <span class="imp-detail-ticket-id">{{ $selectedTicket->formatted_ticket_number }} - {{ $selectedTicket->category ?? '' }}</span>
-                        </div>
-                        <button wire:click="closeTicketDetail" @click="document.body.classList.remove('imp-drawer-open')" class="imp-detail-close">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
+        <!-- Header -->
+        <div class="imp-detail-header">
+            <div class="imp-detail-header-top">
+                <div class="imp-detail-header-info">
+                    <h2 class="imp-detail-title">
+                        {{ $selectedTicket->subject ?? 'No Subject' }}
+                    </h2>
+                    <span class="imp-detail-ticket-id">{{ $selectedTicket->formatted_ticket_number }} - {{ $selectedTicket->category ?? '' }}</span>
+                </div>
+            </div>
                     <div class="imp-detail-header-meta">
                         @php $detailSlaStatus = $selectedTicket->getSlaStatus(); @endphp
                         <span class="imp-detail-sla-badge {{ $detailSlaStatus }}">
@@ -3401,11 +3550,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+    </div>
 
-        {{-- Split Ticket Drawer --}}
-        @if($showSplitDrawer)
+    {{-- Split Ticket Drawer --}}
+    @if($showSplitDrawer)
             <div x-data="{ splitOpen: false }"
                  x-init="$nextTick(() => splitOpen = true)"
                  x-on:close-split.window="splitOpen = false">
@@ -3492,6 +3640,6 @@
                     </div>
                 </div>
             </div>
-        @endif
+    @endif
     @endif
 </x-filament-panels::page>

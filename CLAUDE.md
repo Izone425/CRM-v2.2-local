@@ -33,9 +33,9 @@ Required env vars (see `.env.example`):
 ## Architecture
 - `app/Filament/` — Admin panel (Resources, Pages, Actions, Filters)
 - `app/Filament/Customer/` — Customer portal
-- `app/Filament/Resources/LeadResource/Tabs/` — 40 tab classes for lead view (e.g., `ProjectPlanTabs.php`, `DataMigrationTabs.php`, `ThreadTabs.php`)
+- `app/Filament/Resources/LeadResource/Tabs/` — 39 tab classes for lead view (e.g., `ProjectPlanTabs.php`, `DataMigrationTabs.php`, `ThreadTabs.php`)
 - `app/Filament/Pages/ImplementerTicketingDashboard.php` — Implementer thread/ticketing dashboard (admin)
-- `app/Livewire/` — 126 Livewire components (admin + customer portal)
+- `app/Livewire/` — 142 Livewire components (admin + customer portal)
 - `resources/views/customer/dashboard.blade.php` — Customer portal dashboard with inline sidebar navigation and tab-switched content
 - `app/Models/` — Eloquent models
 - `app/Helpers/general_helpers.php` — Global helper functions
@@ -47,7 +47,7 @@ Required env vars (see `.env.example`):
 - `routes/api.php` — API routes (Sanctum-authenticated)
 
 ## Scale Reference
-- 32 Filament Resources, 100+ custom Pages, 167+ Models, 169 migrations
+- 32 Filament Resources, 100 custom Pages, 134 Models, 171 migrations
 
 ## Conventions
 - Filament custom pages use Livewire properties + Alpine.js for interactivity
@@ -86,7 +86,7 @@ Required env vars (see `.env.example`):
 - `.env.example` contains some hardcoded values — always review before copying
 - Customer portal uses `customer` guard with `Customer` model (has `lead_id` for linking to leads)
 - `Storage::disk('public')->url()` may not include the port in dev — use `response()->download()` via named routes instead
-- User roles: 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician
+- User roles: 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician (roles 4/5/9 are DB-assigned but not referenced in code role checks)
 - Livewire components must have a single root element — `<script>` and `<style>` tags must be inside the root `<div>`, not siblings
 
 ## Data Migration System
@@ -99,8 +99,10 @@ Required env vars (see `.env.example`):
 
 ## Implementer Thread System
 - **Admin dashboard:** `ImplementerTicketingDashboard.php` — WhatsApp-style thread view with search, ticket split, SLA tracking
+- **Admin dashboard navigation:** Supports `?ticket={id}` to open a ticket on load, and `?from={url}` for cross-page back navigation (stored as `$returnUrl`)
+- **Admin client profile:** `ImplementerClientProfile.php` — Shows customer details + all their tickets; rows link to dashboard with `?from=` for back navigation; CSS prefix `imp-client-`
 - **Admin lead tab:** `ThreadTabs.php` + `thread.blade.php` — Lists all tickets for a lead, clickable to open in dashboard via `?ticket={id}` query param
-- **Customer portal:** `CustomerImplementerThread.php` Livewire component — Card-based thread list inside "Software Onboarding" group
+- **Customer portal:** `CustomerImplementerThread.php` Livewire component — Card-based thread list inside "Software Onboarding" group; detail view uses 2-column viewport-fit layout (left: ticket details, right: WhatsApp-style thread with search)
 - **Customer ticketing:** `ImplementerTicketResource` (Filament Customer panel) — Full ticket CRUD for customers, linked from "Support Thread" nav
 - **Models:** `ImplementerTicket` (has `lead_id`, `customer_id`, SLA methods, auto-generated ticket number `IMP-{YY}{IDPADDED}`), `ImplementerTicketReply` (polymorphic `sender()` — User or Customer)
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)

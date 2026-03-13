@@ -36,6 +36,7 @@ class ImplementerTicketingDashboard extends Page
     // Ticket detail drawer
     public $showTicketDetail = false;
     public $selectedTicketId = null;
+    public $returnUrl = null;
 
     // Reply form
     public $replyMessage = '';
@@ -94,6 +95,12 @@ class ImplementerTicketingDashboard extends Page
     public function mount(): void
     {
         $ticketId = request()->query('ticket');
+        $from = request()->query('from');
+
+        if ($from) {
+            $this->returnUrl = $from;
+        }
+
         if ($ticketId) {
             $ticket = ImplementerTicket::find($ticketId);
             if ($ticket) {
@@ -418,6 +425,11 @@ class ImplementerTicketingDashboard extends Page
 
     public function closeTicketDetail()
     {
+        if ($this->returnUrl) {
+            $this->redirect($this->returnUrl);
+            return;
+        }
+
         $this->showTicketDetail = false;
         $this->selectedTicketId = null;
         $this->replyMessage = '';
