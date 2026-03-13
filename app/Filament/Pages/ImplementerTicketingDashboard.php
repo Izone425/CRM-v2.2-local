@@ -59,6 +59,14 @@ class ImplementerTicketingDashboard extends Page
     public $ticketAttachments = [];
     public $customerSearch = '';
 
+    // Split Ticket Drawer
+    public $showSplitDrawer = false;
+    public $splitReplyId = null;
+    public $splitSubject = '';
+    public $splitCategory = '';
+    public $splitModule = '';
+    public $splitPriority = 'medium';
+
     protected $emailTemplates = [
         'First Response' => [
             'subject' => "Re: Your Support Request - We're On It!",
@@ -81,6 +89,17 @@ class ImplementerTicketingDashboard extends Page
             return false;
         }
         return $user->hasRouteAccess('filament.admin.pages.implementer-ticketing-dashboard');
+    }
+
+    public function mount(): void
+    {
+        $ticketId = request()->query('ticket');
+        if ($ticketId) {
+            $ticket = ImplementerTicket::find($ticketId);
+            if ($ticket) {
+                $this->openTicketDetail($ticket->id);
+            }
+        }
     }
 
     public function updatedSearchQuery()
@@ -303,6 +322,82 @@ class ImplementerTicketingDashboard extends Page
             ->send();
     }
 
+    // --- Ticket Split Methods ---
+
+    public function openSplitDrawer($replyId)
+    {
+        $reply = ImplementerTicketReply::find($replyId);
+        if (!$reply) return;
+
+        $originalTicket = ImplementerTicket::find($this->selectedTicketId);
+
+        $this->splitReplyId = $replyId;
+        $this->splitSubject = mb_substr(strip_tags($reply->message), 0, 255);
+        $this->splitCategory = $originalTicket->category ?? '';
+        $this->splitModule = $originalTicket->module ?? '';
+        $this->splitPriority = 'medium';
+        $this->showSplitDrawer = true;
+    }
+
+    public function closeSplitDrawer()
+    {
+        $this->showSplitDrawer = false;
+        $this->splitReplyId = null;
+        $this->splitSubject = '';
+        $this->splitCategory = '';
+        $this->splitModule = '';
+        $this->splitPriority = 'medium';
+    }
+
+    public function submitSplitTicket()
+    {
+        $this->validate([
+            'splitSubject' => 'required|string|max:255',
+            'splitCategory' => 'required|string',
+            'splitModule' => 'required|string',
+        ]);
+
+        $originalReply = ImplementerTicketReply::find($this->splitReplyId);
+        $originalTicket = ImplementerTicket::find($this->selectedTicketId);
+
+        if (!$originalReply || !$originalTicket) {
+            Notification::make()->title('Error')->body('Original message not found.')->danger()->send();
+            return;
+        }
+
+        $newTicket = ImplementerTicket::create([
+            'customer_id' => $originalTicket->customer_id,
+            'implementer_user_id' => $originalTicket->implementer_user_id,
+            'implementer_name' => $originalTicket->implementer_name,
+            'lead_id' => $originalTicket->lead_id,
+            'software_handover_id' => $originalTicket->software_handover_id,
+            'subject' => $this->splitSubject,
+            'description' => $originalReply->message,
+            'status' => 'open',
+            'priority' => $this->splitPriority,
+            'category' => $this->splitCategory,
+            'module' => $this->splitModule,
+        ]);
+
+        // Copy the client message as first reply in the new ticket
+        ImplementerTicketReply::create([
+            'implementer_ticket_id' => $newTicket->id,
+            'sender_type' => $originalReply->sender_type,
+            'sender_id' => $originalReply->sender_id,
+            'message' => $originalReply->message,
+            'attachments' => $originalReply->attachments,
+            'is_internal_note' => false,
+        ]);
+
+        $this->closeSplitDrawer();
+
+        Notification::make()
+            ->title('Ticket split successfully')
+            ->body('New ticket ' . $newTicket->formatted_ticket_number . ' has been created.')
+            ->success()
+            ->send();
+    }
+
     // --- Ticket Detail Drawer Methods ---
 
     public function openTicketDetail($ticketId)
@@ -521,7 +616,7 @@ class ImplementerTicketingDashboard extends Page
         $selectedTicket = null;
         if ($this->selectedTicketId) {
             $selectedTicket = ImplementerTicket::with(['customer', 'implementerUser', 'replies' => function ($q) {
-                $q->orderBy('created_at', 'asc');
+                $q->orderBy('created_at', 'desc');
             }, 'replies.sender'])->find($this->selectedTicketId);
         }
 

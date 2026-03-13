@@ -13,6 +13,9 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .gradient-bg {
@@ -168,6 +171,7 @@
         /* Main Content with Sidebar */
         .main-wrapper {
             margin-left: 200px;
+            flex: 1;
         }
 
         .tab-content.active {
@@ -289,12 +293,18 @@
                     <i class="fas fa-play-circle"></i>
                     <span>Review Session Recordings</span>
                 </button>
+                <button onclick="switchTab('impThread')"
+                        id="impThread-tab"
+                        class="menu-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Implementer Thread</span>
+                </button>
             </div>
 
-            {{-- Ticketing — links to Filament Customer panel --}}
+            {{-- Support Thread — links to Filament Customer panel --}}
             <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
-                <i class="fas fa-ticket-alt"></i>
-                <span>Ticketing</span>
+                <i class="fas fa-headset"></i>
+                <span>Support Thread</span>
             </a>
         </div>
     </div>
@@ -338,6 +348,11 @@
                         <p>Coming soon</p>
                     </div>
                 </div>
+
+                {{-- Implementer Thread --}}
+                <div id="impThread-content" class="p-8 tab-content" style="display: none;">
+                    @livewire('customer-implementer-thread')
+                </div>
             </div>
         </main>
     </div>
@@ -359,7 +374,7 @@
     <!-- Enhanced JavaScript -->
     <script>
         const hasProjectPlan = @json($hasProjectPlan);
-        const onboardingTabs = ['project', 'dataMigration', 'webinar', 'reviewSession'];
+        const onboardingTabs = ['project', 'dataMigration', 'webinar', 'reviewSession', 'impThread'];
 
         function toggleGroup(group) {
             const sub = document.getElementById(group + '-sub');

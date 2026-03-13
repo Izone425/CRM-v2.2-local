@@ -488,6 +488,19 @@ Route::prefix('customer')->name('customer.')->group(function () {
         }
         return view('customer.dashboard');
     })->name('dashboard');
+
+    // Data Migration file download (customer must own the file via lead_id)
+    Route::get('/data-migration-file/{file}/download', function (\App\Models\CustomerDataMigrationFile $file) {
+        $customer = auth('customer')->user();
+        if (!$customer || $file->lead_id != $customer->lead_id) {
+            abort(403);
+        }
+        $path = storage_path('app/public/' . $file->file_path);
+        if (!file_exists($path)) {
+            abort(404, 'File not found.');
+        }
+        return response()->download($path, $file->file_name);
+    })->middleware('auth:customer')->name('data-migration-file.download');
 });
 
 //RESELLER

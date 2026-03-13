@@ -1697,23 +1697,20 @@
                         </div>
                     @endif
 
-                    <!-- Implementer Ticketing Section -->
+                    <!-- Implementer Thread Section -->
                     @if(auth()->user()->hasRouteAccess('filament.admin.resources.implementer-tickets.index'))
                         <div class="menu-block">
                             <div class="menu-item nested-dropdown-trigger" data-submenu="implementer-ticketing-submenu">
                                 <div class="menu-icon-wrapper">
                                     <i class="bi bi-chat-left-text"></i>
                                 </div>
-                                <span class="menu-text">Implementer - Ticketing</span>
+                                <span class="menu-text">Implementer - Thread</span>
                                 <i class="bi bi-chevron-down menu-arrow"></i>
                             </div>
 
                             <div class="submenu" id="implementer-ticketing-submenu">
                                 <a href="{{ route('filament.admin.pages.implementer-ticketing-dashboard') }}" class="submenu-item">
                                     <span class="module-font">Dashboard</span>
-                                </a>
-                                <a href="{{ route('filament.admin.resources.implementer-tickets.index') }}" class="submenu-item">
-                                    <span class="module-font">All Tickets</span>
                                 </a>
                             </div>
                         </div>

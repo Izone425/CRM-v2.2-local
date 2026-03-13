@@ -64,6 +64,7 @@ use App\Filament\Resources\LeadResource\Tabs\SalesProgressTabs;
 use App\Filament\Resources\LeadResource\Tabs\SoftwareHandoverTabs;
 use App\Filament\Resources\LeadResource\Tabs\SubscriberDetailsTabs;
 use App\Filament\Resources\LeadResource\Tabs\SystemTabs;
+use App\Filament\Resources\LeadResource\Tabs\ThreadTabs;
 use App\Filament\Resources\LeadResource\Tabs\TicketingTabs;
 use App\Models\Lead;
 use App\Models\Renewal;
@@ -130,22 +131,22 @@ class LeadResource extends Resource
             if (!$user) {
                 $activeTabs = ['lead', 'company'];
             } elseif ($user->role_id === 1) { // Lead Owner
-                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details'];
+                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
             } elseif ($user->role_id === 2) { // Salesperson
-                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details'];
+                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
             } elseif ($user->role_id === 4) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover', 'implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'data_migration'];
+                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
             } elseif ($user->role_id === 5) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover','implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration'];
+                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
             } elseif ($user->role_id === 9) { // Technician
-                $activeTabs = ['company', 'quotation', 'repair_appointment'];
+                $activeTabs = ['company', 'quotation', 'repair_appointment', 'thread'];
             } else { // Manager (role_id = 3) or others
                 $activeTabs = [
-                    'prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details',
+                    'prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread',
                 ];
             }
         }
@@ -337,6 +338,11 @@ class LeadResource extends Resource
         //     $tabs[] = Tabs\Tab::make('Ticketing')
         //         ->schema(TicketingTabs::getSchema());
         // }
+
+        if (in_array('thread', $activeTabs)) {
+            $tabs[] = Tabs\Tab::make('Thread')
+                ->schema(ThreadTabs::getSchema());
+        }
 
         // Ensure at least one tab is always shown
         if (empty($tabs)) {

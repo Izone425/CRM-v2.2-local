@@ -1485,35 +1485,59 @@
         .imp-detail-thread {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
-            background: #F9FAFB;
+            padding: 20px 16px;
+            background: #F0F2F5;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
         .imp-detail-message {
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            max-width: 78%;
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+        }
+        .imp-detail-message.client {
+            align-self: flex-start;
+            background: #ffffff;
+            border: none;
+            border-radius: 0 12px 12px 12px;
+        }
+        .imp-detail-message.staff {
+            align-self: flex-end;
+            background: #EEF2FF;
+            border: none;
+            border-radius: 12px 0 12px 12px;
         }
         .imp-detail-message.internal {
+            align-self: center;
             background: #FFFBEB;
-            border: 2px solid #FDE68A;
+            border: 1.5px dashed #FCD34D;
+            border-radius: 12px;
+            max-width: 85%;
         }
         .imp-detail-msg-header {
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 8px;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .imp-detail-message.staff .imp-detail-msg-header {
+            flex-direction: row-reverse;
         }
         .imp-detail-msg-avatar {
-            width: 36px;
-            height: 36px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+        }
+        .imp-detail-msg-avatar svg {
+            width: 14px !important;
+            height: 14px !important;
         }
         .imp-detail-msg-avatar.blue { background: #DBEAFE; color: #2563EB; }
         .imp-detail-msg-avatar.purple { background: #EDE9FE; color: #7C3AED; }
@@ -1521,17 +1545,20 @@
         .imp-detail-msg-info {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
+        .imp-detail-message.staff .imp-detail-msg-info {
+            flex-direction: row-reverse;
+        }
         .imp-detail-msg-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #111827;
         }
         .imp-detail-msg-badge {
-            font-size: 11px;
-            padding: 1px 8px;
+            font-size: 10px;
+            padding: 1px 7px;
             border-radius: 4px;
             font-weight: 500;
         }
@@ -1539,14 +1566,22 @@
         .imp-detail-msg-badge.purple { background: #EDE9FE; color: #6D28D9; }
         .imp-detail-msg-badge.yellow { background: #FEF3C7; color: #92400E; }
         .imp-detail-msg-time {
-            font-size: 11px;
-            color: #6B7280;
+            font-size: 10px;
+            color: #9CA3AF;
+            display: block;
+            margin-top: 4px;
+        }
+        .imp-detail-message.client .imp-detail-msg-time {
+            text-align: left;
+        }
+        .imp-detail-message.staff .imp-detail-msg-time {
+            text-align: right;
         }
         .imp-detail-msg-body {
             font-size: 13px;
             color: #374151;
             line-height: 1.6;
-            padding-left: 46px;
+            padding: 0;
         }
         .imp-note-edit-btn {
             margin-left: auto;
@@ -1564,7 +1599,7 @@
             color: #92400E;
         }
         .imp-note-edit-area {
-            padding-left: 46px;
+            padding-left: 0;
         }
         .imp-note-edit-textarea {
             width: 100%;
@@ -1675,8 +1710,8 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            padding-left: 46px;
-            margin-top: 8px;
+            padding-left: 0;
+            margin-top: 6px;
         }
         .imp-detail-attachment-link {
             display: inline-flex;
@@ -1697,6 +1732,243 @@
             padding: 40px 20px;
             color: #6B7280;
             font-size: 13px;
+        }
+
+        /* Thread Search */
+        .imp-thread-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fff;
+            border-bottom: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+        .imp-thread-search i {
+            color: #9CA3AF;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .imp-thread-search input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 13px;
+            color: #374151;
+            background: transparent;
+        }
+        .imp-thread-search input::placeholder {
+            color: #9CA3AF;
+        }
+        .imp-thread-search-clear {
+            border: none;
+            background: none;
+            color: #9CA3AF;
+            cursor: pointer;
+            padding: 2px;
+            font-size: 14px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .imp-thread-search-clear:hover {
+            color: #6B7280;
+        }
+        .imp-msg-dimmed {
+            opacity: 0.12 !important;
+            pointer-events: none;
+        }
+        .imp-msg-highlight {
+            box-shadow: 0 0 0 2px #667eea44;
+        }
+
+        /* Split Button */
+        .imp-detail-message.client {
+            position: relative;
+        }
+        .imp-split-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 26px;
+            height: 26px;
+            border: none;
+            background: #EFF6FF;
+            color: #3B82F6;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.15s, background 0.15s;
+        }
+        .imp-detail-message.client:hover .imp-split-btn {
+            opacity: 1;
+        }
+        .imp-split-btn:hover {
+            background: #DBEAFE;
+            color: #1D4ED8;
+        }
+        .imp-split-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Split Drawer */
+        .imp-split-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 1100;
+        }
+        .imp-split-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 440px;
+            max-width: 92vw;
+            background: #fff;
+            z-index: 1101;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+        .imp-split-drawer.open {
+            transform: translateX(0);
+        }
+        .imp-split-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+        .imp-split-drawer-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .imp-split-drawer-title i {
+            color: #3B82F6;
+        }
+        .imp-split-drawer-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #F1F5F9;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            font-size: 14px;
+        }
+        .imp-split-drawer-close:hover {
+            background: #E2E8F0;
+        }
+        .imp-split-drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .imp-split-section {
+            margin-bottom: 18px;
+        }
+        .imp-split-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .imp-split-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #374151;
+            font-family: inherit;
+        }
+        .imp-split-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102,126,234,0.12);
+        }
+        .imp-split-select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #374151;
+            background: #fff;
+            -webkit-appearance: menulist;
+            -moz-appearance: menulist;
+            appearance: menulist;
+        }
+        .imp-split-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102,126,234,0.12);
+        }
+        .imp-split-preview {
+            padding: 10px 12px;
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #6B7280;
+            line-height: 1.5;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .imp-split-drawer-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #E5E7EB;
+            flex-shrink: 0;
+            display: flex;
+            gap: 8px;
+        }
+        .imp-split-cancel-btn {
+            padding: 9px 18px;
+            border: 1px solid #E5E7EB;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+            cursor: pointer;
+        }
+        .imp-split-cancel-btn:hover {
+            background: #F9FAFB;
+        }
+        .imp-split-submit-btn {
+            flex: 1;
+            padding: 9px 18px;
+            border: none;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .imp-split-submit-btn:hover {
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
         }
 
         /* Reply Box */
@@ -1936,7 +2208,7 @@
         <!-- Header -->
         <div class="imp-dashboard-header">
             <div class="imp-header-left">
-                <h1>Ticket Management - Customer & Implementer</h1>
+                <h1>Thread - Customer & Implementer</h1>
                 <p>Monitor and manage implementer support tickets</p>
             </div>
             <div class="imp-header-right">
@@ -2855,7 +3127,16 @@
                     </div>
 
                     <!-- Right Panel - Thread & Reply -->
-                    <div class="imp-detail-thread-panel">
+                    <div class="imp-detail-thread-panel" x-data="{ threadSearch: '' }">
+                        <!-- Thread Search Bar -->
+                        <div class="imp-thread-search">
+                            <i class="bi bi-search"></i>
+                            <input type="text" x-model="threadSearch" placeholder="Search conversation...">
+                            <button class="imp-thread-search-clear" x-show="threadSearch" x-cloak @click="threadSearch = ''">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
                         <!-- Conversation Thread -->
                         <div class="imp-detail-thread">
                             @if($selectedTicket->replies->count() > 0)
@@ -2863,13 +3144,14 @@
                                     @if($reply->is_internal_note)
                                         <!-- Internal Note -->
                                         <div class="imp-detail-message internal"
+                                             x-bind:class="threadSearch && !$el.textContent.toLowerCase().includes(threadSearch.toLowerCase()) ? 'imp-msg-dimmed' : (threadSearch ? 'imp-msg-highlight' : '')"
                                              @if($reply->sender_type === 'App\\Models\\User' && $reply->sender_id === auth()->id())
                                              x-data="{ editing: false, editText: @js($reply->message), confirmDelete: false }"
                                              @endif
                                         >
                                             <div class="imp-detail-msg-header">
                                                 <div class="imp-detail-msg-avatar yellow">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                                     </svg>
                                                 </div>
@@ -2877,9 +3159,9 @@
                                                     <span class="imp-detail-msg-name">{{ $reply->sender_name }}</span>
                                                     <span class="imp-detail-msg-badge yellow">Internal Only</span>
                                                     @if($reply->updated_at->gt($reply->created_at->addSecond()))
-                                                        <span class="imp-detail-msg-time">Edited - {{ $reply->updated_at->format('M d, g:i A') }}</span>
+                                                        <span class="imp-detail-msg-time" style="display:inline; margin-top:0;">Edited - {{ $reply->updated_at->format('M d, g:i A') }}</span>
                                                     @else
-                                                        <span class="imp-detail-msg-time">{{ $reply->created_at->format('M d, g:i A') }}</span>
+                                                        <span class="imp-detail-msg-time" style="display:inline; margin-top:0;">{{ $reply->created_at->format('M d, g:i A') }}</span>
                                                     @endif
                                                 </div>
                                                 @if($reply->sender_type === 'App\\Models\\User' && $reply->sender_id === auth()->id())
@@ -2919,10 +3201,18 @@
                                         @php
                                             $isClient = str_contains($reply->sender_type, 'Customer');
                                         @endphp
-                                        <div class="imp-detail-message {{ $isClient ? 'client' : 'staff' }}">
+                                        <div class="imp-detail-message {{ $isClient ? 'client' : 'staff' }}"
+                                             x-bind:class="threadSearch && !$el.textContent.toLowerCase().includes(threadSearch.toLowerCase()) ? 'imp-msg-dimmed' : (threadSearch ? 'imp-msg-highlight' : '')">
+                                            @if($isClient)
+                                                <button class="imp-split-btn" wire:click="openSplitDrawer({{ $reply->id }})" title="Split to new ticket">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                    </svg>
+                                                </button>
+                                            @endif
                                             <div class="imp-detail-msg-header">
                                                 <div class="imp-detail-msg-avatar {{ $isClient ? 'blue' : 'purple' }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                                     </svg>
                                                 </div>
@@ -2931,7 +3221,6 @@
                                                     <span class="imp-detail-msg-badge {{ $isClient ? 'blue' : 'purple' }}">
                                                         {{ $isClient ? 'Client' : 'HR Support' }}
                                                     </span>
-                                                    <span class="imp-detail-msg-time">{{ $reply->created_at->format('M d, g:i A') }}</span>
                                                 </div>
                                             </div>
                                             <div class="imp-detail-msg-body">{!! strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>') !!}</div>
@@ -2947,6 +3236,7 @@
                                                     @endforeach
                                                 </div>
                                             @endif
+                                            <span class="imp-detail-msg-time">{{ $reply->created_at->format('M d, g:i A') }}</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -3113,5 +3403,95 @@
                 </div>
             </div>
         </div>
+
+        {{-- Split Ticket Drawer --}}
+        @if($showSplitDrawer)
+            <div x-data="{ splitOpen: false }"
+                 x-init="$nextTick(() => splitOpen = true)"
+                 x-on:close-split.window="splitOpen = false">
+                <div class="imp-split-overlay" @click="$wire.closeSplitDrawer()"></div>
+                <div class="imp-split-drawer" :class="{ 'open': splitOpen }">
+                    <div class="imp-split-drawer-header">
+                        <div class="imp-split-drawer-title">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            Split to New Ticket
+                        </div>
+                        <button class="imp-split-drawer-close" wire:click="closeSplitDrawer">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="imp-split-drawer-body">
+                        {{-- Original message preview --}}
+                        <div class="imp-split-section">
+                            <label class="imp-split-label">Original Message</label>
+                            @php
+                                $splitReply = \App\Models\ImplementerTicketReply::find($splitReplyId);
+                            @endphp
+                            @if($splitReply)
+                                <div class="imp-split-preview">{!! strip_tags($splitReply->message, '<p><br>') !!}</div>
+                            @endif
+                        </div>
+
+                        {{-- Subject --}}
+                        <div class="imp-split-section">
+                            <label class="imp-split-label">Subject</label>
+                            <input type="text" class="imp-split-input" wire:model="splitSubject" placeholder="Ticket subject...">
+                            @error('splitSubject') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Category --}}
+                        <div class="imp-split-section">
+                            <label class="imp-split-label">Category</label>
+                            <select class="imp-split-select" wire:model="splitCategory">
+                                <option value="">Select category</option>
+                                <option value="License Activation">License Activation</option>
+                                <option value="Data Migration">Data Migration</option>
+                                <option value="Software Enquiries">Software Enquiries</option>
+                                <option value="Session Enquiries">Session Enquiries</option>
+                                <option value="Training Enquiries">Training Enquiries</option>
+                                <option value="Enhancement/CR">Enhancement/CR</option>
+                                <option value="Add-on License">Add-on License</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            @error('splitCategory') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Module --}}
+                        <div class="imp-split-section">
+                            <label class="imp-split-label">Module</label>
+                            <select class="imp-split-select" wire:model="splitModule">
+                                <option value="">Select module</option>
+                                <option value="Profile">Profile</option>
+                                <option value="Attendance">Attendance</option>
+                                <option value="Leave">Leave</option>
+                                <option value="Claim">Claim</option>
+                                <option value="Payroll">Payroll</option>
+                                <option value="Appraisal">Appraisal</option>
+                                <option value="Hire">Hire</option>
+                            </select>
+                            @error('splitModule') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Priority --}}
+                        <div class="imp-split-section">
+                            <label class="imp-split-label">Priority</label>
+                            <select class="imp-split-select" wire:model="splitPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="imp-split-drawer-footer">
+                        <button class="imp-split-cancel-btn" wire:click="closeSplitDrawer">Cancel</button>
+                        <button class="imp-split-submit-btn" wire:click="submitSplitTicket" wire:loading.attr="disabled">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span wire:loading.remove wire:target="submitSplitTicket">Create Split Ticket</span>
+                            <span wire:loading wire:target="submitSplitTicket">Creating...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
     @endif
 </x-filament-panels::page>

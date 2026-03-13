@@ -416,4 +416,9 @@ class Lead extends Model
     {
         return $this->hasMany(CustomerDataMigrationFile::class);
     }
+
+    public function implementerTickets(): HasMany
+    {
+        return $this->hasMany(ImplementerTicket::class);
+    }
 }

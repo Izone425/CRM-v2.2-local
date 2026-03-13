@@ -67,7 +67,7 @@ class CustomerDataMigrationTemplates extends Component
     public function getSections(): array
     {
         $sections = [];
-        $uploadedVersions = $this->getUploadedVersions();
+        $allFiles = $this->getAllUploadedFiles();
 
         foreach ($this->templateSections as $sectionKey => $section) {
             $items = [];
@@ -77,10 +77,16 @@ class CustomerDataMigrationTemplates extends Component
                 $exists = file_exists($path);
                 $versionKey = $sectionKey . '|' . $itemKey;
 
+                $versions = $allFiles[$versionKey] ?? collect();
+                $latest = $versions->first();
+
                 $items[$itemKey] = array_merge($item, [
                     'exists' => $exists,
                     'size' => $exists ? $this->formatFileSize(filesize($path)) : null,
-                    'latestVersion' => $uploadedVersions[$versionKey] ?? null,
+                    'latestVersion' => $latest ? $latest->version : null,
+                    'status' => $latest ? $latest->status : null,
+                    'implementerRemark' => $latest ? $latest->implementer_remark : null,
+                    'versions' => $versions,
                 ]);
             }
 
@@ -95,24 +101,19 @@ class CustomerDataMigrationTemplates extends Component
         return $sections;
     }
 
-    protected function getUploadedVersions(): array
+    protected function getAllUploadedFiles()
     {
         $customer = auth('customer')->user();
         if (!$customer || !$customer->lead_id) {
-            return [];
+            return collect();
         }
 
-        $files = CustomerDataMigrationFile::where('lead_id', $customer->lead_id)
-            ->selectRaw('section, item, MAX(version) as latest_version')
-            ->groupBy('section', 'item')
-            ->get();
-
-        $versions = [];
-        foreach ($files as $file) {
-            $versions[$file->section . '|' . $file->item] = $file->latest_version;
-        }
-
-        return $versions;
+        return CustomerDataMigrationFile::where('lead_id', $customer->lead_id)
+            ->orderBy('section')
+            ->orderBy('item')
+            ->orderBy('version', 'desc')
+            ->get()
+            ->groupBy(fn ($f) => $f->section . '|' . $f->item);
     }
 
     protected function formatFileSize(int $bytes): string
