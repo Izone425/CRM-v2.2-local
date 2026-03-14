@@ -88,6 +88,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:sync-ticketing')
             ->everyMinute();
 
+        $schedule->command('sla:check-first-reply')->everyFiveMinutes(); // Check first reply deadline violations
+
+        $schedule->command('sla:process-followups')->dailyAt('00:15'); // Process follow-up reminders and auto-close
+
         $schedule->command('reseller:send-renewal-notification')->weeklyOn(1, '08:00'); // Monday 8 AM
 
         $schedule->command('reseller:send-pending-payment-reminder')->weeklyOn(1, '09:00'); // Monday 9 AM

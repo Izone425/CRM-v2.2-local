@@ -168,6 +168,32 @@
             width: 20px;
         }
 
+        /* Sidebar notification badge */
+        .sidebar-badge {
+            background: #EF4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            line-height: 1;
+        }
+
+        .menu-group-header .sidebar-badge {
+            margin-left: 0;
+        }
+
+        .menu-item.active .sidebar-badge {
+            background: white;
+            color: #667eea;
+        }
+
         /* Main Content with Sidebar */
         .main-wrapper {
             margin-left: 200px;
@@ -192,7 +218,7 @@
 </head>
 <body class="min-h-screen bg-gray-50">
     <!-- Fixed Header with Gradient -->
-    <header class="relative overflow-hidden shadow-xl main-header gradient-bg">
+    <header class="relative shadow-xl main-header gradient-bg" style="overflow: visible;">
         <div class="absolute inset-0 bg-black opacity-10"></div>
         <div class="relative px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
@@ -230,11 +256,19 @@
                                     $hasProjectPlan = $projectPlansCount > 0;
                                 }
                             }
+                            // Implementer Thread notification badge count (Open + Waiting on You)
+                            $impThreadBadgeCount = 0;
+                            if ($customer && $customer->lead_id) {
+                                $impThreadBadgeCount = \App\Models\ImplementerTicket::where('lead_id', $customer->lead_id)
+                                    ->whereIn('status', ['open', 'pending_rnd', 'pending_client'])
+                                    ->count();
+                            }
                         @endphp
 
                         <p class="font-semibold text-white">Company Name: {{ $companyName }}</p>
                         <p class="text-sm font-medium text-indigo-200">Implementer: {{ $implementerName }}</p>
                     </div>
+                    @livewire('customer-notification-bell')
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf
                         <button type="submit" class="px-6 py-3 font-semibold text-white transition-all duration-300 bg-red-500 rounded-full shadow-lg hover:bg-red-600 hover:shadow-xl hover:scale-105">
@@ -262,6 +296,9 @@
             <button class="menu-group-header" onclick="toggleGroup('onboarding')">
                 <i class="fas fa-laptop-code"></i>
                 <span>Software Onboarding</span>
+                @if($impThreadBadgeCount > 0)
+                    <span id="onboarding-badge" class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                @endif
                 <svg id="onboarding-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
@@ -298,6 +335,9 @@
                         class="menu-item">
                     <i class="fas fa-comments"></i>
                     <span>Implementer Thread</span>
+                    @if($impThreadBadgeCount > 0)
+                        <span class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                    @endif
                 </button>
             </div>
 
@@ -379,13 +419,16 @@
         function toggleGroup(group) {
             const sub = document.getElementById(group + '-sub');
             const chevron = document.getElementById(group + '-chevron');
+            const badge = document.getElementById(group + '-badge');
             if (sub.style.display === 'none') {
                 sub.style.display = 'block';
                 chevron.classList.add('open');
+                if (badge) badge.style.display = 'none';
                 localStorage.setItem(group + 'Open', 'true');
             } else {
                 sub.style.display = 'none';
                 chevron.classList.remove('open');
+                if (badge) badge.style.display = '';
                 localStorage.setItem(group + 'Open', 'false');
             }
         }
@@ -429,7 +472,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            let activeTab = localStorage.getItem('activeTab') || 'calendar';
+            // Check URL query params for notification deep links
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlTab = urlParams.get('tab');
+            const urlTicket = urlParams.get('ticket');
+
+            let activeTab = urlTab || localStorage.getItem('activeTab') || 'calendar';
 
             // If project plan doesn't exist and user tries to access it, fallback to calendar
             if (activeTab === 'project' && !hasProjectPlan) {
@@ -446,8 +494,10 @@
             if (localStorage.getItem('onboardingOpen') === 'true' || onboardingTabs.includes(activeTab)) {
                 const sub = document.getElementById('onboarding-sub');
                 const chevron = document.getElementById('onboarding-chevron');
+                const badge = document.getElementById('onboarding-badge');
                 if (sub) sub.style.display = 'block';
                 if (chevron) chevron.classList.add('open');
+                if (badge) badge.style.display = 'none';
             }
 
             if (activeTab !== 'calendar') {
@@ -460,6 +510,15 @@
                 }
                 const calBtn = document.getElementById('calendar-tab');
                 if (calBtn) calBtn.classList.add('active');
+            }
+
+            // Open specific ticket from notification deep link
+            if (urlTicket && activeTab === 'impThread') {
+                setTimeout(function() {
+                    Livewire.dispatch('openTicketFromNotification', { ticketId: parseInt(urlTicket) });
+                }, 500);
+                // Clean URL params without reload
+                window.history.replaceState({}, '', window.location.pathname);
             }
 
             // Diagnostic — check in browser console

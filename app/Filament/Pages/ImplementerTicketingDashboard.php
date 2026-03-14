@@ -6,6 +6,7 @@ use App\Enums\ImplementerTicketStatus;
 use App\Models\Customer;
 use App\Models\ImplementerTicket;
 use App\Models\ImplementerTicketReply;
+use App\Models\SlaConfiguration;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
@@ -25,9 +26,22 @@ class ImplementerTicketingDashboard extends Page
 
     public $searchQuery = '';
     public $selectedImplementer = '';
+    public $selectedCompany = '';
     public $activeTab = 'pending_client';
     public $statusFilter = '';
     public $showSlaPolicy = false;
+
+    // SLA Configuration mode
+    public $slaConfigMode = false;
+    public $configFirstReplyCutoff = '17:30';
+    public $configFirstReplyEnabled = true;
+    public $configFollowupReminderDays = 3;
+    public $configFollowupAutoCloseDays = 2;
+    public $configFollowupEnabled = true;
+    public $configBusinessStart = '08:00';
+    public $configBusinessEnd = '18:00';
+    public $configResolutionSlaHours = 48;
+    public $configFirstResponseSlaHours = 24;
 
     // Pagination
     public $perPage = 15;
@@ -67,6 +81,11 @@ class ImplementerTicketingDashboard extends Page
     public $splitCategory = '';
     public $splitModule = '';
     public $splitPriority = 'medium';
+
+    // Merge Ticket Drawer
+    public $showMergeDrawer = false;
+    public $mergeTargetTicketId = null;
+    public $mergeSearch = '';
 
     protected $emailTemplates = [
         'First Response' => [
@@ -115,6 +134,11 @@ class ImplementerTicketingDashboard extends Page
     }
 
     public function updatedSelectedImplementer()
+    {
+        $this->currentPage = 1;
+    }
+
+    public function updatedSelectedCompany()
     {
         $this->currentPage = 1;
     }
@@ -405,6 +429,134 @@ class ImplementerTicketingDashboard extends Page
             ->send();
     }
 
+    // --- Merge Ticket Methods ---
+
+    public function openMergeDrawer()
+    {
+        $this->mergeTargetTicketId = null;
+        $this->mergeSearch = '';
+        $this->showMergeDrawer = true;
+    }
+
+    public function closeMergeDrawer()
+    {
+        $this->showMergeDrawer = false;
+        $this->mergeTargetTicketId = null;
+        $this->mergeSearch = '';
+    }
+
+    public function getMergeableTicketsProperty()
+    {
+        if (!$this->showMergeDrawer) return collect();
+
+        $ticket = ImplementerTicket::find($this->selectedTicketId);
+        if (!$ticket) return collect();
+
+        $query = ImplementerTicket::where('customer_id', $ticket->customer_id)
+            ->where('id', '!=', $ticket->id)
+            ->whereNull('merged_into_ticket_id')
+            ->where('status', '!=', 'closed')
+            ->with('implementerUser');
+
+        if ($this->mergeSearch) {
+            $search = $this->mergeSearch;
+            $query->where(function ($q) use ($search) {
+                $q->where('ticket_number', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc')->limit(20)->get();
+    }
+
+    public function selectMergeTarget($ticketId)
+    {
+        $this->mergeTargetTicketId = $ticketId;
+    }
+
+    public function submitMergeTicket()
+    {
+        if (!$this->mergeTargetTicketId) {
+            Notification::make()->title('Please select a target ticket')->danger()->send();
+            return;
+        }
+
+        $sourceTicket = ImplementerTicket::find($this->selectedTicketId);
+        $targetTicket = ImplementerTicket::find($this->mergeTargetTicketId);
+
+        if (!$sourceTicket || !$targetTicket) {
+            Notification::make()->title('Ticket not found')->danger()->send();
+            return;
+        }
+
+        if ($sourceTicket->customer_id !== $targetTicket->customer_id) {
+            Notification::make()->title('Tickets must belong to the same customer')->danger()->send();
+            return;
+        }
+
+        if ($sourceTicket->isMerged()) {
+            Notification::make()->title('This ticket has already been merged')->danger()->send();
+            return;
+        }
+
+        if ($targetTicket->status === ImplementerTicketStatus::CLOSED) {
+            Notification::make()->title('Cannot merge into a closed ticket')->danger()->send();
+            return;
+        }
+
+        // Close source ticket as merged
+        $sourceTicket->update([
+            'merged_into_ticket_id' => $targetTicket->id,
+            'merged_at' => now(),
+            'merged_by' => auth()->id(),
+            'status' => 'closed',
+            'closed_at' => now(),
+            'closed_by' => auth()->id(),
+            'closed_by_type' => 'user',
+        ]);
+
+        // Add system note to target ticket
+        ImplementerTicketReply::create([
+            'implementer_ticket_id' => $targetTicket->id,
+            'sender_type' => 'App\\Models\\User',
+            'sender_id' => auth()->id(),
+            'message' => '<p><em>Ticket ' . $sourceTicket->formatted_ticket_number . ' (' . e($sourceTicket->subject) . ') has been merged into this ticket by ' . auth()->user()->name . '.</em></p>',
+            'is_internal_note' => false,
+        ]);
+
+        // Notify customer
+        if ($targetTicket->customer) {
+            $targetTicket->customer->notify(
+                new \App\Notifications\ImplementerTicketNotification(
+                    $targetTicket,
+                    'merged',
+                    auth()->user()->name,
+                    ['merged_ticket_number' => $sourceTicket->formatted_ticket_number, 'merged_ticket_id' => $sourceTicket->id]
+                )
+            );
+        }
+
+        $this->closeMergeDrawer();
+
+        // Navigate to target ticket
+        $this->openTicketDetail($targetTicket->id);
+
+        Notification::make()
+            ->title('Ticket merged successfully')
+            ->body($sourceTicket->formatted_ticket_number . ' has been merged into ' . $targetTicket->formatted_ticket_number)
+            ->success()
+            ->send();
+    }
+
+    #[\Livewire\Attributes\On('openTicketByNumber')]
+    public function openTicketByNumber($number)
+    {
+        $ticket = ImplementerTicket::where('ticket_number', $number)->first();
+        if ($ticket) {
+            $this->openTicketDetail($ticket->id);
+        }
+    }
+
     // --- Ticket Detail Drawer Methods ---
 
     public function openTicketDetail($ticketId)
@@ -449,6 +601,16 @@ class ImplementerTicketingDashboard extends Page
         $oldStatus = $ticket->status->value;
         $ticket->status = $status;
 
+        // Track pending_client_since for SLA follow-up automation
+        if ($status === 'pending_client') {
+            if (!$ticket->pending_client_since) {
+                $ticket->pending_client_since = now();
+            }
+        } else {
+            $ticket->pending_client_since = null;
+            $ticket->followup_sent_at = null;
+        }
+
         if ($status === 'closed' && !$ticket->closed_at) {
             $ticket->closed_at = now();
             $ticket->closed_by = auth()->id();
@@ -470,40 +632,60 @@ class ImplementerTicketingDashboard extends Page
 
     public function submitReply()
     {
-        if (empty(trim($this->replyMessage))) {
+        $ticket = ImplementerTicket::find($this->selectedTicketId);
+        if (!$ticket) return;
+
+        $hasMessage = !empty(trim($this->replyMessage));
+        $wasInternalNote = $this->isInternalNote;
+
+        // Internal notes require a message
+        if ($wasInternalNote && !$hasMessage) {
             Notification::make()
-                ->title('Reply cannot be empty')
+                ->title('Internal note cannot be empty')
                 ->danger()
                 ->send();
             return;
         }
 
-        $ticket = ImplementerTicket::find($this->selectedTicketId);
-        if (!$ticket) return;
-
-        // Handle file attachments
-        $attachmentPaths = [];
-        if (!empty($this->replyAttachments)) {
-            foreach ($this->replyAttachments as $file) {
-                $attachmentPaths[] = $file->store('implementer-ticket-replies', 'public');
+        // If there's a message, create the reply
+        if ($hasMessage) {
+            // Handle file attachments
+            $attachmentPaths = [];
+            if (!empty($this->replyAttachments)) {
+                foreach ($this->replyAttachments as $file) {
+                    $attachmentPaths[] = $file->store('implementer-ticket-replies', 'public');
+                }
             }
+
+            ImplementerTicketReply::create([
+                'implementer_ticket_id' => $ticket->id,
+                'sender_type' => 'App\\Models\\User',
+                'sender_id' => auth()->id(),
+                'message' => $this->replyMessage,
+                'attachments' => !empty($attachmentPaths) ? $attachmentPaths : null,
+                'is_internal_note' => $wasInternalNote,
+            ]);
         }
 
-        ImplementerTicketReply::create([
-            'implementer_ticket_id' => $ticket->id,
-            'sender_type' => 'App\\Models\\User',
-            'sender_id' => auth()->id(),
-            'message' => $this->replyMessage,
-            'attachments' => !empty($attachmentPaths) ? $attachmentPaths : null,
-            'is_internal_note' => $this->isInternalNote,
-        ]);
-
-        // Update ticket status and first response if not internal note
-        $wasInternalNote = $this->isInternalNote;
+        // Update first response tracking and SLA fields if not internal note
+        // Status is NOT overridden here — the user controls status via the sidebar dropdown
         if (!$wasInternalNote) {
-            $ticket->status = 'pending_client';
-            if (!$ticket->first_responded_at) {
+            // Re-read ticket to get the latest status (user may have changed it via sidebar)
+            $ticket->refresh();
+
+            // Track pending_client_since if current status is pending_client
+            if ($ticket->status === ImplementerTicketStatus::PENDING_CLIENT) {
+                if (!$ticket->pending_client_since) {
+                    $ticket->pending_client_since = now();
+                }
+            } else {
+                $ticket->pending_client_since = null;
+                $ticket->followup_sent_at = null;
+            }
+
+            if ($hasMessage && !$ticket->first_responded_at) {
                 $ticket->first_responded_at = now();
+                $ticket->is_overdue = false;
             }
             $ticket->save();
         }
@@ -516,8 +698,17 @@ class ImplementerTicketingDashboard extends Page
         $this->replyEmailTemplate = '';
         $this->dispatch('replyEditorReset');
 
+        // Show appropriate notification
+        if ($wasInternalNote) {
+            $notifTitle = 'Internal note added';
+        } elseif ($hasMessage) {
+            $notifTitle = 'Reply sent successfully';
+        } else {
+            $notifTitle = 'Status updated successfully';
+        }
+
         Notification::make()
-            ->title($wasInternalNote ? 'Internal note added' : 'Reply sent successfully')
+            ->title($notifTitle)
             ->success()
             ->send();
     }
@@ -534,6 +725,66 @@ class ImplementerTicketingDashboard extends Page
         }
     }
 
+    // --- SLA Configuration Methods ---
+
+    public function toggleSlaConfigMode()
+    {
+        if (!$this->slaConfigMode) {
+            // Entering edit mode — load current config
+            $config = SlaConfiguration::current();
+            $this->configFirstReplyCutoff = $config->first_reply_cutoff_time;
+            $this->configFirstReplyEnabled = $config->first_reply_enabled;
+            $this->configFollowupReminderDays = $config->followup_reminder_days;
+            $this->configFollowupAutoCloseDays = $config->followup_auto_close_days;
+            $this->configFollowupEnabled = $config->followup_enabled;
+            $this->configBusinessStart = $config->business_start_time;
+            $this->configBusinessEnd = $config->business_end_time;
+            $this->configResolutionSlaHours = $config->resolution_sla_hours;
+            $this->configFirstResponseSlaHours = $config->first_response_sla_hours;
+        }
+        $this->slaConfigMode = !$this->slaConfigMode;
+    }
+
+    public function saveSlaConfig()
+    {
+        $this->validate([
+            'configFirstReplyCutoff' => 'required|date_format:H:i',
+            'configFollowupReminderDays' => 'required|integer|min:1|max:30',
+            'configFollowupAutoCloseDays' => 'required|integer|min:1|max:30',
+            'configResolutionSlaHours' => 'required|integer|min:1|max:720',
+            'configFirstResponseSlaHours' => 'required|integer|min:1|max:720',
+            'configBusinessStart' => 'required|date_format:H:i',
+            'configBusinessEnd' => 'required|date_format:H:i',
+        ]);
+
+        $config = SlaConfiguration::first();
+        if (!$config) {
+            $config = new SlaConfiguration();
+        }
+
+        $config->fill([
+            'first_reply_cutoff_time' => $this->configFirstReplyCutoff,
+            'first_reply_enabled' => $this->configFirstReplyEnabled,
+            'followup_reminder_days' => $this->configFollowupReminderDays,
+            'followup_auto_close_days' => $this->configFollowupAutoCloseDays,
+            'followup_enabled' => $this->configFollowupEnabled,
+            'business_start_time' => $this->configBusinessStart,
+            'business_end_time' => $this->configBusinessEnd,
+            'resolution_sla_hours' => $this->configResolutionSlaHours,
+            'first_response_sla_hours' => $this->configFirstResponseSlaHours,
+            'updated_by' => auth()->id(),
+        ]);
+        $config->save();
+
+        SlaConfiguration::clearCache();
+        $this->slaConfigMode = false;
+
+        Notification::make()
+            ->title('SLA Configuration saved successfully')
+            ->success()
+            ->send();
+    }
+
     public function getViewData(): array
     {
         $baseQuery = ImplementerTicket::with(['customer', 'implementerUser']);
@@ -541,6 +792,11 @@ class ImplementerTicketingDashboard extends Page
         // Apply implementer filter
         if ($this->selectedImplementer) {
             $baseQuery->where('implementer_user_id', $this->selectedImplementer);
+        }
+
+        // Apply company filter
+        if ($this->selectedCompany) {
+            $baseQuery->where('customer_id', $this->selectedCompany);
         }
 
         $allTickets = $baseQuery->get();
@@ -572,16 +828,24 @@ class ImplementerTicketingDashboard extends Page
         $allTicketsCount = $allTickets->count();
 
         // Build filtered query for table
-        $tableQuery = ImplementerTicket::with(['customer', 'implementerUser']);
+        $tableQuery = ImplementerTicket::with(['customer', 'implementerUser', 'mergedInto']);
 
         if ($this->selectedImplementer) {
             $tableQuery->where('implementer_user_id', $this->selectedImplementer);
         }
 
+        if ($this->selectedCompany) {
+            $tableQuery->where('customer_id', $this->selectedCompany);
+        }
+
         if ($this->statusFilter) {
             if ($this->statusFilter === 'overdue') {
+                $slaHours = SlaConfiguration::current()->resolution_sla_hours;
                 $tableQuery->where('status', '!=', 'closed')
-                    ->where('created_at', '<', now()->subHours(ImplementerTicket::SLA_HOURS));
+                    ->where(function ($q) use ($slaHours) {
+                        $q->where('is_overdue', true)
+                          ->orWhere('created_at', '<', now()->subHours($slaHours));
+                    });
             } else {
                 $tableQuery->where('status', $this->statusFilter);
             }
@@ -616,6 +880,13 @@ class ImplementerTicketingDashboard extends Page
             ->orderBy('name')
             ->pluck('name', 'id');
 
+        // Company list for filter
+        $companies = Customer::whereHas('implementerTickets')
+            ->whereNotNull('company_name')
+            ->where('company_name', '!=', '')
+            ->orderBy('company_name')
+            ->pluck('company_name', 'id');
+
         // Customers for create drawer
         $customerQuery = Customer::whereNotNull('company_name')
             ->where('company_name', '!=', '');
@@ -627,7 +898,7 @@ class ImplementerTicketingDashboard extends Page
         // Load selected ticket for detail drawer
         $selectedTicket = null;
         if ($this->selectedTicketId) {
-            $selectedTicket = ImplementerTicket::with(['customer', 'implementerUser', 'replies' => function ($q) {
+            $selectedTicket = ImplementerTicket::with(['customer', 'implementerUser', 'mergedInto', 'mergedFrom.replies.sender', 'replies' => function ($q) {
                 $q->orderBy('created_at', 'desc');
             }, 'replies.sender'])->find($this->selectedTicketId);
         }
@@ -648,8 +919,10 @@ class ImplementerTicketingDashboard extends Page
             'currentPage' => $this->currentPage,
             'perPage' => $this->perPage,
             'implementers' => $implementers,
+            'companies' => $companies,
             'customers' => $customers,
             'selectedTicket' => $selectedTicket,
+            'slaConfig' => SlaConfiguration::current(),
         ];
     }
 }

@@ -230,10 +230,17 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="cit-status-badge" style="background:{{ $sc['bg'] }}; color:{{ $sc['text'] }}">
-                                            <span class="cit-dot" style="background:{{ $sc['dot'] }}"></span>
-                                            {{ $sc['label'] }}
-                                        </span>
+                                        @if($ticket->isMerged())
+                                            <span class="cit-status-badge" style="background:#FEF3C7; color:#92400E">
+                                                <span class="cit-dot" style="background:#D97706"></span>
+                                                Merged to {{ $ticket->mergedInto?->formatted_ticket_number }}
+                                            </span>
+                                        @else
+                                            <span class="cit-status-badge" style="background:{{ $sc['bg'] }}; color:{{ $sc['text'] }}">
+                                                <span class="cit-dot" style="background:{{ $sc['dot'] }}"></span>
+                                                {{ $sc['label'] }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="cit-sla-badge {{ $slaStatus === 'overdue' ? 'cit-sla-pulse' : '' }}" style="background:{{ $sl['bg'] }}; color:{{ $sl['text'] }}; border-color:{{ $sl['border'] }}">
@@ -358,10 +365,17 @@
                     <div class="cit-detail-meta-grid">
                         <div class="cit-detail-meta-item">
                             <span class="cit-detail-meta-label">Status</span>
-                            <span class="cit-status-badge" style="background:{{ $sc['bg'] }}; color:{{ $sc['text'] }}">
-                                <span class="cit-dot" style="background:{{ $sc['dot'] }}"></span>
-                                {{ $sc['label'] }}
-                            </span>
+                            @if($selectedTicket->isMerged())
+                                <span class="cit-status-badge" style="background:#FEF3C7; color:#92400E">
+                                    <span class="cit-dot" style="background:#D97706"></span>
+                                    Merged to {{ $selectedTicket->mergedInto?->formatted_ticket_number }}
+                                </span>
+                            @else
+                                <span class="cit-status-badge" style="background:{{ $sc['bg'] }}; color:{{ $sc['text'] }}">
+                                    <span class="cit-dot" style="background:{{ $sc['dot'] }}"></span>
+                                    {{ $sc['label'] }}
+                                </span>
+                            @endif
                         </div>
                         <div class="cit-detail-meta-item">
                             <span class="cit-detail-meta-label">Priority</span>
@@ -527,9 +541,14 @@
                     </div>
                 </div>
                 @else
-                    <div class="cit-closed-notice">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-                        This ticket has been resolved and closed.
+                    <div class="cit-closed-notice" @if($selectedTicket->isMerged()) style="background: #FEF3C7; border-color: #FDE68A; color: #92400E;" @endif>
+                        @if($selectedTicket->isMerged())
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.07a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374" /></svg>
+                            This ticket has been merged to <strong>{{ $selectedTicket->mergedInto?->formatted_ticket_number }}</strong>.
+                        @else
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                            This ticket has been resolved and closed.
+                        @endif
                     </div>
                 @endif
             </div>

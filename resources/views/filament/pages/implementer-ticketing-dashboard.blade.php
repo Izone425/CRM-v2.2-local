@@ -86,25 +86,123 @@
             color: #9CA3AF;
         }
 
-        .imp-filter-select {
-            padding: 8px 16px;
+        /* Searchable Filter Dropdown */
+        .imp-searchable-filter {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .imp-searchable-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
             border: 1px solid #D1D5DB;
             border-radius: 8px;
             background: white;
             font-size: 14px;
             color: #374151;
             cursor: pointer;
-            min-width: 180px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: none;
+            width: 100%;
+            transition: all 0.2s;
         }
 
-        .imp-filter-select:focus {
-            outline: none;
+        .imp-searchable-trigger:hover {
+            border-color: #9CA3AF;
+        }
+
+        .imp-searchable-trigger.open {
             border-color: #6366F1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .imp-searchable-trigger input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14px;
+            color: #374151;
+            width: 100%;
+            padding: 0;
+        }
+
+        .imp-searchable-trigger input::placeholder {
+            color: #6B7280;
+        }
+
+        .imp-searchable-chevron {
+            width: 16px;
+            height: 16px;
+            color: #9CA3AF;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .imp-searchable-chevron.open {
+            transform: rotate(180deg);
+        }
+
+        .imp-searchable-clear {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9CA3AF;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .imp-searchable-clear:hover {
+            color: #374151;
+        }
+
+        .imp-searchable-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .imp-searchable-option {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .imp-searchable-option:hover {
+            background: #F3F4F6;
+        }
+
+        .imp-searchable-option.active {
+            background: #EEF2FF;
+            color: #4F46E5;
+            font-weight: 600;
+        }
+
+        .imp-searchable-empty {
+            padding: 12px;
+            font-size: 13px;
+            color: #9CA3AF;
+            text-align: center;
+        }
+
+        .imp-searchable-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .imp-searchable-dropdown::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 3px;
         }
 
         .imp-create-btn {
@@ -757,6 +855,255 @@
             margin-top: 4px;
         }
 
+        /* SLA Gear Button */
+        .imp-sla-gear-btn {
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            cursor: pointer;
+            color: #6B7280;
+            padding: 6px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .imp-sla-gear-btn:hover {
+            background: #EDE9FE;
+            color: #7C3AED;
+            border-color: #C4B5FD;
+        }
+
+        /* SLA Status Badges */
+        .imp-status-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .imp-badge-active {
+            background: #ECFDF5;
+            color: #059669;
+        }
+
+        .imp-badge-inactive {
+            background: #FEF2F2;
+            color: #DC2626;
+        }
+
+        /* SLA Config Form */
+        .imp-sla-config-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .imp-config-section {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .imp-config-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .imp-config-section-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .imp-config-section-header h3 svg {
+            width: 16px;
+            height: 16px;
+            color: #6366F1;
+        }
+
+        /* Toggle Switch */
+        .imp-config-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .imp-config-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .imp-toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #D1D5DB;
+            border-radius: 24px;
+            transition: all 0.3s;
+        }
+
+        .imp-toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .imp-config-toggle input:checked + .imp-toggle-slider {
+            background: #7C3AED;
+        }
+
+        .imp-config-toggle input:checked + .imp-toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        /* Config Fields */
+        .imp-config-desc {
+            font-size: 12px;
+            color: #6B7280;
+            margin: 0 0 14px 0;
+            line-height: 1.5;
+        }
+
+        .imp-config-field {
+            margin-bottom: 12px;
+        }
+
+        .imp-config-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .imp-config-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .imp-config-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #111827;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .imp-config-input:focus {
+            border-color: #7C3AED;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .imp-config-field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .imp-config-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .imp-config-input-group .imp-config-input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .imp-config-unit {
+            font-size: 12px;
+            color: #6B7280;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .imp-config-note {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: #EFF6FF;
+            border-radius: 8px;
+            border: 1px solid #BFDBFE;
+        }
+
+        /* Config Actions */
+        .imp-config-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 4px;
+        }
+
+        .imp-config-cancel-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #374151;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .imp-config-cancel-btn:hover {
+            background: #F9FAFB;
+            border-color: #9CA3AF;
+        }
+
+        .imp-config-save-btn {
+            padding: 10px 20px;
+            background: #7C3AED;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .imp-config-save-btn:hover {
+            background: #6D28D9;
+        }
+
         /* Create Ticket Drawer */
         .imp-drawer-modal {
             height: 100vh;
@@ -1346,6 +1693,136 @@
             display: flex;
             gap: 8px;
         }
+
+        /* Merge Ticket Button */
+        .imp-merge-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .imp-merge-btn:hover {
+            background: #EDE9FE;
+            color: #7C3AED;
+            border-color: #C4B5FD;
+        }
+
+        .imp-merged-badge-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #FEF3C7;
+            border: 1px solid #FDE68A;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #92400E;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .imp-merged-badge-link:hover {
+            background: #FDE68A;
+        }
+
+
+        /* Merge Drawer */
+        .imp-merge-search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background: white;
+            margin-bottom: 16px;
+        }
+
+        .imp-merge-search-box:focus-within {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .imp-merge-ticket-list {
+            max-height: calc(100vh - 340px);
+            overflow-y: auto;
+        }
+
+        .imp-merge-ticket-item {
+            padding: 12px 14px;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .imp-merge-ticket-item:hover {
+            border-color: #C4B5FD;
+            background: #FAFAFF;
+        }
+
+        .imp-merge-ticket-item.selected {
+            border-color: #7C3AED;
+            background: #F5F3FF;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+
+        .imp-merge-ticket-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .imp-merge-ticket-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .imp-merge-ticket-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .imp-merge-ticket-status.open { background: #DBEAFE; color: #1D4ED8; }
+        .imp-merge-ticket-status.pending_support { background: #FEF3C7; color: #92400E; }
+        .imp-merge-ticket-status.pending_client { background: #FEE2E2; color: #991B1B; }
+        .imp-merge-ticket-status.pending_rnd { background: #F3F4F6; color: #4B5563; }
+        .imp-merge-ticket-status.closed { background: #D1FAE5; color: #065F46; }
+
+        .imp-merge-ticket-subject {
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .imp-merge-ticket-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+
+        .imp-split-submit.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .imp-detail-action-btn {
             display: flex;
             align-items: center;
@@ -1685,6 +2162,18 @@
             color: #334155;
             line-height: 1.65;
             padding: 0;
+        }
+        .imp-ticket-link {
+            color: #7C3AED;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 2px;
+        }
+        .imp-ticket-link:hover {
+            color: #6D28D9;
+            text-decoration-style: solid;
         }
         .imp-note-edit-btn {
             margin-left: auto;
@@ -2386,12 +2875,111 @@
                            placeholder="Search tickets...">
                 </div>
 
-                <select class="imp-filter-select" wire:model.live="selectedImplementer">
-                    <option value="">All Implementers</option>
-                    @foreach($implementers as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                </select>
+                {{-- Searchable Implementer Filter --}}
+                <div class="imp-searchable-filter" x-data="{
+                    open: false,
+                    search: '',
+                    selectedId: @entangle('selectedImplementer').live,
+                    items: {{ Js::from($implementers->map(fn($name, $id) => ['id' => $id, 'name' => $name])->values()) }},
+                    get selectedName() {
+                        if (!this.selectedId) return '';
+                        const found = this.items.find(i => i.id == this.selectedId);
+                        return found ? found.name : '';
+                    },
+                    get filtered() {
+                        if (!this.search) return this.items;
+                        const s = this.search.toLowerCase();
+                        return this.items.filter(i => i.name.toLowerCase().includes(s));
+                    },
+                    select(id) {
+                        this.selectedId = id;
+                        this.search = '';
+                        this.open = false;
+                    },
+                    clear() {
+                        this.selectedId = '';
+                        this.search = '';
+                        this.open = false;
+                    }
+                }" @click.away="open = false; search = ''">
+                    <div class="imp-searchable-trigger" :class="{ 'open': open }" @click="open = true; $nextTick(() => $refs.impSearch.focus())">
+                        <svg class="imp-searchable-chevron" :class="{ 'open': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                        <input type="text" x-ref="impSearch"
+                               x-show="open" x-model="search"
+                               placeholder="Search implementers..."
+                               @keydown.escape="open = false; search = ''">
+                        <span x-show="!open" x-text="selectedName || 'All Implementers'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                        <template x-if="selectedId">
+                            <button class="imp-searchable-clear" @click.stop="clear()" title="Clear filter">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 14px; height: 14px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </template>
+                    </div>
+                    <div class="imp-searchable-dropdown" x-show="open" x-cloak x-transition>
+                        <div class="imp-searchable-option" :class="{ 'active': !selectedId }" @click="clear()">All Implementers</div>
+                        <template x-for="item in filtered" :key="item.id">
+                            <div class="imp-searchable-option" :class="{ 'active': selectedId == item.id }" @click="select(item.id)" x-text="item.name"></div>
+                        </template>
+                        <div class="imp-searchable-empty" x-show="filtered.length === 0">No matches found</div>
+                    </div>
+                </div>
+
+                {{-- Searchable Company Filter --}}
+                <div class="imp-searchable-filter" x-data="{
+                    open: false,
+                    search: '',
+                    selectedId: @entangle('selectedCompany').live,
+                    items: {{ Js::from($companies->map(fn($name, $id) => ['id' => $id, 'name' => $name])->values()) }},
+                    get selectedName() {
+                        if (!this.selectedId) return '';
+                        const found = this.items.find(i => i.id == this.selectedId);
+                        return found ? found.name : '';
+                    },
+                    get filtered() {
+                        if (!this.search) return this.items;
+                        const s = this.search.toLowerCase();
+                        return this.items.filter(i => i.name.toLowerCase().includes(s));
+                    },
+                    select(id) {
+                        this.selectedId = id;
+                        this.search = '';
+                        this.open = false;
+                    },
+                    clear() {
+                        this.selectedId = '';
+                        this.search = '';
+                        this.open = false;
+                    }
+                }" @click.away="open = false; search = ''">
+                    <div class="imp-searchable-trigger" :class="{ 'open': open }" @click="open = true; $nextTick(() => $refs.compSearch.focus())">
+                        <svg class="imp-searchable-chevron" :class="{ 'open': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                        <input type="text" x-ref="compSearch"
+                               x-show="open" x-model="search"
+                               placeholder="Search companies..."
+                               @keydown.escape="open = false; search = ''">
+                        <span x-show="!open" x-text="selectedName || 'All Companies'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                        <template x-if="selectedId">
+                            <button class="imp-searchable-clear" @click.stop="clear()" title="Clear filter">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 14px; height: 14px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </template>
+                    </div>
+                    <div class="imp-searchable-dropdown" x-show="open" x-cloak x-transition>
+                        <div class="imp-searchable-option" :class="{ 'active': !selectedId }" @click="clear()">All Companies</div>
+                        <template x-for="item in filtered" :key="item.id">
+                            <div class="imp-searchable-option" :class="{ 'active': selectedId == item.id }" @click="select(item.id)" x-text="item.name"></div>
+                        </template>
+                        <div class="imp-searchable-empty" x-show="filtered.length === 0">No matches found</div>
+                    </div>
+                </div>
 
                 <button class="imp-sla-policy-btn" wire:click="$set('showSlaPolicy', true)">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
@@ -2581,9 +3169,15 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="imp-status-badge {{ $ticket->status->value }}">
-                                        {{ $ticket->status->label() }}
-                                    </span>
+                                    @if($ticket->isMerged())
+                                        <span class="imp-status-badge" style="background: #FEF3C7; color: #92400E; font-size: 11px;">
+                                            Merged to {{ $ticket->mergedInto?->formatted_ticket_number ?? 'Unknown' }}
+                                        </span>
+                                    @else
+                                        <span class="imp-status-badge {{ $ticket->status->value }}">
+                                            {{ $ticket->status->label() }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td>
                                     @php $timeRemaining = $ticket->getTimeRemaining(); @endphp
@@ -2682,15 +3276,33 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px; color: #7C3AED;">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                         </svg>
-                        SLA Policy
+                        {{ $slaConfigMode ? 'SLA Configuration' : 'SLA Policy' }}
                     </h2>
-                    <button class="imp-modal-close" wire:click="$set('showSlaPolicy', false)">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="imp-sla-gear-btn" wire:click="toggleSlaConfigMode" title="{{ $slaConfigMode ? 'Back to View' : 'Configure SLA' }}">
+                            @if($slaConfigMode)
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            @else
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            @endif
+                        </button>
+                        <button class="imp-modal-close" wire:click="$set('showSlaPolicy', false)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="imp-modal-body">
+                    @if(!$slaConfigMode)
+                    <!-- ===== VIEW MODE ===== -->
+
                     <!-- Response Time Matrix -->
                     <div class="imp-modal-section">
                         <h3>
@@ -2702,29 +3314,42 @@
                         <table class="imp-sla-table">
                             <thead>
                                 <tr>
-                                    <th>Priority</th>
-                                    <th>First Response</th>
-                                    <th>Resolution Target</th>
+                                    <th>First Response SLA</th>
+                                    <th>Resolution SLA</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><span class="imp-sla-priority-dot high"></span> High</td>
-                                    <td>2 hours</td>
-                                    <td>Same day</td>
-                                </tr>
-                                <tr>
-                                    <td><span class="imp-sla-priority-dot medium"></span> Medium</td>
-                                    <td>4 hours</td>
-                                    <td>Next business day</td>
-                                </tr>
-                                <tr>
-                                    <td><span class="imp-sla-priority-dot low"></span> Low</td>
-                                    <td>8 hours</td>
-                                    <td>3 business days</td>
+                                    <td><strong>{{ $slaConfig->first_response_sla_hours ?? 24 }}</strong> hours</td>
+                                    <td><strong>{{ $slaConfig->resolution_sla_hours ?? 48 }}</strong> hours</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- First Reply Deadline -->
+                    <div class="imp-modal-section">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            First Reply Deadline
+                            @if($slaConfig->first_reply_enabled ?? true)
+                                <span class="imp-status-badge imp-badge-active">Active</span>
+                            @else
+                                <span class="imp-status-badge imp-badge-inactive">Disabled</span>
+                            @endif
+                        </h3>
+                        <ul class="imp-policy-list">
+                            <li>
+                                <svg class="imp-bullet-blue" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                                <span>Tickets created before <strong>{{ \Carbon\Carbon::createFromFormat('H:i', $slaConfig->first_reply_cutoff_time ?? '17:30')->format('g:i A') }}</strong> must receive a reply by <strong>11:59 PM</strong> same day</span>
+                            </li>
+                            <li>
+                                <svg class="imp-bullet-red" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                                <span>If no reply is detected, status automatically changes to <strong>Overdue</strong></span>
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- Business Hours -->
@@ -2738,7 +3363,7 @@
                         <ul class="imp-policy-list">
                             <li>
                                 <svg class="imp-bullet-blue" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Monday - Friday: <strong>8:00 AM - 6:00 PM (MYT)</strong></span>
+                                <span>Monday - Friday: <strong>{{ \Carbon\Carbon::createFromFormat('H:i', $slaConfig->business_start_time ?? '08:00')->format('g:i A') }} - {{ \Carbon\Carbon::createFromFormat('H:i', $slaConfig->business_end_time ?? '18:00')->format('g:i A') }} (MYT)</strong></span>
                             </li>
                             <li>
                                 <svg class="imp-bullet-amber" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
@@ -2746,35 +3371,36 @@
                             </li>
                             <li>
                                 <svg class="imp-bullet-blue" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Tickets submitted after <strong>3:00 PM</strong> will be processed the next business day</span>
+                                <span>Tickets submitted after <strong>{{ \Carbon\Carbon::createFromFormat('H:i', $slaConfig->first_reply_cutoff_time ?? '17:30')->format('g:i A') }}</strong> will be processed the next business day</span>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- Escalation Policy -->
+                    <!-- Follow-up Automation -->
                     <div class="imp-modal-section">
                         <h3>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                             </svg>
-                            Escalation Policy
+                            Follow-up Automation
+                            @if($slaConfig->followup_enabled ?? true)
+                                <span class="imp-status-badge imp-badge-active">Active</span>
+                            @else
+                                <span class="imp-status-badge imp-badge-inactive">Disabled</span>
+                            @endif
                         </h3>
                         <ul class="imp-policy-list">
                             <li>
                                 <svg class="imp-bullet-amber" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Auto-escalate after <strong>75%</strong> of SLA time has elapsed</span>
+                                <span>Auto follow-up reminder after <strong>{{ $slaConfig->followup_reminder_days ?? 3 }} working days</strong> of pending client status</span>
                             </li>
                             <li>
                                 <svg class="imp-bullet-red" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Notify manager when ticket reaches <strong>50%</strong> of SLA deadline</span>
-                            </li>
-                            <li>
-                                <svg class="imp-bullet-blue" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Escalate to <strong>R&D team</strong> for technical issues requiring code changes</span>
+                                <span>Auto-close ticket after additional <strong>{{ $slaConfig->followup_auto_close_days ?? 2 }} working days</strong> with no client response</span>
                             </li>
                             <li>
                                 <svg class="imp-bullet-green" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
-                                <span>Auto-resolve tickets with no client response after <strong>48 hours</strong></span>
+                                <span>Holiday and weekend logic automatically applied to all SLA triggers</span>
                             </li>
                         </ul>
                     </div>
@@ -2806,6 +3432,134 @@
                             </div>
                         </div>
                     </div>
+
+                    @else
+                    <!-- ===== CONFIG MODE ===== -->
+                    <div class="imp-sla-config-form">
+
+                        <!-- Section 1: First Reply Deadline -->
+                        <div class="imp-config-section">
+                            <div class="imp-config-section-header">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    First Reply Deadline
+                                </h3>
+                                <label class="imp-config-toggle">
+                                    <input type="checkbox" wire:model.live="configFirstReplyEnabled">
+                                    <span class="imp-toggle-slider"></span>
+                                </label>
+                            </div>
+                            <p class="imp-config-desc">Tickets created before cutoff time must receive a reply by 11:59 PM same day, or status changes to Overdue.</p>
+                            <div class="imp-config-field">
+                                <label>Cutoff Time</label>
+                                <input type="time" wire:model="configFirstReplyCutoff" class="imp-config-input">
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Follow-up Automation -->
+                        <div class="imp-config-section">
+                            <div class="imp-config-section-header">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+                                    </svg>
+                                    Follow-up Automation
+                                </h3>
+                                <label class="imp-config-toggle">
+                                    <input type="checkbox" wire:model.live="configFollowupEnabled">
+                                    <span class="imp-toggle-slider"></span>
+                                </label>
+                            </div>
+                            <p class="imp-config-desc">Automatically manage tickets in "Pending Client" status with follow-up reminders and auto-close.</p>
+                            <div class="imp-config-field-row">
+                                <div class="imp-config-field">
+                                    <label>Follow-up Reminder After</label>
+                                    <div class="imp-config-input-group">
+                                        <input type="number" wire:model="configFollowupReminderDays" min="1" max="30" class="imp-config-input">
+                                        <span class="imp-config-unit">working days</span>
+                                    </div>
+                                </div>
+                                <div class="imp-config-field">
+                                    <label>Auto-close After Additional</label>
+                                    <div class="imp-config-input-group">
+                                        <input type="number" wire:model="configFollowupAutoCloseDays" min="1" max="30" class="imp-config-input">
+                                        <span class="imp-config-unit">working days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: SLA Timings -->
+                        <div class="imp-config-section">
+                            <div class="imp-config-section-header">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                                    </svg>
+                                    SLA Timings
+                                </h3>
+                            </div>
+                            <p class="imp-config-desc">Configure the maximum allowed hours for ticket resolution and first response.</p>
+                            <div class="imp-config-field-row">
+                                <div class="imp-config-field">
+                                    <label>Resolution SLA</label>
+                                    <div class="imp-config-input-group">
+                                        <input type="number" wire:model="configResolutionSlaHours" min="1" max="720" class="imp-config-input">
+                                        <span class="imp-config-unit">hours</span>
+                                    </div>
+                                </div>
+                                <div class="imp-config-field">
+                                    <label>First Response SLA</label>
+                                    <div class="imp-config-input-group">
+                                        <input type="number" wire:model="configFirstResponseSlaHours" min="1" max="720" class="imp-config-input">
+                                        <span class="imp-config-unit">hours</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Business Hours -->
+                        <div class="imp-config-section">
+                            <div class="imp-config-section-header">
+                                <h3>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 0h.008v.008h-.008V7.5z" />
+                                    </svg>
+                                    Business Hours
+                                </h3>
+                            </div>
+                            <div class="imp-config-field-row">
+                                <div class="imp-config-field">
+                                    <label>Start Time</label>
+                                    <input type="time" wire:model="configBusinessStart" class="imp-config-input">
+                                </div>
+                                <div class="imp-config-field">
+                                    <label>End Time</label>
+                                    <input type="time" wire:model="configBusinessEnd" class="imp-config-input">
+                                </div>
+                            </div>
+                            <p class="imp-config-note">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px; flex-shrink: 0;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                                </svg>
+                                Weekends and public holidays are automatically excluded from all SLA calculations.
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="imp-config-actions">
+                            <button class="imp-config-cancel-btn" wire:click="toggleSlaConfigMode">Cancel</button>
+                            <button class="imp-config-save-btn" wire:click="saveSlaConfig">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                                Save Configuration
+                            </button>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -3140,6 +3894,18 @@
                     </h2>
                     <span class="imp-detail-ticket-id">{{ $selectedTicket->formatted_ticket_number }} - {{ $selectedTicket->category ?? '' }}</span>
                 </div>
+                @if($selectedTicket->isMerged())
+                    <a href="javascript:void(0)" wire:click="openTicketDetail({{ $selectedTicket->merged_into_ticket_id }})" class="imp-merged-badge-link" style="margin-left: auto; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.07a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374" />
+                        </svg>
+                        Merged into {{ $selectedTicket->mergedInto?->formatted_ticket_number }}
+                    </a>
+                @else
+                    <button wire:click="openMergeDrawer" class="imp-merge-btn" style="margin-left: auto; flex-shrink: 0;" title="Merge into another ticket">
+                        Merge Ticket
+                    </button>
+                @endif
             </div>
                     <div class="imp-detail-header-meta">
                         @php $detailSlaStatus = $selectedTicket->getSlaStatus(); @endphp
@@ -3151,7 +3917,6 @@
                         </span>
                         <span class="imp-detail-company-name">{{ $selectedTicket->customer?->company_name ?? '-' }}</span>
                     </div>
-                    <div class="imp-detail-actions-bar"></div>
                 </div>
 
                 <!-- Main Content - Split View -->
@@ -3343,7 +4108,11 @@
                                                     </div>
                                                 </div>
                                             @else
-                                                <div class="imp-detail-msg-body">{!! strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>') !!}</div>
+                                                <div class="imp-detail-msg-body">{!! preg_replace(
+                                                '/(IMP-\d+)/',
+                                                '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
+                                                strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
+                                            ) !!}</div>
                                             @endif
                                         </div>
                                     @else
@@ -3372,7 +4141,11 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div class="imp-detail-msg-body">{!! strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>') !!}</div>
+                                            <div class="imp-detail-msg-body">{!! preg_replace(
+                                                '/(IMP-\d+)/',
+                                                '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
+                                                strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
+                                            ) !!}</div>
                                             @if($reply->attachments)
                                                 <div class="imp-detail-msg-attachments">
                                                     @foreach($reply->attachments as $attachment)
@@ -3641,5 +4414,71 @@
                 </div>
             </div>
     @endif
+    @endif
+
+    {{-- Merge Ticket Drawer --}}
+    @if($showMergeDrawer)
+        <div class="imp-split-overlay" wire:click="closeMergeDrawer"></div>
+        <div class="imp-split-drawer open" style="max-width: 560px;">
+            <div class="imp-split-drawer-header">
+                <div class="imp-split-drawer-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.07a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374" />
+                    </svg>
+                    Merge Ticket
+                </div>
+                <button class="imp-split-drawer-close" wire:click="closeMergeDrawer">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="imp-split-drawer-body">
+                <p style="font-size: 13px; color: #6B7280; margin: 0 0 16px;">
+                    Merge <strong>{{ $selectedTicket?->formatted_ticket_number ?? '' }}</strong> into another ticket. The current ticket will be closed and its conversation will appear in the target ticket.
+                </p>
+
+                <!-- Search -->
+                <div class="imp-merge-search-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px; color: #9CA3AF; flex-shrink: 0;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <input type="text" wire:model.live.debounce.300ms="mergeSearch" placeholder="Search by ticket ID or subject..." style="border: none; outline: none; flex: 1; font-size: 14px; color: #374151; background: transparent;">
+                </div>
+
+                <!-- Ticket List -->
+                <div class="imp-merge-ticket-list">
+                    @forelse($this->mergeableTickets as $mTicket)
+                        <div class="imp-merge-ticket-item {{ $mergeTargetTicketId == $mTicket->id ? 'selected' : '' }}"
+                             wire:click="selectMergeTarget({{ $mTicket->id }})">
+                            <div class="imp-merge-ticket-top">
+                                <span class="imp-merge-ticket-number">{{ $mTicket->formatted_ticket_number }}</span>
+                                <span class="imp-merge-ticket-status {{ $mTicket->status->value }}">{{ $mTicket->status->label() }}</span>
+                            </div>
+                            <div class="imp-merge-ticket-subject">{{ Str::limit($mTicket->subject, 80) }}</div>
+                            <div class="imp-merge-ticket-meta">
+                                <span>{{ $mTicket->implementerUser?->name ?? 'Unassigned' }}</span>
+                                <span>{{ $mTicket->created_at->format('M d, Y') }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div style="padding: 32px 16px; text-align: center; color: #9CA3AF; font-size: 14px;">
+                            {{ $mergeSearch ? 'No matching tickets found' : 'No other tickets from this customer' }}
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+            <div class="imp-split-drawer-footer">
+                <button class="imp-split-cancel-btn" wire:click="closeMergeDrawer">Cancel</button>
+                <button class="imp-split-submit-btn {{ !$mergeTargetTicketId ? 'disabled' : '' }}"
+                        wire:click="submitMergeTicket"
+                        wire:loading.attr="disabled"
+                        wire:target="submitMergeTicket"
+                        {{ !$mergeTargetTicketId ? 'disabled' : '' }}>
+                    <span wire:loading.remove wire:target="submitMergeTicket">Merge Ticket</span>
+                    <span wire:loading wire:target="submitMergeTicket">Merging...</span>
+                </button>
+            </div>
+        </div>
     @endif
 </x-filament-panels::page>

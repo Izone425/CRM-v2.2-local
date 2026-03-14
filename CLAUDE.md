@@ -54,7 +54,7 @@ Required env vars (see `.env.example`):
 - Rich text editors use `contenteditable` + Alpine.js + `document.execCommand()` (not external deps)
 - `wire:ignore` wraps Alpine-managed DOM to prevent Livewire re-render conflicts
 - Livewire events (`$this->dispatch()`) communicate from PHP to Alpine; sync data at submission boundaries only
-- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread)
+- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell)
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
 - Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false`
 - Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching
@@ -62,6 +62,9 @@ Required env vars (see `.env.example`):
 - Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
 - When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
 - Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead
+- Searchable filter dropdowns use Alpine.js `x-data` with `@entangle('property').live`, `Js::from()` for items, client-side filtering via computed getter
+- Livewire 3 `@entangle('property')` defers updates — use `@entangle('property').live` for immediate server-side sync (required for filters, toggles)
+- Fixed-position drawers/modals (like merge drawer) should be placed at root level of the Blade template (outside `@if/@else` conditionals) to avoid rendering issues with Livewire morphing
 - `foreignId()->constrained()` may fail if DB column types don't match — use `unsignedBigInteger()` without FK constraints as fallback
 - MySQL index names have 64-char limit — use short custom names for long composite indexes
 
@@ -88,6 +91,8 @@ Required env vars (see `.env.example`):
 - `Storage::disk('public')->url()` may not include the port in dev — use `response()->download()` via named routes instead
 - User roles: 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician (roles 4/5/9 are DB-assigned but not referenced in code role checks)
 - Livewire components must have a single root element — `<script>` and `<style>` tags must be inside the root `<div>`, not siblings
+- `public/storage` symlink must exist — run `php artisan storage:link` after fresh clone; without it, file uploads return 404
+- `php artisan migrate` may fail on existing DB — use `--path=database/migrations/<filename>.php` to run specific new migrations
 
 ## Data Migration System
 - **V1 (nested subsections):** `ImplementerDataFile.php` — 5 sections with sub-items, storage at `templates/data-migration-v1/`
@@ -105,4 +110,8 @@ Required env vars (see `.env.example`):
 - **Customer portal:** `CustomerImplementerThread.php` Livewire component — Card-based thread list inside "Software Onboarding" group; detail view uses 2-column viewport-fit layout (left: ticket details, right: WhatsApp-style thread with search)
 - **Customer ticketing:** `ImplementerTicketResource` (Filament Customer panel) — Full ticket CRUD for customers, linked from "Support Thread" nav
 - **Models:** `ImplementerTicket` (has `lead_id`, `customer_id`, SLA methods, auto-generated ticket number `IMP-{YY}{IDPADDED}`), `ImplementerTicketReply` (polymorphic `sender()` — User or Customer)
+- **SLA Configuration:** `SlaConfiguration` model (single-row, cached) — configurable via gear button in SLA Policy modal; `sla:check-first-reply` (every 5min) and `sla:process-followups` (daily) scheduled commands; uses `PublicHoliday` + `CustomPublicHoliday` for working-day calculations
+- **Merge Ticket:** `merged_into_ticket_id`, `merged_at`, `merged_by` fields on `ImplementerTicket`; `mergedInto()` / `mergedFrom()` relationships; drawer to select target (same customer only); source ticket closes as "Merged to IMP-XXXX"; clickable ticket IDs in messages via regex `/(IMP-\d+)/`
+- **Customer notification bell:** `CustomerNotificationBell` Livewire component in portal header; reads existing `notifications` table (polymorphic); 30s polling; CSS prefix `cnb-`
+- **Dashboard filters:** Searchable "All Implementers" and "All Companies" Alpine.js dropdowns with `@entangle().live`
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)

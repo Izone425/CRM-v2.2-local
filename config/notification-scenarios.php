@@ -369,5 +369,13 @@ return [
                 'button_text' => 'View Ticket',
             ],
         ],
+
+        'merged' => [
+            'title' => 'Ticket Merged',
+            'message' => 'Your ticket {merged_ticket_number} has been merged into {ticket_number}. All conversation has been consolidated.',
+            'channels' => ['in_app'],
+            'priority' => 'normal',
+            'action_url' => '/customer/dashboard?tab=impThread&ticket={ticket_id}',
+        ],
     ],
 ];

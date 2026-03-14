@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ImplementerTicketStatus;
+use App\Models\SlaConfiguration;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,12 @@ class ImplementerTicket extends Model
         'closed_by',
         'closed_by_type',
         'first_responded_at',
+        'pending_client_since',
+        'followup_sent_at',
+        'is_overdue',
+        'merged_into_ticket_id',
+        'merged_at',
+        'merged_by',
     ];
 
     protected $casts = [
@@ -38,6 +45,10 @@ class ImplementerTicket extends Model
         'attachments' => 'array',
         'closed_at' => 'datetime',
         'first_responded_at' => 'datetime',
+        'pending_client_since' => 'datetime',
+        'followup_sent_at' => 'datetime',
+        'is_overdue' => 'boolean',
+        'merged_at' => 'datetime',
     ];
 
     // SLA Constants
@@ -77,6 +88,26 @@ class ImplementerTicket extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(ImplementerTicketReply::class)->orderBy('created_at', 'asc');
+    }
+
+    public function mergedInto(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'merged_into_ticket_id');
+    }
+
+    public function mergedFrom(): HasMany
+    {
+        return $this->hasMany(self::class, 'merged_into_ticket_id');
+    }
+
+    public function mergedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'merged_by');
+    }
+
+    public function isMerged(): bool
+    {
+        return !is_null($this->merged_into_ticket_id);
     }
 
     public function getFormattedTicketNumberAttribute(): string
@@ -140,13 +171,18 @@ class ImplementerTicket extends Model
 
     public function getSlaDeadline(): Carbon
     {
-        return $this->created_at->copy()->addHours(self::SLA_HOURS);
+        $hours = SlaConfiguration::current()->resolution_sla_hours ?? self::SLA_HOURS;
+        return $this->created_at->copy()->addHours($hours);
     }
 
     public function isOverdue(): bool
     {
         if ($this->status === ImplementerTicketStatus::CLOSED) {
             return false;
+        }
+        // Check flag set by scheduled command (first-reply-deadline overdue)
+        if ($this->is_overdue) {
+            return true;
         }
         return now()->gt($this->getSlaDeadline());
     }
@@ -155,6 +191,10 @@ class ImplementerTicket extends Model
     {
         if ($this->status === ImplementerTicketStatus::CLOSED) {
             return 'resolved';
+        }
+
+        if ($this->is_overdue) {
+            return 'overdue';
         }
 
         $deadline = $this->getSlaDeadline();
@@ -176,10 +216,8 @@ class ImplementerTicket extends Model
         }
 
         $deadline = $this->getSlaDeadline();
-        $diff = now()->diff($deadline);
 
         if (now()->gt($deadline)) {
-            $hours = now()->diffInHours($deadline);
             return 'Overdue';
         }
 
@@ -204,7 +242,8 @@ class ImplementerTicket extends Model
         if (!$this->first_responded_at) {
             return false;
         }
-        $responseDeadline = $this->created_at->copy()->addHours(self::FIRST_RESPONSE_SLA_HOURS);
+        $hours = SlaConfiguration::current()->first_response_sla_hours ?? self::FIRST_RESPONSE_SLA_HOURS;
+        $responseDeadline = $this->created_at->copy()->addHours($hours);
         return $this->first_responded_at->lte($responseDeadline);
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\ImplementerTicketStatus;
 use App\Models\ImplementerTicket;
 use App\Models\ImplementerTicketReply;
 use App\Notifications\ImplementerTicketNotification;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -50,7 +51,7 @@ class CustomerImplementerThread extends Component
         }
 
         $query = ImplementerTicket::where('lead_id', $customer->lead_id)
-            ->with(['customer', 'implementerUser', 'replies' => function ($q) {
+            ->with(['customer', 'implementerUser', 'mergedInto', 'replies' => function ($q) {
                 $q->where('is_internal_note', false);
             }])
             ->orderBy('created_at', 'desc');
@@ -116,6 +117,7 @@ class CustomerImplementerThread extends Component
         return ImplementerTicket::with([
             'customer',
             'implementerUser',
+            'mergedInto',
             'replies' => function ($q) {
                 $q->where('is_internal_note', false)->with('sender');
             },
@@ -129,6 +131,12 @@ class CustomerImplementerThread extends Component
         $this->currentView = 'detail';
         $this->replyMessage = '';
         $this->replyAttachments = [];
+    }
+
+    #[On('openTicketFromNotification')]
+    public function openTicketFromNotification($ticketId)
+    {
+        $this->openTicketDetail($ticketId);
     }
 
     public function backToDashboard()
