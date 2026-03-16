@@ -94,7 +94,9 @@ use App\Filament\Pages\TicketAnalysis;
 use App\Filament\Pages\TicketDashboard;
 use App\Filament\Pages\TicketList;
 use App\Filament\Pages\ImplementerClientProfile;
+use App\Filament\Pages\ImplementerThreadEmailTemplate;
 use App\Filament\Pages\ImplementerTicketingDashboard;
+use App\Filament\Pages\SupportThreadEmailTemplate;
 use App\Filament\Pages\TrainerFileUpload;
 use App\Filament\Pages\TrainerFileView;
 use App\Filament\Pages\TrainerHandover;
@@ -384,6 +386,8 @@ class AdminPanelProvider extends PanelProvider
                 TrainerFileUpload::class,
                 TrainerFileView::class,
                 CustomPublicHolidayPage::class,
+                ImplementerThreadEmailTemplate::class,
+                SupportThreadEmailTemplate::class,
                 // LicenseTerminatedList::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

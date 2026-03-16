@@ -1860,7 +1860,7 @@
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
             border-radius: 12px;
-            padding: 20px 16px;
+            padding: 14px 14px;
             overflow-y: auto;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
         }
@@ -1868,19 +1868,19 @@
             font-size: 11px;
             font-weight: 700;
             color: #64748B;
-            margin: 0 0 18px 0;
+            margin: 0 0 10px 0;
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
         .imp-detail-section {
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
         .imp-detail-section::after {
             content: '';
             display: block;
             height: 1px;
             background: linear-gradient(90deg, transparent, #D8DCE5, transparent);
-            margin-top: 16px;
+            margin-top: 8px;
         }
         .imp-detail-section:last-child::after {
             display: none;
@@ -1891,14 +1891,14 @@
             font-weight: 700;
             color: #94A3B8;
             letter-spacing: 0.06em;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
         .imp-detail-card {
             background: #F8FAFC;
             border: 1px solid #EEF0F4;
             border-radius: 10px;
-            padding: 12px;
+            padding: 8px 10px;
             box-shadow: none;
             transition: background 0.2s ease;
         }
@@ -1911,8 +1911,8 @@
             gap: 8px;
         }
         .imp-detail-avatar {
-            width: 34px;
-            height: 34px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -1937,10 +1937,20 @@
         .imp-detail-email-row {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-            font-size: 11px;
+            gap: 4px;
+            margin-top: 2px;
+            font-size: 10px;
             color: #64748B;
+        }
+        .imp-detail-people-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .imp-detail-person {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* Status Dropdown */
@@ -2000,12 +2010,15 @@
             border-radius: 10px;
             box-shadow: none;
             overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
         }
         .imp-detail-date-item {
-            padding: 11px 12px;
+            padding: 8px 10px;
         }
         .imp-detail-date-item + .imp-detail-date-item {
-            border-top: 1px solid #F1F3F8;
+            border-top: none;
+            border-left: 1px solid #F1F3F8;
         }
         .imp-detail-date-label {
             display: flex;
@@ -2013,7 +2026,7 @@
             gap: 5px;
             font-size: 11px;
             color: #94A3B8;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             font-weight: 500;
         }
         .imp-detail-date-value {
@@ -2028,14 +2041,14 @@
             background: #F8FAFC;
             border: 1px solid #EEF0F4;
             border-radius: 10px;
-            padding: 12px;
+            padding: 8px 10px;
             box-shadow: none;
         }
         .imp-detail-prop-row {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
-            padding: 4px 0;
+            padding: 2px 0;
         }
         .imp-detail-prop-label { color: #94A3B8; font-weight: 500; }
         .imp-detail-prop-value { color: #1A1D26; font-weight: 500; }
@@ -3737,9 +3750,9 @@
                         </label>
                         <select class="imp-drawer-select" wire:model="newTicketEmailTemplate" wire:change="applyEmailTemplate($event.target.value)">
                             <option value="">No Template</option>
-                            <option value="First Response">First Response</option>
-                            <option value="Require More Time">Require More Time</option>
-                            <option value="R&D Escalation">R&D Escalation</option>
+                            @foreach($this->emailTemplates as $tmpl)
+                                <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -3925,45 +3938,40 @@
                     <div class="imp-detail-sidebar">
                         <h3 class="imp-detail-sidebar-title">Ticket Properties</h3>
 
-                        <!-- Client Contact -->
+                        <!-- People -->
                         <div class="imp-detail-section">
-                            <label class="imp-detail-label">CLIENT CONTACT</label>
+                            <label class="imp-detail-label">PEOPLE</label>
                             <div class="imp-detail-card">
-                                <div class="imp-detail-card-row">
-                                    <div class="imp-detail-avatar blue">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                        </svg>
+                                <div class="imp-detail-people-grid">
+                                    <div class="imp-detail-person">
+                                        <div class="imp-detail-avatar blue">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 13px; height: 13px;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="imp-detail-name">{{ $selectedTicket->customer?->name ?? 'Unknown' }}</p>
+                                            <p class="imp-detail-sublabel">Client</p>
+                                            @if($selectedTicket->customer?->email)
+                                                <div class="imp-detail-email-row">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 12px; height: 12px;">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                                    </svg>
+                                                    <span>{{ $selectedTicket->customer->email }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="imp-detail-name">{{ $selectedTicket->customer?->name ?? 'Unknown' }}</p>
-                                        <p class="imp-detail-sublabel">Primary Contact</p>
-                                    </div>
-                                </div>
-                                @if($selectedTicket->customer?->email)
-                                    <div class="imp-detail-email-row">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 12px; height: 12px;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                        </svg>
-                                        <span>{{ $selectedTicket->customer->email }}</span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Ticket Owner -->
-                        <div class="imp-detail-section">
-                            <label class="imp-detail-label">TICKET OWNER</label>
-                            <div class="imp-detail-card">
-                                <div class="imp-detail-card-row">
-                                    <div class="imp-detail-avatar purple">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="imp-detail-name">{{ $selectedTicket->implementerUser?->name ?? $selectedTicket->implementer_name ?? 'Unassigned' }}</p>
-                                        <p class="imp-detail-sublabel">Implementer</p>
+                                    <div class="imp-detail-person">
+                                        <div class="imp-detail-avatar purple">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 13px; height: 13px;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="imp-detail-name">{{ $selectedTicket->implementerUser?->name ?? $selectedTicket->implementer_name ?? 'Unassigned' }}</p>
+                                            <p class="imp-detail-sublabel">Implementer</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -4249,9 +4257,9 @@
                                 <label>Email Template</label>
                                 <select wire:model="replyEmailTemplate" wire:change="applyReplyTemplate($event.target.value)">
                                     <option value="">No Template</option>
-                                    <option value="First Response">First Response</option>
-                                    <option value="Require More Time">Require More Time</option>
-                                    <option value="R&D Escalation">R&D Escalation</option>
+                                    @foreach($this->emailTemplates as $tmpl)
+                                        <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
 

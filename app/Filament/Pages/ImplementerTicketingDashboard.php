@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\ImplementerTicketStatus;
 use App\Models\Customer;
+use App\Models\EmailTemplate;
 use App\Models\ImplementerTicket;
 use App\Models\ImplementerTicketReply;
 use App\Models\SlaConfiguration;
@@ -87,20 +88,10 @@ class ImplementerTicketingDashboard extends Page
     public $mergeTargetTicketId = null;
     public $mergeSearch = '';
 
-    protected $emailTemplates = [
-        'First Response' => [
-            'subject' => "Re: Your Support Request - We're On It!",
-            'body' => "Dear [Client Name],\n\nThank you for reaching out to our support team. We have received your request and our team is currently reviewing the details.\n\nWe aim to provide you with a comprehensive response within [X hours/days] as per our SLA agreement. If you have any additional information that might help us resolve this faster, please feel free to share it.\n\nBest regards,\n[Implementer Name]\nSupport Team",
-        ],
-        'Require More Time' => [
-            'subject' => 'Update: Additional Time Required for Your Request',
-            'body' => "Dear [Client Name],\n\nWe are writing to update you on the status of your support ticket [Ticket ID].\n\nAfter thorough review, our team requires additional time to properly address your request. This will ensure we provide you with the best possible solution. We now estimate completion by [New Date/Time].\n\nWe appreciate your patience and understanding. Should you have any questions, please don't hesitate to reach out.\n\nBest regards,\n[Implementer Name]\nSupport Team",
-        ],
-        'R&D Escalation' => [
-            'subject' => 'Escalation Notice: Your Ticket Requires R&D Investigation',
-            'body' => "Dear [Client Name],\n\nThank you for your patience. Your support ticket [Ticket ID] has been escalated to our Research & Development team for further investigation.\n\nThis escalation allows our technical experts to conduct a deeper analysis and develop a comprehensive solution. We will keep you updated on the progress and provide an estimated resolution timeline shortly.\n\nWe appreciate your understanding as we work to resolve this matter.\n\nBest regards,\n[Implementer Name]\nSupport Team",
-        ],
-    ];
+    public function getEmailTemplatesProperty()
+    {
+        return EmailTemplate::implementerThread()->latest()->get();
+    }
 
     public static function canAccess(): bool
     {
@@ -216,16 +207,22 @@ class ImplementerTicketingDashboard extends Page
         }
     }
 
-    public function applyEmailTemplate($template)
+    public function applyEmailTemplate($templateId)
     {
-        $this->newTicketEmailTemplate = $template;
+        $this->newTicketEmailTemplate = $templateId;
 
-        if (isset($this->emailTemplates[$template])) {
-            $this->newTicketEmailSubject = $this->emailTemplates[$template]['subject'];
-            // Convert plain text template to HTML paragraphs for rich text editor
-            $body = $this->emailTemplates[$template]['body'];
-            $paragraphs = array_filter(explode("\n\n", $body), fn($p) => trim($p) !== '');
-            $this->newTicketEmailBody = implode('', array_map(fn($p) => '<p>' . nl2br(e(trim($p))) . '</p>', $paragraphs));
+        $template = EmailTemplate::find($templateId);
+        if ($template) {
+            $customer = \App\Models\Customer::find($this->newTicketCustomerId);
+            $placeholderData = [
+                'client_name' => $customer?->name,
+                'company_name' => $customer?->company_name,
+                'category' => $this->newTicketCategory,
+                'module' => $this->newTicketModule,
+                'implementer_name' => auth()->user()->name,
+            ];
+            $this->newTicketEmailSubject = EmailTemplate::replacePlaceholders($template->subject, $placeholderData);
+            $this->newTicketEmailBody = EmailTemplate::replacePlaceholders($template->content, $placeholderData);
             $this->dispatch('templateApplied');
         }
     }
@@ -311,10 +308,12 @@ class ImplementerTicketingDashboard extends Page
             $closedByType = 'user';
         }
 
+        $implementerName = $implementerData ? $implementerData['name'] : auth()->user()->name;
+
         $ticket = ImplementerTicket::create([
             'customer_id' => $customer->id,
             'implementer_user_id' => $implementerData ? $implementerData['user']->id : auth()->id(),
-            'implementer_name' => $implementerData ? $implementerData['name'] : auth()->user()->name,
+            'implementer_name' => $implementerName,
             'lead_id' => $implementerData['lead_id'] ?? null,
             'software_handover_id' => $implementerData['software_handover_id'] ?? null,
             'subject' => $this->newTicketEmailSubject,
@@ -329,13 +328,31 @@ class ImplementerTicketingDashboard extends Page
             'closed_by_type' => $closedByType,
         ]);
 
+        // Final placeholder replacement pass (now that ticket exists with ID)
+        $placeholderData = [
+            'client_name' => $customer->name,
+            'ticket_id' => $ticket->formatted_ticket_number,
+            'implementer_name' => $implementerName,
+            'company_name' => $customer->company_name,
+            'category' => $this->newTicketCategory,
+            'module' => $this->newTicketModule,
+        ];
+        $finalBody = EmailTemplate::replacePlaceholders($this->newTicketEmailBody, $placeholderData);
+        $finalSubject = EmailTemplate::replacePlaceholders($this->newTicketEmailSubject, $placeholderData);
+
+        // Update ticket description and subject with replaced placeholders
+        $ticket->update([
+            'description' => $finalBody,
+            'subject' => $finalSubject,
+        ]);
+
         // Create the first reply from email body
-        if ($ticket && $this->newTicketEmailBody) {
+        if ($ticket && $finalBody) {
             ImplementerTicketReply::create([
                 'implementer_ticket_id' => $ticket->id,
                 'sender_type' => 'App\\Models\\User',
                 'sender_id' => auth()->id(),
-                'message' => $this->newTicketEmailBody,
+                'message' => $finalBody,
                 'is_internal_note' => false,
             ]);
 
@@ -632,8 +649,18 @@ class ImplementerTicketingDashboard extends Page
 
     public function submitReply()
     {
-        $ticket = ImplementerTicket::find($this->selectedTicketId);
+        $ticket = ImplementerTicket::with(['customer', 'implementerUser'])->find($this->selectedTicketId);
         if (!$ticket) return;
+
+        // Final placeholder replacement pass before saving
+        $this->replyMessage = EmailTemplate::replacePlaceholders($this->replyMessage, [
+            'client_name' => $ticket->customer?->name,
+            'ticket_id' => $ticket->formatted_ticket_number,
+            'implementer_name' => $ticket->implementerUser?->name ?? auth()->user()->name,
+            'company_name' => $ticket->customer?->company_name,
+            'category' => $ticket->category,
+            'module' => $ticket->module,
+        ]);
 
         $hasMessage = !empty(trim($this->replyMessage));
         $wasInternalNote = $this->isInternalNote;
@@ -713,14 +740,21 @@ class ImplementerTicketingDashboard extends Page
             ->send();
     }
 
-    public function applyReplyTemplate($template)
+    public function applyReplyTemplate($templateId)
     {
-        $this->replyEmailTemplate = $template;
+        $this->replyEmailTemplate = $templateId;
 
-        if (isset($this->emailTemplates[$template])) {
-            $body = $this->emailTemplates[$template]['body'];
-            $paragraphs = array_filter(explode("\n\n", $body), fn($p) => trim($p) !== '');
-            $this->replyMessage = implode('', array_map(fn($p) => '<p>' . nl2br(e(trim($p))) . '</p>', $paragraphs));
+        $template = EmailTemplate::find($templateId);
+        if ($template) {
+            $ticket = \App\Models\ImplementerTicket::with(['customer', 'implementerUser'])->find($this->selectedTicketId);
+            $this->replyMessage = EmailTemplate::replacePlaceholders($template->content, [
+                'client_name' => $ticket?->customer?->name,
+                'ticket_id' => $ticket?->formatted_ticket_number,
+                'implementer_name' => $ticket?->implementerUser?->name ?? auth()->user()->name,
+                'company_name' => $ticket?->customer?->company_name,
+                'category' => $ticket?->category,
+                'module' => $ticket?->module,
+            ]);
             $this->dispatch('replyTemplateApplied');
         }
     }

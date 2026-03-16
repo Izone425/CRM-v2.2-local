@@ -532,10 +532,8 @@
 
                     <div class="cit-reply-footer">
                         <button @click="syncAndSubmit()" class="cit-btn-primary cit-reply-send" wire:loading.attr="disabled" wire:target="submitReply">
-                            <span wire:loading.remove wire:target="submitReply">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                                Send Reply
-                            </span>
+                            <svg wire:loading.remove wire:target="submitReply" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            <span wire:loading.remove wire:target="submitReply">Send Reply</span>
                             <span wire:loading wire:target="submitReply">Sending...</span>
                         </button>
                     </div>

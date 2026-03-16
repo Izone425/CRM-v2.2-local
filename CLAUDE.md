@@ -52,16 +52,17 @@ Required env vars (see `.env.example`):
 ## Conventions
 - Filament custom pages use Livewire properties + Alpine.js for interactivity
 - Rich text editors use `contenteditable` + Alpine.js + `document.execCommand()` (not external deps)
+- Cursor-aware insertion in `contenteditable`: save `Range` via `saveSelection()` on `@mouseup/@keyup/@blur`, restore before `insertText` — clicking outside (e.g., placeholder buttons) loses cursor position
 - `wire:ignore` wraps Alpine-managed DOM to prevent Livewire re-render conflicts
 - Livewire events (`$this->dispatch()`) communicate from PHP to Alpine; sync data at submission boundaries only
-- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell)
+- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template)
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
-- Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false`
+- Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false` and must be manually registered in `AdminPanelProvider->pages([])` (auto-discovery is disabled)
 - Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching
 - Lead view tabs follow pattern: `class TabName { public static function getSchema(): array }` returning Filament form components
 - Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
 - When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
-- Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead
+- Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead; follow the `emt-select-*` or `imp-searchable-*` class pattern with `x-data` containing `open`, `select()`, `clear()` methods and `@click.away` to close
 - Searchable filter dropdowns use Alpine.js `x-data` with `@entangle('property').live`, `Js::from()` for items, client-side filtering via computed getter
 - Livewire 3 `@entangle('property')` defers updates — use `@entangle('property').live` for immediate server-side sync (required for filters, toggles)
 - Fixed-position drawers/modals (like merge drawer) should be placed at root level of the Blade template (outside `@if/@else` conditionals) to avoid rendering issues with Livewire morphing
@@ -89,8 +90,9 @@ Required env vars (see `.env.example`):
 - `.env.example` contains some hardcoded values — always review before copying
 - Customer portal uses `customer` guard with `Customer` model (has `lead_id` for linking to leads)
 - `Storage::disk('public')->url()` may not include the port in dev — use `response()->download()` via named routes instead
-- User roles: 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician (roles 4/5/9 are DB-assigned but not referenced in code role checks)
+- User roles use `role_id` field (not `role`): 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician (roles 4/5/9 are DB-assigned but not referenced in code role checks)
 - Livewire components must have a single root element — `<script>` and `<style>` tags must be inside the root `<div>`, not siblings
+- Buttons with SVG icon + text + `wire:loading.remove`: SVG and text `<span>` must be separate sibling children of the button (not wrapped in a single `<span>`), otherwise `inline-flex`/`gap` can't separate them
 - `public/storage` symlink must exist — run `php artisan storage:link` after fresh clone; without it, file uploads return 404
 - `php artisan migrate` may fail on existing DB — use `--path=database/migrations/<filename>.php` to run specific new migrations
 
@@ -114,4 +116,16 @@ Required env vars (see `.env.example`):
 - **Merge Ticket:** `merged_into_ticket_id`, `merged_at`, `merged_by` fields on `ImplementerTicket`; `mergedInto()` / `mergedFrom()` relationships; drawer to select target (same customer only); source ticket closes as "Merged to IMP-XXXX"; clickable ticket IDs in messages via regex `/(IMP-\d+)/`
 - **Customer notification bell:** `CustomerNotificationBell` Livewire component in portal header; reads existing `notifications` table (polymorphic); 30s polling; CSS prefix `cnb-`
 - **Dashboard filters:** Searchable "All Implementers" and "All Companies" Alpine.js dropdowns with `@entangle().live`
+- **Email templates:** Database-driven via `EmailTemplate` model (replaces hardcoded `$emailTemplates` array); `getEmailTemplatesProperty()` computed property; `applyEmailTemplate($templateId)` and `applyReplyTemplate($templateId)` load by ID
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)
+
+## Email Template System
+- **Model:** `EmailTemplate` — fields: `name`, `subject`, `content`, `type` (implementer_thread/support_thread), `category`, `created_by`; scopes: `implementerThread()`, `supportThread()`
+- **Settings pages:** `ImplementerThreadEmailTemplate.php` (full CRUD with modal overlay) + `SupportThreadEmailTemplate.php` (placeholder); under Settings > Email Template in sidebar
+- **Dashboard integration:** `ImplementerTicketingDashboard` uses `getEmailTemplatesProperty()` computed property to load templates from DB; template dropdowns in create ticket drawer and reply section use template `id` as value
+- **Placeholder replacement:** `EmailTemplate::replacePlaceholders($content, $data)` — dual strategy: simple `str_replace` first, then regex fallback for HTML-artifact-tolerant matching; values are XSS-escaped via `e()`
+- **Replacement timing:** Templates are replaced at preview time (template selection) AND at submit time (after entity creation, so `[Ticket ID]` gets the real value)
+- **Placeholders:** `[Client Name]`, `[Ticket ID]`, `[Implementer Name]`, `[Company Name]`, `[Category]`, `[Module]` — defined in `EmailTemplate::availablePlaceholders()`
+- **Duplicate template:** `duplicateTemplate($id)` opens create modal with "(Copy)" suffix, same subject/body/category
+- **Access:** Roles 1 (Lead Owner) and 3 (Manager) can manage templates via `canAccess()` check
+- **CSS prefix:** `emt-`

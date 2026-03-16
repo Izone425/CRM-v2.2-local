@@ -735,7 +735,9 @@
                     'filament.admin.resources.invalid-lead-reasons.index',
                     'filament.admin.resources.resellers.index',
                     'filament.admin.resources.users.index',
-                    'filament.admin.resources.project-tasks.index'
+                    'filament.admin.resources.project-tasks.index',
+                    'filament.admin.pages.implementer-thread-email-template',
+                    'filament.admin.pages.support-thread-email-template'
                 ]))
                     <div class="icon-link" data-section="settings">
                         <div class="icon-wrapper">
@@ -1700,18 +1702,11 @@
                     <!-- Implementer Thread Section -->
                     @if(auth()->user()->hasRouteAccess('filament.admin.resources.implementer-tickets.index'))
                         <div class="menu-block">
-                            <div class="menu-item nested-dropdown-trigger" data-submenu="implementer-ticketing-submenu">
+                            <div class="menu-item" onclick="window.location='{{ route('filament.admin.pages.implementer-ticketing-dashboard') }}'" style="cursor: pointer;">
                                 <div class="menu-icon-wrapper">
                                     <i class="bi bi-chat-left-text"></i>
                                 </div>
                                 <span class="menu-text">Implementer - Thread</span>
-                                <i class="bi bi-chevron-down menu-arrow"></i>
-                            </div>
-
-                            <div class="submenu" id="implementer-ticketing-submenu">
-                                <a href="{{ route('filament.admin.pages.implementer-ticketing-dashboard') }}" class="submenu-item">
-                                    <span class="module-font">Dashboard</span>
-                                </a>
                             </div>
                         </div>
                     @endif
@@ -2076,7 +2071,9 @@
                         'filament.admin.resources.invalid-lead-reasons.index',
                         'filament.admin.resources.resellers.index',
                         'filament.admin.resources.users.index',
-                        'filament.admin.resources.project-tasks.index'
+                        'filament.admin.resources.project-tasks.index',
+                        'filament.admin.pages.implementer-thread-email-template',
+                        'filament.admin.pages.support-thread-email-template'
                     ]))
                         <!-- System Label Section -->
                         @if(auth()->user()->hasAccessToAny([
@@ -2194,6 +2191,36 @@
                                 @if(auth()->user()->hasRouteAccess('filament.admin.resources.users.index'))
                                 <a href="{{ route('filament.admin.resources.users.index') }}" class="submenu-item">
                                     <span class="module-font">System Admin</span>
+                                </a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Email Template Section -->
+                        @if(auth()->user()->hasAccessToAny([
+                            'filament.admin.pages.implementer-thread-email-template',
+                            'filament.admin.pages.support-thread-email-template'
+                        ]))
+                        <div class="menu-block">
+                            <div class="menu-item nested-dropdown-trigger" data-submenu="settings-email-template-submenu">
+                                <div class="menu-icon-wrapper">
+                                    <i class="bi bi-envelope-paper"></i>
+                                </div>
+                                <span class="menu-text">Email Template</span>
+                                <i class="bi bi-chevron-down menu-arrow"></i>
+                            </div>
+
+                            <div class="submenu" id="settings-email-template-submenu">
+                                @if(auth()->user()->hasRouteAccess('filament.admin.pages.implementer-thread-email-template'))
+                                <a href="{{ route('filament.admin.pages.implementer-thread-email-template') }}" class="submenu-item">
+                                    <span class="module-font">Implementer Thread</span>
+                                </a>
+                                @endif
+
+                                @if(auth()->user()->hasRouteAccess('filament.admin.pages.support-thread-email-template'))
+                                <a href="{{ route('filament.admin.pages.support-thread-email-template') }}" class="submenu-item">
+                                    <span class="module-font">Support Thread</span>
                                 </a>
                                 @endif
                             </div>
