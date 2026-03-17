@@ -501,6 +501,24 @@ Route::prefix('customer')->name('customer.')->group(function () {
         }
         return response()->download($path, $file->file_name);
     })->middleware('auth:customer')->name('data-migration-file.download');
+
+    // Training file download (global training materials for all customers)
+    Route::get('/training-file/{trainerFile}/download', function (\App\Models\TrainerFile $trainerFile) {
+        $customer = auth('customer')->user();
+        if (!$customer) {
+            abort(403);
+        }
+        if ($trainerFile->is_link) {
+            abort(400, 'Links cannot be downloaded.');
+        }
+        $path = storage_path('app/public/' . $trainerFile->file_path);
+        if (!file_exists($path)) {
+            abort(404, 'File not found.');
+        }
+        $ext = pathinfo($trainerFile->file_name, PATHINFO_EXTENSION);
+        $downloadName = $trainerFile->title . '_' . ($trainerFile->module_type ?? 'General') . '.' . $ext;
+        return response()->download($path, $downloadName);
+    })->middleware('auth:customer')->name('training-file.download');
 });
 
 //RESELLER

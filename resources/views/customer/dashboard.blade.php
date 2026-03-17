@@ -284,26 +284,24 @@
     <!-- Left Sidebar (Below Header) -->
     <div class="sidebar">
         <div class="sidebar-menu">
-            {{-- Meeting Schedule --}}
-            <button onclick="switchTab('calendar')"
-                    id="calendar-tab"
-                    class="menu-item active">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Meeting Schedule</span>
-            </button>
-
-            {{-- Software Onboarding — collapsible group --}}
-            <button class="menu-group-header" onclick="toggleGroup('onboarding')">
-                <i class="fas fa-laptop-code"></i>
-                <span>Software Onboarding</span>
+            {{-- Implementation — collapsible group --}}
+            <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
+                <i class="fas fa-cogs"></i>
+                <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
-                    <span id="onboarding-badge" class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                    <span id="implementation-badge" class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
                 @endif
-                <svg id="onboarding-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                <svg id="implementation-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
-            <div id="onboarding-sub" class="menu-sub-items" style="display: none;">
+            <div id="implementation-sub" class="menu-sub-items" style="display: none;">
+                <button onclick="switchTab('calendar')"
+                        id="calendar-tab"
+                        class="menu-item active">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Meeting Schedule</span>
+                </button>
                 @if($hasProjectPlan)
                     <button onclick="switchTab('project')"
                             id="project-tab"
@@ -318,6 +316,26 @@
                     <i class="fas fa-database"></i>
                     <span>Data Migration Templates</span>
                 </button>
+                <button onclick="switchTab('impThread')"
+                        id="impThread-tab"
+                        class="menu-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Implementer Thread</span>
+                    @if($impThreadBadgeCount > 0)
+                        <span class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                    @endif
+                </button>
+            </div>
+
+            {{-- Training — collapsible group --}}
+            <button class="menu-group-header" data-group="training" onclick="toggleGroup('training')">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Training</span>
+                <svg id="training-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="training-sub" class="menu-sub-items" style="display: none;">
                 <button onclick="switchTab('webinar')"
                         id="webinar-tab"
                         class="menu-item">
@@ -330,22 +348,36 @@
                     <i class="fas fa-play-circle"></i>
                     <span>Review Session Recordings</span>
                 </button>
-                <button onclick="switchTab('impThread')"
-                        id="impThread-tab"
-                        class="menu-item">
-                    <i class="fas fa-comments"></i>
-                    <span>Implementer Thread</span>
-                    @if($impThreadBadgeCount > 0)
-                        <span class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
-                    @endif
-                </button>
             </div>
 
-            {{-- Support Thread — links to Filament Customer panel --}}
-            <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
+            {{-- Support — collapsible group --}}
+            <button class="menu-group-header" data-group="support" onclick="toggleGroup('support')">
                 <i class="fas fa-headset"></i>
-                <span>Support Thread</span>
-            </a>
+                <span>Support</span>
+                <svg id="support-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="support-sub" class="menu-sub-items" style="display: none;">
+                <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
+                    <i class="fas fa-life-ring"></i>
+                    <span>Support Thread</span>
+                </a>
+            </div>
+
+            {{-- Commercial — collapsible group --}}
+            <button class="menu-group-header" data-group="commercial" onclick="toggleGroup('commercial')">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Commercial</span>
+                <svg id="commercial-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="commercial-sub" class="menu-sub-items" style="display: none;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                    Coming Soon
+                </div>
+            </div>
         </div>
     </div>
 
@@ -373,11 +405,7 @@
 
                 {{-- Webinar Recording & Training Decks --}}
                 <div id="webinar-content" class="p-8 tab-content" style="display: none;">
-                    <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
-                        <i class="fas fa-video" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                        <h3 style="font-size: 18px; font-weight: 600; color: #475569;">Webinar Recording & Training Decks</h3>
-                        <p>Coming soon</p>
-                    </div>
+                    @livewire('customer-training-files')
                 </div>
 
                 {{-- Review Session Recordings --}}
@@ -414,7 +442,19 @@
     <!-- Enhanced JavaScript -->
     <script>
         const hasProjectPlan = @json($hasProjectPlan);
-        const onboardingTabs = ['project', 'dataMigration', 'webinar', 'reviewSession', 'impThread'];
+        const implementationTabs = ['calendar', 'project', 'dataMigration', 'impThread'];
+        const trainingTabs = ['webinar', 'reviewSession'];
+        const groupMap = {
+            'implementation': implementationTabs,
+            'training': trainingTabs,
+        };
+
+        function getGroupForTab(tab) {
+            for (const [group, tabs] of Object.entries(groupMap)) {
+                if (tabs.includes(tab)) return group;
+            }
+            return null;
+        }
 
         function toggleGroup(group) {
             const sub = document.getElementById(group + '-sub');
@@ -446,18 +486,21 @@
             });
 
             // Auto-expand parent group if sub-item selected
-            if (onboardingTabs.includes(tab)) {
-                const sub = document.getElementById('onboarding-sub');
-                const chevron = document.getElementById('onboarding-chevron');
+            const parentGroup = getGroupForTab(tab);
+            if (parentGroup) {
+                const sub = document.getElementById(parentGroup + '-sub');
+                const chevron = document.getElementById(parentGroup + '-chevron');
                 if (sub) sub.style.display = 'block';
                 if (chevron) chevron.classList.add('open');
+                localStorage.setItem(parentGroup + 'Open', 'true');
             }
 
-            // Highlight parent group header
-            const groupHeader = document.querySelector('.menu-group-header');
-            if (groupHeader) {
-                groupHeader.classList.toggle('has-active', onboardingTabs.includes(tab));
-            }
+            // Highlight parent group headers
+            document.querySelectorAll('.menu-group-header').forEach(header => {
+                const group = header.getAttribute('data-group');
+                const tabs = groupMap[group];
+                header.classList.toggle('has-active', tabs ? tabs.includes(tab) : false);
+            });
 
             // Show selected tab content using inline !important
             const tabContent = document.getElementById(tab + '-content');
@@ -490,27 +533,31 @@
                 content.style.setProperty('display', 'none', 'important');
             });
 
-            // Restore onboarding group state
-            if (localStorage.getItem('onboardingOpen') === 'true' || onboardingTabs.includes(activeTab)) {
-                const sub = document.getElementById('onboarding-sub');
-                const chevron = document.getElementById('onboarding-chevron');
-                const badge = document.getElementById('onboarding-badge');
+            // Restore all group states
+            ['implementation', 'training', 'support', 'commercial'].forEach(function(group) {
+                const tabs = groupMap[group] || [];
+                const shouldOpen = localStorage.getItem(group + 'Open') === 'true' || tabs.includes(activeTab);
+                if (shouldOpen) {
+                    const sub = document.getElementById(group + '-sub');
+                    const chevron = document.getElementById(group + '-chevron');
+                    const badge = document.getElementById(group + '-badge');
+                    if (sub) sub.style.display = 'block';
+                    if (chevron) chevron.classList.add('open');
+                    if (badge) badge.style.display = 'none';
+                }
+            });
+
+            // Always expand Implementation on first load if no saved state
+            if (!localStorage.getItem('implementationOpen')) {
+                const sub = document.getElementById('implementation-sub');
+                const chevron = document.getElementById('implementation-chevron');
+                const badge = document.getElementById('implementation-badge');
                 if (sub) sub.style.display = 'block';
                 if (chevron) chevron.classList.add('open');
                 if (badge) badge.style.display = 'none';
             }
 
-            if (activeTab !== 'calendar') {
-                switchTab(activeTab);
-            } else {
-                const cal = document.getElementById('calendar-content');
-                if (cal) {
-                    cal.style.setProperty('display', 'block', 'important');
-                    cal.classList.add('active');
-                }
-                const calBtn = document.getElementById('calendar-tab');
-                if (calBtn) calBtn.classList.add('active');
-            }
+            switchTab(activeTab);
 
             // Open specific ticket from notification deep link
             if (urlTicket && activeTab === 'impThread') {
