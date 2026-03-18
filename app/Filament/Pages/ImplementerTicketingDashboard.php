@@ -12,7 +12,9 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ImplementerTicketHrNotification;
 use Livewire\WithFileUploads;
 
 class ImplementerTicketingDashboard extends Page
@@ -363,6 +365,16 @@ class ImplementerTicketingDashboard extends Page
         $this->showCreateDrawer = false;
         $this->resetCreateForm();
 
+        // Send HR email notification
+        $this->sendHrEmailNotification($ticket, 'created');
+
+        // Notify customer in-app
+        if ($ticket->customer) {
+            $ticket->customer->notifyNow(
+                new \App\Notifications\ImplementerTicketNotification($ticket, 'replied_by_implementer', auth()->user()->name)
+            );
+        }
+
         Notification::make()
             ->title('Ticket created successfully')
             ->body('Ticket ' . $ticket->formatted_ticket_number . ' has been created.')
@@ -543,7 +555,7 @@ class ImplementerTicketingDashboard extends Page
 
         // Notify customer
         if ($targetTicket->customer) {
-            $targetTicket->customer->notify(
+            $targetTicket->customer->notifyNow(
                 new \App\Notifications\ImplementerTicketNotification(
                     $targetTicket,
                     'merged',
@@ -552,6 +564,9 @@ class ImplementerTicketingDashboard extends Page
                 )
             );
         }
+
+        // Send HR email notification for merge
+        $this->sendHrEmailNotification($targetTicket, 'merged');
 
         $this->closeMergeDrawer();
 
@@ -715,6 +730,29 @@ class ImplementerTicketingDashboard extends Page
                 $ticket->is_overdue = false;
             }
             $ticket->save();
+        }
+
+        // Send HR email + customer in-app notification (skip internal notes)
+        if (!$wasInternalNote) {
+            if ($hasMessage) {
+                $action = $ticket->status === ImplementerTicketStatus::CLOSED ? 'closed' : 'replied_by_implementer';
+                $this->sendHrEmailNotification($ticket, $action);
+                // Notify customer in-app
+                if ($ticket->customer) {
+                    $ticket->customer->notifyNow(
+                        new \App\Notifications\ImplementerTicketNotification($ticket, $action, auth()->user()->name)
+                    );
+                }
+            } else {
+                $action = $ticket->status === ImplementerTicketStatus::CLOSED ? 'closed' : 'status_changed';
+                $this->sendHrEmailNotification($ticket, $action);
+                // Notify customer in-app
+                if ($ticket->customer) {
+                    $ticket->customer->notifyNow(
+                        new \App\Notifications\ImplementerTicketNotification($ticket, $action, auth()->user()->name)
+                    );
+                }
+            }
         }
 
         $this->replyMessage = '';
@@ -958,5 +996,68 @@ class ImplementerTicketingDashboard extends Page
             'selectedTicket' => $selectedTicket,
             'slaConfig' => SlaConfiguration::current(),
         ];
+    }
+
+    private function sendHrEmailNotification(ImplementerTicket $ticket, string $action, string $actionByName = null)
+    {
+        $lead = $ticket->lead;
+        if (!$lead || !$lead->companyDetail) {
+            return;
+        }
+
+        $companyDetail = $lead->companyDetail;
+        $emails = [];
+
+        // Primary HR email
+        if (!empty($companyDetail->email)) {
+            $emails[] = $companyDetail->email;
+        }
+
+        // Secondary HR contacts (Available status only)
+        $additionalPics = $companyDetail->additional_prospect_pic;
+        if (is_string($additionalPics)) {
+            $additionalPics = json_decode($additionalPics, true) ?? [];
+        }
+        foreach ($additionalPics ?? [] as $pic) {
+            if (($pic['status'] ?? '') === 'Available' && !empty($pic['email'])) {
+                $emails[] = $pic['email'];
+            }
+        }
+
+        // Deduplicate and filter
+        $emails = array_unique(array_filter($emails));
+        if (empty($emails)) {
+            return;
+        }
+
+        try {
+            // Disable SSL peer verification for local dev SMTP
+            $mailer = Mail::mailer();
+            $transport = $mailer->getSymfonyTransport();
+            if ($transport instanceof \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport) {
+                $stream = $transport->getStream();
+                if ($stream instanceof \Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream) {
+                    $stream->setStreamOptions([
+                        'ssl' => [
+                            'allow_self_signed' => true,
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                        ],
+                    ]);
+                }
+            }
+
+            Mail::to($emails)->send(new ImplementerTicketHrNotification(
+                $ticket->load(['lead.companyDetail', 'customer', 'implementerUser']),
+                $action,
+                $actionByName ?? auth()->user()->name
+            ));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send HR email notification: ' . $e->getMessage(), [
+                'ticket_id' => $ticket->id,
+                'action' => $action,
+                'emails' => $emails,
+            ]);
+        }
     }
 }

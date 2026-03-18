@@ -65,6 +65,7 @@ Required env vars (see `.env.example`):
 - Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead; follow the `emt-select-*` or `imp-searchable-*` class pattern with `x-data` containing `open`, `select()`, `clear()` methods and `@click.away` to close
 - Searchable filter dropdowns use Alpine.js `x-data` with `@entangle('property').live`, `Js::from()` for items, client-side filtering via computed getter
 - Livewire 3 `@entangle('property')` defers updates — use `@entangle('property').live` for immediate server-side sync (required for filters, toggles)
+- "HR Details" tab in Lead view = `ProspectPICTabs.php`; primary HR contact is `company_details` table (name, email, contact_no, position); secondary HR contacts stored as JSON in `company_details.additional_prospect_pic` (array of {name, position, contact_no, email, status})
 - Fixed-position drawers/modals (like merge drawer) should be placed at root level of the Blade template (outside `@if/@else` conditionals) to avoid rendering issues with Livewire morphing
 - `foreignId()->constrained()` may fail if DB column types don't match — use `unsignedBigInteger()` without FK constraints as fallback
 - MySQL index names have 64-char limit — use short custom names for long composite indexes
@@ -95,6 +96,9 @@ Required env vars (see `.env.example`):
 - Buttons with SVG icon + text + `wire:loading.remove`: SVG and text `<span>` must be separate sibling children of the button (not wrapped in a single `<span>`), otherwise `inline-flex`/`gap` can't separate them
 - `public/storage` symlink must exist — run `php artisan storage:link` after fresh clone; without it, file uploads return 404
 - `php artisan migrate` may fail on existing DB — use `--path=database/migrations/<filename>.php` to run specific new migrations
+- `QUEUE_CONNECTION=database` in dev — `ShouldQueue` notifications/mailables won't process without `php artisan queue:work`; use `notifyNow()` or remove `ShouldQueue` for synchronous local testing
+- Laravel 10 Symfony Mailer ignores `stream.ssl` config in `mail.php` — to disable SSL verification (local dev), set `setStreamOptions()` directly on the `SocketStream` via `Mail::mailer()->getSymfonyTransport()->getStream()` before sending
+- Config changes require restarting `php artisan serve` — `config:clear` alone doesn't reload configs in the running process
 
 ## Data Migration System
 - **V1 (nested subsections):** `ImplementerDataFile.php` — 5 sections with sub-items, storage at `templates/data-migration-v1/`
@@ -117,6 +121,8 @@ Required env vars (see `.env.example`):
 - **Customer notification bell:** `CustomerNotificationBell` Livewire component in portal header; reads existing `notifications` table (polymorphic); 30s polling; CSS prefix `cnb-`
 - **Dashboard filters:** Searchable "All Implementers" and "All Companies" Alpine.js dropdowns with `@entangle().live`
 - **Email templates:** Database-driven via `EmailTemplate` model (replaces hardcoded `$emailTemplates` array); `getEmailTemplatesProperty()` computed property; `applyEmailTemplate($templateId)` and `applyReplyTemplate($templateId)` load by ID
+- **HR email notifications:** `ImplementerTicketHrNotification` Mailable — sends to all HR contacts (primary `company_details.email` + secondary `additional_prospect_pic` JSON with status=Available) on ticket create, reply, status change, merge; dispatched from `sendHrEmailNotification()` in dashboard; email has truncated description preview + "View in Customer Portal" button linking to `/customer/dashboard?tab=impThread&ticket={id}`
+- **Customer in-app notifications from admin:** `createTicket()`, `submitReply()`, and `submitMergeTicket()` call `$customer->notifyNow(new ImplementerTicketNotification(...))` to populate the notification bell; actions: `replied_by_implementer`, `status_changed`, `closed`, `merged`
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)
 
 ## Email Template System
