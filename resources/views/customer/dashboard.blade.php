@@ -302,6 +302,12 @@
                     <i class="fas fa-calendar-alt"></i>
                     <span>Meeting Schedule</span>
                 </button>
+                <button onclick="switchTab('softwareHandover')"
+                        id="softwareHandover-tab"
+                        class="menu-item">
+                    <i class="fas fa-file-export"></i>
+                    <span>Software Handover Process</span>
+                </button>
                 @if($hasProjectPlan)
                     <button onclick="switchTab('project')"
                             id="project-tab"
@@ -391,6 +397,11 @@
                     @livewire('customer-calendar')
                 </div>
 
+                {{-- Software Handover Process --}}
+                <div id="softwareHandover-content" class="p-8 tab-content" style="display: none; min-height: 600px;">
+                    @livewire('customer-software-handover-process')
+                </div>
+
                 <!-- Project Plan Tab Content -->
                 @if($hasProjectPlan)
                     <div id="project-content" class="p-8 tab-content" style="display: none; min-height: 600px;">
@@ -442,7 +453,7 @@
     <!-- Enhanced JavaScript -->
     <script>
         const hasProjectPlan = @json($hasProjectPlan);
-        const implementationTabs = ['calendar', 'project', 'dataMigration', 'impThread'];
+        const implementationTabs = ['calendar', 'softwareHandover', 'project', 'dataMigration', 'impThread'];
         const trainingTabs = ['webinar', 'reviewSession'];
         const groupMap = {
             'implementation': implementationTabs,

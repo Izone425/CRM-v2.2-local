@@ -42,6 +42,7 @@ use App\Filament\Resources\LeadResource\Tabs\DataFileTabs;
 use App\Filament\Resources\LeadResource\Tabs\DataMigrationTabs;
 use App\Filament\Resources\LeadResource\Tabs\HandoverDetailTabs;
 use App\Filament\Resources\LeadResource\Tabs\HardwareHandoverTabs;
+use App\Filament\Resources\LeadResource\Tabs\SoftwareHandoverProcessTabs;
 use App\Filament\Resources\LeadResource\Tabs\ImplementerAppointmentTabs;
 use App\Filament\Resources\LeadResource\Tabs\ImplementerFollowUpTabs;
 use App\Filament\Resources\LeadResource\Tabs\ImplementerHandoverTabs;
@@ -131,22 +132,22 @@ class LeadResource extends Resource
             if (!$user) {
                 $activeTabs = ['lead', 'company'];
             } elseif ($user->role_id === 1) { // Lead Owner
-                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
+                $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread'];
             } elseif ($user->role_id === 2) { // Salesperson
                 $activeTabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
             } elseif ($user->role_id === 4) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover', 'implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
+                    'data_file', 'implementer_service_form', 'ticketing', 'project_plan', 'data_migration', 'software_handover_process', 'thread'];
             } elseif ($user->role_id === 5) { // Implementer
                 $activeTabs = ['implementer_software_handover', 'implementer_hardware_handover','implementer_pic_details',
                     'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
+                    'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'software_handover_process', 'thread'];
             } elseif ($user->role_id === 9) { // Technician
                 $activeTabs = ['company', 'quotation', 'repair_appointment', 'thread'];
             } else { // Manager (role_id = 3) or others
                 $activeTabs = [
-                    'prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread',
+                    'prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread',
                 ];
             }
         }
@@ -306,6 +307,11 @@ class LeadResource extends Resource
         if (in_array('handover_details', $activeTabs)) {
             $tabs[] = Tabs\Tab::make('Handover Details')
                 ->schema(HandoverDetailTabs::getSchema());
+        }
+
+        if (in_array('software_handover_process', $activeTabs)) {
+            $tabs[] = Tabs\Tab::make('Software Handover Process')
+                ->schema(SoftwareHandoverProcessTabs::getSchema());
         }
 
         // UNCOMMENT THESE IF NEEDED

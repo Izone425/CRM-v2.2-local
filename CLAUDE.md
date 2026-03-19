@@ -55,13 +55,14 @@ Required env vars (see `.env.example`):
 - Cursor-aware insertion in `contenteditable`: save `Range` via `saveSelection()` on `@mouseup/@keyup/@blur`, restore before `insertText` — clicking outside (e.g., placeholder buttons) loses cursor position
 - `wire:ignore` wraps Alpine-managed DOM to prevent Livewire re-render conflicts
 - Livewire events (`$this->dispatch()`) communicate from PHP to Alpine; sync data at submission boundaries only
-- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template)
+- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template), `shp-` (Software Handover Process admin), `cshp-` (Software Handover Process customer)
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
 - Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false` and must be manually registered in `AdminPanelProvider->pages([])` (auto-discovery is disabled)
 - Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching
 - Lead view tabs follow pattern: `class TabName { public static function getSchema(): array }` returning Filament form components
 - Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
 - When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
+- Lead view tab Blade views rendered via ViewField are inside Filament's `<form>` — never nest `<form>` tags or Livewire `WithFileUploads` components; use Alpine.js + `fetch()` POST to a dedicated route instead (reference: `data-migration.blade.php`, `software-handover-process.blade.php`)
 - Filament's CSS aggressively overrides native `<select>` elements — use custom Alpine.js dropdowns (div-based) instead; follow the `emt-select-*` or `imp-searchable-*` class pattern with `x-data` containing `open`, `select()`, `clear()` methods and `@click.away` to close
 - Searchable filter dropdowns use Alpine.js `x-data` with `@entangle('property').live`, `Js::from()` for items, client-side filtering via computed getter
 - Livewire 3 `@entangle('property')` defers updates — use `@entangle('property').live` for immediate server-side sync (required for filters, toggles)
@@ -90,6 +91,7 @@ Required env vars (see `.env.example`):
 - Many commands are scheduled (`app/Console/Kernel.php`) — ensure `schedule:run` is in cron
 - `.env.example` contains some hardcoded values — always review before copying
 - Customer portal uses `customer` guard with `Customer` model (has `lead_id` for linking to leads)
+- Customer portal routes are inside `Route::prefix('customer')->name('customer.')` group — don't include `customer.` in `->name()` calls (the group prefix adds it automatically)
 - `Storage::disk('public')->url()` may not include the port in dev — use `response()->download()` via named routes instead
 - User roles use `role_id` field (not `role`): 1=Lead Owner, 2=Salesperson, 3=Manager, 4=Implementer, 5=Implementer, 9=Technician (roles 4/5/9 are DB-assigned but not referenced in code role checks)
 - Livewire components must have a single root element — `<script>` and `<style>` tags must be inside the root `<div>`, not siblings
@@ -135,3 +137,11 @@ Required env vars (see `.env.example`):
 - **Duplicate template:** `duplicateTemplate($id)` opens create modal with "(Copy)" suffix, same subject/body/category
 - **Access:** Roles 1 (Lead Owner) and 3 (Manager) can manage templates via `canAccess()` check
 - **CSS prefix:** `emt-`
+
+## Software Handover Process
+- **Admin tab:** `SoftwareHandoverProcessTabs.php` → `software-handover-process.blade.php` — Alpine.js + fetch POST upload, no nested Livewire
+- **Upload route:** POST `/admin/software-handover-process-file/upload` — validates file (pdf,doc,docx,xls,xlsx), stores versioned files at `software-handover-process/{leadId}/v{version}.{ext}`
+- **Download routes:** GET `/admin/software-handover-process-file/{file}/download` (admin), GET `/customer/software-handover-process-file/{file}/download` (customer, ownership-checked)
+- **Customer portal:** `CustomerSoftwareHandoverProcess.php` Livewire component — read-only file list with direct `<a href>` download links (no `wire:click` redirect)
+- **Model:** `SoftwareHandoverProcessFile` — fields: lead_id, uploaded_by, version, file_name, file_path, remark; helpers: `nextVersion($leadId)`, `latestForLead($leadId)`
+- **Customer sidebar:** Under Implementation group, after "Meeting Schedule" (`softwareHandover` tab key)

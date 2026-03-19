@@ -502,6 +502,19 @@ Route::prefix('customer')->name('customer.')->group(function () {
         return response()->download($path, $file->file_name);
     })->middleware('auth:customer')->name('data-migration-file.download');
 
+    // Software Handover Process file download (customer must own the file via lead_id)
+    Route::get('/software-handover-process-file/{file}/download', function (\App\Models\SoftwareHandoverProcessFile $file) {
+        $customer = auth('customer')->user();
+        if (!$customer || $file->lead_id != $customer->lead_id) {
+            abort(403);
+        }
+        $path = storage_path('app/public/' . $file->file_path);
+        if (!file_exists($path)) {
+            abort(404, 'File not found.');
+        }
+        return response()->download($path, $file->file_name);
+    })->middleware('auth:customer')->name('software-handover-process.download');
+
     // Training file download (global training materials for all customers)
     Route::get('/training-file/{trainerFile}/download', function (\App\Models\TrainerFile $trainerFile) {
         $customer = auth('customer')->user();
@@ -1307,4 +1320,59 @@ Route::get('/admin/data-migration-file/{file}/download', function (\App\Models\C
     }
     return response()->download($path, $file->file_name);
 })->middleware(['auth'])->name('admin.data-migration-file.download');
+
+Route::post('/admin/software-handover-process-file/upload', function (\Illuminate\Http\Request $request) {
+    $user = auth()->user();
+    if (!$user || !in_array($user->role_id, [1, 3, 4, 5])) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    $request->validate([
+        'lead_id' => 'required|integer',
+        'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
+        'remark' => 'nullable|string|max:1000',
+    ]);
+
+    $leadId = $request->lead_id;
+    $version = \App\Models\SoftwareHandoverProcessFile::nextVersion($leadId);
+    $uploadedFile = $request->file('file');
+    $originalName = $uploadedFile->getClientOriginalName();
+    $ext = $uploadedFile->getClientOriginalExtension();
+    $storagePath = "software-handover-process/{$leadId}";
+    $fileName = "v{$version}.{$ext}";
+
+    $filePath = $uploadedFile->storeAs($storagePath, $fileName, 'public');
+
+    $record = \App\Models\SoftwareHandoverProcessFile::create([
+        'lead_id' => $leadId,
+        'uploaded_by' => $user->id,
+        'version' => $version,
+        'file_name' => $originalName,
+        'file_path' => $filePath,
+        'remark' => $request->remark ?: null,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'file' => [
+            'id' => $record->id,
+            'version' => $record->version,
+            'file_name' => $record->file_name,
+            'uploader_name' => $user->name,
+            'uploader_email' => $user->email,
+            'remark' => $record->remark,
+            'created_at' => $record->created_at->format('M d, Y'),
+            'created_time' => $record->created_at->format('h:i A'),
+            'download_url' => route('admin.software-handover-process-file.download', $record->id),
+        ],
+    ]);
+})->middleware(['auth'])->name('admin.software-handover-process-file.upload');
+
+Route::get('/admin/software-handover-process-file/{file}/download', function (\App\Models\SoftwareHandoverProcessFile $file) {
+    $path = storage_path('app/public/' . $file->file_path);
+    if (!file_exists($path)) {
+        abort(404, 'File not found.');
+    }
+    return response()->download($path, $file->file_name);
+})->middleware(['auth'])->name('admin.software-handover-process-file.download');
 

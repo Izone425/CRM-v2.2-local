@@ -66,21 +66,21 @@ class ViewLeadRecord extends ViewRecord
         if (!$user) {
             return ['lead', 'company'];
         } elseif ($user->role_id === 1) { // Lead Owner
-                return ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
+                return ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread'];
         } elseif ($user->role_id === 2) { // Salesperson
             return ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
         } elseif ($user->role_id === 4) { // Implementer
             return ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
             'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
+            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'software_handover_process', 'thread'];
         } elseif ($user->role_id === 5) { // Implementer
             return ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
             'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
+            'data_file', 'implementer_service_form', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'software_handover_process', 'thread'];
         } elseif ($user->role_id === 9) { // Technician
             return ['company', 'quotation', 'repair_appointment', 'thread'];
         } else { // Manager (role_id = 3) or others
-            return ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
+            return ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread'];
         }
     }
 
@@ -219,12 +219,12 @@ class ViewLeadRecord extends ViewRecord
 
                     switch ($roleView) {
                         case 'lead_owner':
-                            $tabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
+                            $tabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread'];
                             break;
                         case 'implementer':
                             $tabs = ['implementer_software_handover','implementer_hardware_handover','implementer_pic_details',
                                 'implementer_notes', 'implementer_appointment', 'implementer_follow_up',
-                                'implementer_service_form', 'data_file', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'thread'];
+                                'implementer_service_form', 'data_file', 'other_form', 'ticketing', 'project_plan', 'data_migration', 'software_handover_process', 'thread'];
                             break;
                         case 'admin_repair':
                             $tabs = ['company', 'quotation', 'repair_appointment', 'thread'];
@@ -245,7 +245,7 @@ class ViewLeadRecord extends ViewRecord
                             break;
                         case 'manager':
                         default:
-                            $tabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'thread'];
+                            $tabs = ['prospect_details', 'subscriber_details', 'sales_progress', 'commercial_items', 'handover_details', 'software_handover_process', 'thread'];
                             break;
                     }
 
