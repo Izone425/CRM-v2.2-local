@@ -4046,6 +4046,35 @@
                                 </div>
                             </div>
                         </div>
+
+                        {{-- Status History --}}
+                        <div class="imp-detail-section">
+                            <label class="imp-detail-label">STATUS HISTORY</label>
+                            <div style="max-height: 180px; overflow-y: auto;">
+                                @php
+                                    $statusLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', 'App\\Models\\ImplementerTicket')
+                                        ->where('subject_id', $selectedTicket->id)
+                                        ->where('log_name', 'implementer_ticket')
+                                        ->orderBy('created_at', 'desc')
+                                        ->limit(20)
+                                        ->get();
+                                @endphp
+                                @forelse($statusLogs as $log)
+                                    <div style="padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px;">
+                                        <div style="color: #334155; font-weight: 500;">{{ $log->description }}</div>
+                                        <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">
+                                            {{ $log->causer?->name ?? 'Customer' }}
+                                            · {{ $log->created_at->format('M d, Y h:i A') }}
+                                            @if(in_array($log->properties['trigger'] ?? '', ['customer_reply', 'customer_reopen']))
+                                                <span style="color: #667eea; font-weight: 600;">(Auto)</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div style="color: #94a3b8; font-size: 12px; font-style: italic; padding: 8px 0;">No status changes recorded</div>
+                                @endforelse
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right Panel - Thread & Reply -->

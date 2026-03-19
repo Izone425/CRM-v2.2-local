@@ -277,10 +277,16 @@ class CustomerImplementerThread extends Component
             'is_internal_note' => false,
         ]);
 
-        // Update status to pending_support
-        if ($ticket->status !== ImplementerTicketStatus::CLOSED) {
-            $ticket->update(['status' => ImplementerTicketStatus::PENDING_SUPPORT->value]);
-        }
+        // Update status to open (revert on any customer reply, including closed tickets)
+        $oldStatus = $ticket->status->value;
+        $ticket->update(['status' => ImplementerTicketStatus::OPEN->value]);
+
+        // Log status change
+        activity('implementer_ticket')
+            ->performedOn($ticket)
+            ->causedBy(auth('customer')->user())
+            ->withProperties(['old_status' => $oldStatus, 'new_status' => 'open', 'trigger' => 'customer_reply'])
+            ->log('Status changed from ' . ucwords(str_replace('_', ' ', $oldStatus)) . ' to Open');
 
         // Notify implementer
         if ($ticket->implementerUser) {
@@ -291,7 +297,33 @@ class CustomerImplementerThread extends Component
 
         $this->replyMessage = '';
         $this->replyAttachments = [];
-        $this->dispatch('replyEditorReset');
+        $this->js("document.querySelector('.cit-reply-editor')?.innerHTML = ''");
+    }
+
+    public function reopenTicket()
+    {
+        $customer = auth('customer')->user();
+        if (!$customer) return;
+
+        $ticket = ImplementerTicket::find($this->selectedTicketId);
+        if (!$ticket || $ticket->customer_id !== $customer->id) return;
+
+        $oldStatus = $ticket->status->value;
+        $ticket->update(['status' => ImplementerTicketStatus::OPEN->value]);
+
+        // Log status change
+        activity('implementer_ticket')
+            ->performedOn($ticket)
+            ->causedBy($customer)
+            ->withProperties(['old_status' => $oldStatus, 'new_status' => 'open', 'trigger' => 'customer_reopen'])
+            ->log('Status changed from ' . ucwords(str_replace('_', ' ', $oldStatus)) . ' to Open');
+
+        // Notify implementer
+        if ($ticket->implementerUser) {
+            $ticket->implementerUser->notify(
+                new ImplementerTicketNotification($ticket, 'status_changed', $customer->name)
+            );
+        }
     }
 
     public function removeReplyAttachment($index)

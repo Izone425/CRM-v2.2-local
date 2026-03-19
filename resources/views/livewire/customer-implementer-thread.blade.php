@@ -512,8 +512,7 @@
                              contenteditable="true"
                              class="cit-reply-editor"
                              data-placeholder="Type your reply..."
-                             @paste.prevent="handlePaste($event)"
-                             x-on:replyEditorReset.window="$refs.replyEditor.innerHTML = ''"></div>
+                             @paste.prevent="handlePaste($event)"></div>
                     </div>
 
                     <input type="file" x-ref="replyFileInput" wire:model="replyAttachments" multiple class="cit-hidden" />
@@ -546,6 +545,10 @@
                         @else
                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
                             This ticket has been resolved and closed.
+                            <button wire:click="reopenTicket" class="cit-reopen-btn" wire:loading.attr="disabled" wire:target="reopenTicket">
+                                <span wire:loading.remove wire:target="reopenTicket">Reopen Ticket</span>
+                                <span wire:loading wire:target="reopenTicket">Reopening...</span>
+                            </button>
                         @endif
                     </div>
                 @endif
@@ -1135,6 +1138,13 @@
     border-radius: 0 0 12px 12px; display: flex; align-items: center; gap: 8px;
     font-size: 0.84rem; color: #047857; font-weight: 500;
 }
+.cit-reopen-btn {
+    margin-left: auto; padding: 6px 14px; background: #667eea; color: #fff;
+    border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap;
+}
+.cit-reopen-btn:hover { background: #5a6fd6; }
+.cit-reopen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cit-escalation-card {
     display: flex; gap: 12px; padding: 14px 18px; background: #FEF2F2;
     border: 1px solid #FECACA; border-radius: 12px; color: #991B1B;

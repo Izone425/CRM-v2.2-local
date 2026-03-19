@@ -655,6 +655,13 @@ class ImplementerTicketingDashboard extends Page
 
         $ticket->save();
 
+        // Log status change
+        activity('implementer_ticket')
+            ->performedOn($ticket)
+            ->causedBy(auth()->user())
+            ->withProperties(['old_status' => $oldStatus, 'new_status' => $status, 'trigger' => 'manual'])
+            ->log('Status changed from ' . ucwords(str_replace('_', ' ', $oldStatus)) . ' to ' . ucwords(str_replace('_', ' ', $status)));
+
         Notification::make()
             ->title('Status updated')
             ->body("Ticket status changed to " . ImplementerTicketStatus::from($status)->label())

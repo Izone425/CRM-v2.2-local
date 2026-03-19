@@ -42,10 +42,16 @@ class ViewImplementerTicket extends ViewRecord
                         'is_internal_note' => false,
                     ]);
 
-                    // Auto-status: customer replies → pending_support
-                    if ($this->record->status !== ImplementerTicketStatus::CLOSED) {
-                        $this->record->update(['status' => ImplementerTicketStatus::PENDING_SUPPORT->value]);
-                    }
+                    // Auto-status: customer replies → open (revert on any reply, including closed)
+                    $oldStatus = $this->record->status->value;
+                    $this->record->update(['status' => ImplementerTicketStatus::OPEN->value]);
+
+                    // Log status change
+                    activity('implementer_ticket')
+                        ->performedOn($this->record)
+                        ->causedBy(auth('customer')->user())
+                        ->withProperties(['old_status' => $oldStatus, 'new_status' => 'open', 'trigger' => 'customer_reply'])
+                        ->log('Status changed from ' . ucwords(str_replace('_', ' ', $oldStatus)) . ' to Open');
 
                     // Notify implementer
                     if ($this->record->implementerUser) {
