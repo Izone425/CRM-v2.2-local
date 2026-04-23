@@ -269,7 +269,7 @@
                         <p class="text-sm font-medium text-indigo-200">Implementer: {{ $implementerName }}</p>
                     </div>
                     @livewire('customer-notification-bell')
-                    <form method="POST" action="{{ route('customer.logout') }}">
+                    <form method="POST" action="{{ route('filament.customer.auth.logout') }}">
                         @csrf
                         <button type="submit" class="px-6 py-3 font-semibold text-white transition-all duration-300 bg-red-500 rounded-full shadow-lg hover:bg-red-600 hover:shadow-xl hover:scale-105">
                             <i class="mr-2 fas fa-sign-out-alt"></i>

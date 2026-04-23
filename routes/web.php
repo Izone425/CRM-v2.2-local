@@ -471,7 +471,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
     // Public routes
     Route::get('/login', \App\Livewire\Customer\Login::class)->name('login')->middleware('guest:customer');
     Route::post('/login', [CustomerAuthController::class, 'login'])->name('login.submit')->middleware('guest:customer');
-    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 
     // // Password Reset Routes
     // Route::get('/forgot-password', \App\Livewire\Customer\ForgotPassword::class)->name('password.request');
@@ -533,6 +532,10 @@ Route::prefix('customer')->name('customer.')->group(function () {
         return response()->download($path, $downloadName);
     })->middleware('auth:customer')->name('training-file.download');
 });
+
+// Customer logout — named to match what Filament's customer panel expects
+Route::post('/customer/logout', [CustomerAuthController::class, 'logout'])
+    ->name('filament.customer.auth.logout');
 
 //RESELLER
 Route::prefix('reseller')->name('reseller.')->group(function () {
