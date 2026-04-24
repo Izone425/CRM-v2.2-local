@@ -63,6 +63,14 @@ class CustomerCalendar extends Component
 
         $this->showExistingBookings = true;
 
+        // Preload the customer's saved attendee list if one exists so that
+        // subsequent bookings (e.g. review sessions) can reuse it without
+        // retyping. Falls through to getRequiredAttendeesFromHandover() in
+        // selectDateInline() when saved_attendees is null/empty.
+        if (!empty($customer->saved_attendees)) {
+            $this->requiredAttendees = $customer->saved_attendees;
+        }
+
         if (!$customer->tutorial_completed) {
             $this->showTutorial = true;
             $this->currentTutorialStep = $customer->tutorial_step ?? 1;
@@ -624,6 +632,125 @@ class CustomerCalendar extends Component
         }
     }
 
+    /**
+     * Select a date for the inline Split-Canvas booking panel.
+     * Same validation as openBookingModal() but does NOT open the modal —
+     * instead populates $selectedDate + $availableSessions so the right-side
+     * panel can render session pills.
+     */
+    public function selectDateInline($date)
+    {
+        $customer = auth()->guard('customer')->user();
+
+        if (!$this->canScheduleMeeting) {
+            $latestAppointment = ImplementerAppointment::where('lead_id', $customer->lead_id)
+                ->whereIn('type', ['KICK OFF MEETING SESSION', 'REVIEW SESSION'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($latestAppointment && $latestAppointment->status === 'New') {
+                $appointmentType = $latestAppointment->type;
+                if ($latestAppointment->type === 'REVIEW SESSION') {
+                    $previousReviewCount = ImplementerAppointment::where('lead_id', $customer->lead_id)
+                        ->where('type', 'REVIEW SESSION')
+                        ->where('status', 'Done')
+                        ->where('created_at', '<', $latestAppointment->created_at)
+                        ->count();
+                    $appointmentType = "REVIEW SESSION " . ($previousReviewCount + 1);
+                }
+
+                Notification::make()
+                    ->title('Existing appointment pending')
+                    ->warning()
+                    ->body("You have a pending {$appointmentType}. Please wait for it to be completed before scheduling another one.")
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('Meeting scheduling disabled')
+                    ->warning()
+                    ->body('You are not authorized to schedule meetings. Please contact support for assistance.')
+                    ->send();
+            }
+            return;
+        }
+
+        if (Carbon::parse($date)->isPast()) {
+            return;
+        }
+
+        if (!$this->assignedImplementer) {
+            Notification::make()
+                ->title('No implementer assigned')
+                ->warning()
+                ->body('Please contact support to assign an implementer to your account.')
+                ->send();
+            return;
+        }
+
+        $this->selectedDate = $date;
+        $this->selectedSession = null;
+        $this->availableSessions = $this->getAvailableSessionsForDate($date);
+        $this->sessionValidationError = null;
+
+        // Auto-populate required attendees from the software handover if the
+        // field is still empty. Guarded so user edits persist across date changes.
+        if (empty(trim($this->requiredAttendees))) {
+            $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        }
+    }
+
+    /**
+     * Clear the inline date selection (resets right panel to idle state).
+     */
+    public function clearSelectedDate()
+    {
+        $this->selectedDate = null;
+        $this->selectedSession = null;
+        $this->availableSessions = [];
+        $this->sessionValidationError = null;
+    }
+
+    /**
+     * Persist the attendee list to the customer's record so it auto-populates
+     * on future bookings. Called from the bulk attendees drawer's Save action.
+     * Single roundtrip: updates the Livewire property, writes to DB, and
+     * confirms with a Filament notification.
+     */
+    public function saveAttendeeList($emails)
+    {
+        $customer = auth()->guard('customer')->user();
+        if (!$customer) {
+            return;
+        }
+
+        $this->requiredAttendees = (string) $emails;
+
+        DB::table('customers')
+            ->where('id', $customer->id)
+            ->update(['saved_attendees' => $this->requiredAttendees]);
+
+        Notification::make()
+            ->title('Attendees saved')
+            ->body('This list will be pre-filled for your future bookings.')
+            ->success()
+            ->send();
+    }
+
+    /**
+     * Open the final booking confirmation modal after the user picks a
+     * session inline. Requires selectedDate + selectedSession to be set.
+     */
+    public function openBookingConfirmation()
+    {
+        if (!$this->selectedDate || !$this->selectedSession) {
+            $this->sessionValidationError = 'Please select a time slot before continuing.';
+            return;
+        }
+
+        $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        $this->showBookingModal = true;
+    }
+
     public function openBookingModal($date)
     {
         $customer = auth()->guard('customer')->user();
@@ -887,6 +1014,8 @@ class CustomerCalendar extends Component
                     'session_name' => $sessionName,
                     'start_time' => $sessionData['start_time'],
                     'end_time' => $sessionData['end_time'],
+                    'formatted_start' => $sessionData['formatted_start'],
+                    'formatted_end' => $sessionData['formatted_end'],
                     'formatted_time' => $sessionData['formatted_start'] . ' - ' . $sessionData['formatted_end']
                 ];
             }
@@ -1282,7 +1411,11 @@ class CustomerCalendar extends Component
 
             DB::table('customers')
             ->where('id', $customer->id)
-            ->update(['able_set_meeting' => false]);
+            ->update([
+                'able_set_meeting' => false,
+                // Persist attendee list for reuse on the customer's next booking.
+                'saved_attendees' => $this->requiredAttendees,
+            ]);
 
             info('Customer able_set_meeting disabled after booking', [
                 'customer_id' => $customer->id,

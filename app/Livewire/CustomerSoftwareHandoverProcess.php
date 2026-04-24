@@ -2,39 +2,29 @@
 
 namespace App\Livewire;
 
-use App\Models\SoftwareHandoverProcessFile;
+use App\Services\OnboardingPdfGenerator;
 use Livewire\Component;
 
 class CustomerSoftwareHandoverProcess extends Component
 {
-    public function downloadFile(int $fileId)
-    {
-        $customer = auth('customer')->user();
-        if (!$customer) {
-            abort(403);
-        }
-
-        $file = SoftwareHandoverProcessFile::where('id', $fileId)
-            ->where('lead_id', $customer->lead_id)
-            ->firstOrFail();
-
-        return redirect()->route('customer.software-handover-process.download', $file);
-    }
-
     public function render()
     {
         $customer = auth('customer')->user();
-        $files = collect();
+        $context = null;
+        $hasCompleteData = false;
+        $templateMissing = false;
 
         if ($customer) {
-            $files = SoftwareHandoverProcessFile::where('lead_id', $customer->lead_id)
-                ->with('uploader')
-                ->orderBy('version', 'desc')
-                ->get();
+            $generator = app(OnboardingPdfGenerator::class);
+            $context = $generator->resolveFields($customer);
+            $hasCompleteData = $generator->hasCompleteData($customer);
+            $templateMissing = !file_exists(storage_path('app/templates/software-handover/onboarding-process.pdf'));
         }
 
         return view('livewire.customer-software-handover-process', [
-            'files' => $files,
+            'context'         => $context,
+            'hasCompleteData' => $hasCompleteData,
+            'templateMissing' => $templateMissing,
         ]);
     }
 }

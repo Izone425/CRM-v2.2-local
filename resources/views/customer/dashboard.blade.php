@@ -7,15 +7,173 @@
     <title>Customer Dashboard - TimeTec CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     @livewireStyles
 
     <style>
+        :root {
+            --tt-primary: #00a4e0;
+            --tt-accent-dark: #003c75;
+            --tt-accent-mid: #1a6dd4;
+            --tt-hover-bg: #f0f7ff;
+            --tt-border: #e5e7eb;
+            --tt-text-secondary: #6b7280;
+            --tt-text-muted: #9ca3af;
+            --tt-danger: #ef4444;
+            --tt-surface: #ffffff;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+        }
+
+        /* TimeTec Header */
+        .tt-header {
+            background: var(--tt-surface);
+            border-bottom: 1px solid var(--tt-border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            height: 80px;
+        }
+
+        .tt-header-inner {
+            height: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        @media (min-width: 1024px) {
+            .tt-header-inner {
+                padding: 0 2rem;
+            }
+        }
+
+        .tt-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .tt-brand-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .tt-brand-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--tt-accent-dark);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .tt-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tt-header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+
+        .tt-info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .tt-info-row i {
+            font-size: 12px;
+            color: var(--tt-accent-dark);
+            width: 14px;
+            text-align: center;
+        }
+
+        .tt-info-label {
+            color: var(--tt-text-secondary);
+            font-weight: 400;
+        }
+
+        .tt-info-value {
+            color: var(--tt-accent-dark);
+            font-weight: 600;
+        }
+
+        .tt-info-implementer .tt-info-row i {
+            color: var(--tt-text-secondary);
+        }
+
+        .tt-info-implementer .tt-info-value {
+            color: var(--tt-text-secondary);
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .tt-info-implementer .tt-info-label {
+            font-size: 12px;
+        }
+
+        .tt-header-divider {
+            width: 1px;
+            height: 36px;
+            background: var(--tt-border);
+            flex-shrink: 0;
+        }
+
+        .tt-logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--tt-danger);
+            background: var(--tt-surface);
+            border: 1.5px solid var(--tt-danger);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .tt-logout-btn i {
+            font-size: 12px;
+        }
+
+        .tt-logout-btn:hover {
+            background: var(--tt-danger);
+            color: var(--tt-surface);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .tt-header-info,
+            .tt-header-divider {
+                display: none;
+            }
+            .tt-brand-title {
+                font-size: 16px;
+            }
         }
 
         .gradient-bg {
@@ -72,7 +230,7 @@
         .sidebar {
             position: absolute;
             left: 0;
-            top: 140px;
+            top: 80px;
             width: 260px;
             z-index: 50;
         }
@@ -196,8 +354,26 @@
 
         /* Main Content with Sidebar */
         .main-wrapper {
-            margin-left: 200px;
+            margin-left: 260px;
+            padding: 80px 2rem 2rem;
             flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                padding: 80px 1.25rem 1.5rem;
+            }
+        }
+
+        .tt-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            padding: 1.5rem 0;
         }
 
         .tab-content.active {
@@ -217,66 +393,69 @@
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    <!-- Fixed Header with Gradient -->
-    <header class="relative shadow-xl main-header gradient-bg" style="overflow: visible;">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
-        <div class="relative px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-lg">
-                        <i class="text-2xl text-indigo-600 fas fa-user-circle"></i>
+    @php
+        $customer = Auth::guard('customer')->user();
+        $companyName = $customer->company_name ?? 'Not Available';
+
+        // Get the latest software handover based on lead_id
+        $implementerName = 'Not Available';
+        $hasProjectPlan = false;
+
+        if ($customer->lead_id) {
+            $latestHandover = \App\Models\SoftwareHandover::where('lead_id', $customer->lead_id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($latestHandover) {
+                $implementerName = $latestHandover->implementer ?? 'Not Assigned';
+
+                // Check if there are any project plans for this lead
+                $projectPlansCount = \App\Models\ProjectPlan::where('lead_id', $customer->lead_id)
+                    ->where('sw_id', $latestHandover->id)
+                    ->count();
+
+                $hasProjectPlan = $projectPlansCount > 0;
+            }
+        }
+        // Implementer Thread notification badge count (Open + Waiting on You)
+        $impThreadBadgeCount = 0;
+        if ($customer && $customer->lead_id) {
+            $impThreadBadgeCount = \App\Models\ImplementerTicket::where('lead_id', $customer->lead_id)
+                ->whereIn('status', ['open', 'pending_rnd', 'pending_client'])
+                ->count();
+        }
+    @endphp
+
+    <!-- TimeTec Header -->
+    <header class="main-header tt-header" style="overflow: visible;">
+        <div class="tt-header-inner">
+            <div class="tt-brand">
+                <img src="{{ asset('img/logo-ttc.png') }}" alt="TimeTec" class="tt-brand-logo">
+                <span class="tt-brand-title">Customer Portal</span>
+            </div>
+            <div class="tt-header-actions">
+                <div class="tt-header-info">
+                    <div class="tt-info-row tt-info-company">
+                        <i class="fas fa-building"></i>
+                        <span class="tt-info-label">Company:</span>
+                        <span class="tt-info-value">{{ $companyName }}</span>
                     </div>
-                    <div>
-                        <h1 class="text-3xl font-bold text-white drop-shadow-lg">Customer Portal</h1>
+                    <div class="tt-info-row tt-info-implementer">
+                        <i class="fas fa-user"></i>
+                        <span class="tt-info-label">Implementer:</span>
+                        <span class="tt-info-value">{{ $implementerName }}</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-6">
-                    <div class="text-right">
-                        @php
-                            $customer = Auth::guard('customer')->user();
-                            $companyName = $customer->company_name ?? 'Not Available';
-
-                            // Get the latest software handover based on lead_id
-                            $implementerName = 'Not Available';
-                            $hasProjectPlan = false;
-
-                            if ($customer->lead_id) {
-                                $latestHandover = \App\Models\SoftwareHandover::where('lead_id', $customer->lead_id)
-                                    ->orderBy('id', 'desc')
-                                    ->first();
-
-                                if ($latestHandover) {
-                                    $implementerName = $latestHandover->implementer ?? 'Not Assigned';
-
-                                    // Check if there are any project plans for this lead
-                                    $projectPlansCount = \App\Models\ProjectPlan::where('lead_id', $customer->lead_id)
-                                        ->where('sw_id', $latestHandover->id)
-                                        ->count();
-
-                                    $hasProjectPlan = $projectPlansCount > 0;
-                                }
-                            }
-                            // Implementer Thread notification badge count (Open + Waiting on You)
-                            $impThreadBadgeCount = 0;
-                            if ($customer && $customer->lead_id) {
-                                $impThreadBadgeCount = \App\Models\ImplementerTicket::where('lead_id', $customer->lead_id)
-                                    ->whereIn('status', ['open', 'pending_rnd', 'pending_client'])
-                                    ->count();
-                            }
-                        @endphp
-
-                        <p class="font-semibold text-white">Company Name: {{ $companyName }}</p>
-                        <p class="text-sm font-medium text-indigo-200">Implementer: {{ $implementerName }}</p>
-                    </div>
-                    @livewire('customer-notification-bell')
-                    <form method="POST" action="{{ route('filament.customer.auth.logout') }}">
-                        @csrf
-                        <button type="submit" class="px-6 py-3 font-semibold text-white transition-all duration-300 bg-red-500 rounded-full shadow-lg hover:bg-red-600 hover:shadow-xl hover:scale-105">
-                            <i class="mr-2 fas fa-sign-out-alt"></i>
-                            Logout
-                        </button>
-                    </form>
-                </div>
+                <div class="tt-header-divider"></div>
+                @livewire('customer-notification-bell')
+                <div class="tt-header-divider"></div>
+                <form method="POST" action="{{ route('filament.customer.auth.logout') }}">
+                    @csrf
+                    <button type="submit" class="tt-logout-btn">
+                        <i class="fas fa-right-from-bracket"></i>
+                        Logout
+                    </button>
+                </form>
             </div>
         </div>
     </header>
@@ -390,48 +569,46 @@
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
         <!-- Main Content -->
-        <main class="relative">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <!-- Calendar Tab Content -->
-                <div id="calendar-content" class="p-8 tab-content" style="display: block;">
-                    @livewire('customer-calendar')
-                </div>
+        <main class="tt-content">
+            <!-- Calendar Tab Content -->
+            <div id="calendar-content" class="tab-content" style="display: block;">
+                @livewire('customer-calendar')
+            </div>
 
-                {{-- Software Handover Process --}}
-                <div id="softwareHandover-content" class="p-8 tab-content" style="display: none; min-height: 600px;">
-                    @livewire('customer-software-handover-process')
-                </div>
+            {{-- Software Handover Process --}}
+            <div id="softwareHandover-content" class="tab-content" style="display: none; min-height: 600px;">
+                @livewire('customer-software-handover-process')
+            </div>
 
-                <!-- Project Plan Tab Content -->
-                @if($hasProjectPlan)
-                    <div id="project-content" class="p-8 tab-content" style="display: none; min-height: 600px;">
-                        @livewire('customer-project-plan')
-                    </div>
-                @endif
-
-                {{-- Data Migration Templates --}}
-                <div id="dataMigration-content" class="p-8 tab-content" style="display: none;">
-                    @livewire('customer-data-migration-templates')
+            <!-- Project Plan Tab Content -->
+            @if($hasProjectPlan)
+                <div id="project-content" class="tab-content" style="display: none; min-height: 600px;">
+                    @livewire('customer-project-plan')
                 </div>
+            @endif
 
-                {{-- Webinar Recording & Training Decks --}}
-                <div id="webinar-content" class="p-8 tab-content" style="display: none;">
-                    @livewire('customer-training-files')
-                </div>
+            {{-- Data Migration Templates --}}
+            <div id="dataMigration-content" class="tab-content" style="display: none;">
+                @livewire('customer-data-migration-templates')
+            </div>
 
-                {{-- Review Session Recordings --}}
-                <div id="reviewSession-content" class="p-8 tab-content" style="display: none;">
-                    <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
-                        <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                        <h3 style="font-size: 18px; font-weight: 600; color: #475569;">Review Session Recordings</h3>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
+            {{-- Webinar Recording & Training Decks --}}
+            <div id="webinar-content" class="tab-content" style="display: none;">
+                @livewire('customer-training-files')
+            </div>
 
-                {{-- Implementer Thread --}}
-                <div id="impThread-content" class="p-8 tab-content" style="display: none;">
-                    @livewire('customer-implementer-thread')
+            {{-- Review Session Recordings --}}
+            <div id="reviewSession-content" class="tab-content" style="display: none;">
+                <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+                    <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    <h3 style="font-size: 18px; font-weight: 600; color: #475569;">Review Session Recordings</h3>
+                    <p>Coming soon</p>
                 </div>
+            </div>
+
+            {{-- Implementer Thread --}}
+            <div id="impThread-content" class="tab-content" style="display: none;">
+                @livewire('customer-implementer-thread')
             </div>
         </main>
     </div>

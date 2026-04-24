@@ -7,6 +7,7 @@ use App\Models\LeadSource;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerActivationController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerOnboardingPdfController;
 use App\Http\Controllers\GenerateHardwareHandoverPdfController;
 use App\Http\Controllers\GenerateHardwareHandoverV2PdfController;
 use App\Http\Controllers\GenerateProformaInvoicePdfController;
@@ -513,6 +514,30 @@ Route::prefix('customer')->name('customer.')->group(function () {
         }
         return response()->download($path, $file->file_name);
     })->middleware('auth:customer')->name('software-handover-process.download');
+
+    // Personalized Software Onboarding PDF (generated on-demand with customer's data)
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/onboarding-pdf/view', [CustomerOnboardingPdfController::class, 'show'])
+            ->name('onboarding-pdf.view');
+        Route::get('/onboarding-pdf/download', [CustomerOnboardingPdfController::class, 'download'])
+            ->name('onboarding-pdf.download');
+
+        // Global onboarding template downloads linked from the onboarding PDF (pg 6).
+        // Whitelisted keys serve files from storage/app/public/templates/data-migration-v1/.
+        Route::get('/onboarding-template/{key}/download', function (string $key) {
+            $map = [
+                'user-data-migration' => ['profile-import-user.xlsx',        'User_Data_Migration_Template.xlsx'],
+                'clocking-schedule'   => ['attendance-clocking-schedule.xlsx', 'Clocking_Schedule_Template.xlsx'],
+                'leave-policy'        => ['leave-leave-policy.xlsx',         'Leave_Policy_Template.xlsx'],
+                'claim-policy'        => ['claim-claim-policy.xlsx',         'Claim_Policy_Template.xlsx'],
+            ];
+            abort_unless(isset($map[$key]), 404);
+            [$stored, $downloadName] = $map[$key];
+            $path = storage_path('app/public/templates/data-migration-v1/' . $stored);
+            abort_unless(file_exists($path), 404);
+            return response()->download($path, $downloadName);
+        })->name('onboarding-template.download');
+    });
 
     // Training file download (global training materials for all customers)
     Route::get('/training-file/{trainerFile}/download', function (\App\Models\TrainerFile $trainerFile) {

@@ -8,8 +8,8 @@
 
         .cnb-bell-btn {
             position: relative;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: var(--tt-surface, #ffffff);
+            border: 1px solid var(--tt-border, #e5e7eb);
             border-radius: 50%;
             width: 42px;
             height: 42px;
@@ -18,11 +18,13 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            color: white;
+            color: var(--tt-accent-dark, #003c75);
         }
 
         .cnb-bell-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: var(--tt-hover-bg, #f0f7ff);
+            border-color: transparent;
+            color: var(--tt-accent-mid, #1a6dd4);
             transform: scale(1.05);
         }
 
@@ -47,7 +49,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1;
-            border: 2px solid rgba(102, 126, 234, 1);
+            border: 2px solid #ffffff;
         }
 
         .cnb-dropdown {

@@ -4,127 +4,1104 @@ use Carbon\Carbon;
 
 <div>
     <style>
+        /* ──────────────────────────────────────────────────────────────
+           TimeTec Split Canvas — calendar layout tokens + palette
+        ────────────────────────────────────────────────────────────── */
         .calendar-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 2rem 2rem 1rem 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --cal-primary: #00a4e0;
+            --cal-accent-dark: #003c75;
+            --cal-accent-mid: #1a6dd4;
+            --cal-hover-bg: #f0f7ff;
+            --cal-border: #e5e7eb;
+            --cal-border-strong: #d1d5db;
+            --cal-text: #111827;
+            --cal-text-muted: #6b7280;
+            --cal-text-quiet: #9ca3af;
+            --cal-surface: #ffffff;
+            --cal-surface-soft: #f9fafb;
+            --cal-available-bg: #ecfdf5;
+            --cal-available-border: #10b981;
+            --cal-available-text: #065f46;
+            --cal-weekend-bg: #fffbeb;
+            --cal-weekend-text: #b45309;
+            --cal-holiday-bg: #fef2f2;
+            --cal-holiday-text: #b91c1c;
+            --cal-full-bg: #fef2f2;
+            --cal-full-text: #dc2626;
+            --cal-meeting-bg: #eff6ff;
+            --cal-meeting-border: #003c75;
+            --cal-meeting-text: #003c75;
+
+            background: var(--cal-surface);
+            border-radius: 18px;
+            padding: 1.75rem;
+            border: 1px solid var(--cal-border);
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.08);
+        }
+
+        .cal-split {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 1.75rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .cal-split {
+                grid-template-columns: minmax(0, 1fr) 320px;
+                gap: 1.25rem;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .cal-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cal-left {
+            min-width: 0;
         }
 
         .calendar-header-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            backdrop-filter: none;
+            border-radius: 0;
+            padding: 0 0 1.25rem 0;
+            margin-bottom: 1.25rem;
+            border: none;
+            border-bottom: 1px solid var(--cal-border);
         }
 
+        .cal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .cal-title-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--cal-hover-bg);
+            color: var(--cal-accent-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .cal-title-text h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--cal-text);
+            letter-spacing: -0.01em;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .cal-title-text p {
+            font-size: 0.8125rem;
+            color: var(--cal-text-muted);
+            margin: 2px 0 0 0;
+        }
+
+        .cal-month-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cal-month-nav .nav-button {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 10px;
+            background: var(--cal-surface);
+            border: 1px solid var(--cal-border);
+            color: var(--cal-accent-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            box-shadow: none;
+        }
+
+        .cal-month-nav .nav-button:hover {
+            background: var(--cal-hover-bg);
+            border-color: transparent;
+            color: var(--cal-accent-mid);
+            transform: none;
+        }
+
+        .cal-month-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--cal-accent-dark);
+            min-width: 120px;
+            text-align: center;
+            letter-spacing: -0.005em;
+        }
+
+        /* Compact chip-row legend */
+        .cal-legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            margin-bottom: 0.75rem;
+            font-size: 12px;
+            color: var(--cal-text-muted);
+        }
+
+        .cal-legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px 3px 8px;
+            background: var(--cal-surface);
+            border: 1px solid var(--cal-border);
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        .cal-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .cal-legend-dot.avail { background: var(--cal-available-border); }
+        .cal-legend-dot.meet  { background: var(--cal-meeting-border); }
+        .cal-legend-dot.wknd  { background: #f59e0b; }
+        .cal-legend-dot.hol   { background: #ef4444; }
+        .cal-legend-dot.full  { background: var(--cal-text-quiet); }
+
+        /* Grid + day cells */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            gap: 6px;
+            background: transparent;
+            border-radius: 0;
+            overflow: visible;
+            box-shadow: none;
         }
 
         .calendar-day {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 0.75rem;
-            min-height: 100px;
+            background: var(--cal-surface);
+            backdrop-filter: none;
+            padding: 10px 10px 8px;
+            min-height: 82px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+            transition: all 0.15s ease;
             position: relative;
-            border: 2px solid transparent;
+            border: 1px solid var(--cal-border);
+            border-radius: 10px;
         }
 
         .calendar-day:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            background: rgba(255, 255, 255, 1);
+            transform: none;
+            box-shadow: none;
+            background: var(--cal-surface);
         }
 
         .calendar-day.other-month {
-            background: rgba(249, 250, 251, 0.7);
-            color: #9ca3af;
+            background: transparent;
+            color: var(--cal-text-quiet);
+            border-color: transparent;
         }
 
         .calendar-day.today {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border: 2px solid #3b82f6;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            background: var(--cal-surface);
+            border: 2px solid var(--cal-accent-dark);
+            box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.08);
         }
 
         .calendar-day.past {
-            background: rgba(243, 244, 246, 0.8);
-            color: #9ca3af;
+            background: var(--cal-surface-soft);
+            color: var(--cal-text-quiet);
             cursor: not-allowed;
+            border-color: var(--cal-border);
+        }
+
+        .calendar-day.past .day-number {
+            color: var(--cal-text-quiet);
+            font-weight: 500;
         }
 
         .calendar-day.weekend {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 4px solid #f59e0b;
+            background: var(--cal-weekend-bg);
+            border-color: #fde68a;
+        }
+
+        .calendar-day.weekend .day-number {
+            color: var(--cal-weekend-text);
         }
 
         .calendar-day.holiday {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            border-left: 4px solid #ef4444;
+            background: var(--cal-holiday-bg);
+            border-color: #fecaca;
+        }
+
+        .calendar-day.holiday .day-number {
+            color: var(--cal-holiday-text);
         }
 
         .calendar-day.bookable {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border: 2px solid #22c55e;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+            background: var(--cal-available-bg);
+            border: 1.5px solid var(--cal-available-border);
+            cursor: pointer;
         }
 
         .calendar-day.bookable:hover {
-            background: linear-gradient(135deg, #bbf7d0 0%, #a7f3d0 100%);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(34, 197, 94, 0.3);
+            background: #d1fae5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.25);
+        }
+
+        .calendar-day.bookable .day-number {
+            color: var(--cal-available-text);
+        }
+
+        .calendar-day.selected {
+            background: var(--cal-accent-dark);
+            border-color: var(--cal-accent-dark);
+            box-shadow: 0 6px 20px -6px rgba(0, 60, 117, 0.55);
+            transform: translateY(-2px);
+        }
+
+        .calendar-day.selected .day-number,
+        .calendar-day.selected .available-count {
+            color: #ffffff;
+        }
+
+        .calendar-day.selected .available-count {
+            background: rgba(255, 255, 255, 0.18);
         }
 
         .calendar-day.has-meeting {
-            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-            border: 2px solid #6366f1;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            background: var(--cal-meeting-bg);
+            border: 1.5px solid var(--cal-meeting-border);
+            cursor: pointer;
+        }
+
+        .calendar-day.has-meeting .day-number {
+            color: var(--cal-meeting-text);
+        }
+
+        .calendar-day.has-meeting:hover {
+            background: #dbeafe;
+            transform: translateY(-2px);
         }
 
         .calendar-day.disabled {
-            background: rgba(243, 244, 246, 0.6);
-            color: #9ca3af;
+            background: var(--cal-surface-soft);
+            color: var(--cal-text-quiet);
             cursor: not-allowed;
+            border-color: var(--cal-border);
+        }
+
+        .calendar-day.disabled .day-number {
+            color: var(--cal-text-quiet);
+            font-weight: 500;
         }
 
         .day-number {
-            font-weight: 700;
-            font-size: 1.125rem;
-            margin-bottom: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--cal-text);
+            line-height: 1;
+        }
+
+        /* Corner state pictogram */
+        .cal-day-icon {
+            position: absolute;
+            top: 8px;
+            right: 9px;
+            font-size: 11px;
+            line-height: 1;
+            opacity: 0.55;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .calendar-day.bookable .cal-day-icon  { color: var(--cal-available-border); opacity: 0.7; }
+        .calendar-day.weekend .cal-day-icon   { color: #d97706; opacity: 0.55; }
+        .calendar-day.holiday .cal-day-icon   { color: #dc2626; opacity: 0.6; }
+        .calendar-day.has-meeting .cal-day-icon { color: var(--cal-meeting-text); opacity: 0.75; }
+
+        .calendar-day.bookable:hover .cal-day-icon {
+            transform: rotate(14deg) scale(1.18);
+            opacity: 1;
+        }
+        .calendar-day.has-meeting:hover .cal-day-icon {
+            transform: scale(1.12);
+            opacity: 1;
+        }
+
+        .calendar-day.selected .cal-day-icon {
+            color: #ffffff;
+            opacity: 0.8;
+        }
+
+        /* Today: elevate specificity so the blue ring wins over .bookable */
+        .calendar-day.today,
+        .calendar-day.today.bookable,
+        .calendar-day.today.has-meeting {
+            border: 2px solid var(--cal-accent-dark);
+            box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.08);
+        }
+
+        .calendar-day.today::after {
+            content: "Today";
+            position: absolute;
+            top: -9px;
+            left: 10px;
+            padding: 1px 7px;
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            line-height: 1.4;
+            pointer-events: none;
         }
 
         .available-count {
-            font-size: 0.75rem;
-            color: #059669;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--cal-available-text);
             font-weight: 600;
-            background: rgba(5, 150, 105, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.14);
+            padding: 2px 8px;
+            border-radius: 999px;
             text-align: center;
+            align-self: flex-start;
+            letter-spacing: 0.01em;
+        }
+
+        .available-count i {
+            font-size: 9px;
+            color: var(--cal-available-border);
         }
 
         .meeting-indicator {
-            font-size: 0.75rem;
-            color: #6366f1;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--cal-meeting-text);
             font-weight: 600;
-            background: rgba(99, 102, 241, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
+            background: rgba(0, 60, 117, 0.08);
+            padding: 2px 8px;
+            border-radius: 999px;
+            align-self: flex-start;
+        }
+
+        .meeting-indicator i {
+            font-size: 9px;
+        }
+
+        .meeting-indicator.completed {
+            color: #047857;
+            background: rgba(16, 185, 129, 0.14);
+        }
+
+        .cal-full-marker {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--cal-full-text);
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        .cal-full-marker i {
+            font-size: 9px;
+        }
+
+        /* ──────────────────────────────────────────────────────────────
+           Right booking panel
+        ────────────────────────────────────────────────────────────── */
+        .cal-book-panel {
+            background: var(--cal-surface);
+            border: 1px solid var(--cal-border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            position: sticky;
+            top: 96px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cal-panel-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--cal-border);
+        }
+
+        .cal-panel-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--cal-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 0 0 4px 0;
+        }
+
+        .cal-panel-date {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--cal-accent-dark);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .cal-panel-sub {
+            font-size: 12px;
+            color: var(--cal-text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        .cal-panel-clear {
+            background: none;
+            border: none;
+            color: var(--cal-text-quiet);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .cal-panel-clear:hover {
+            color: var(--cal-accent-dark);
+            background: var(--cal-hover-bg);
+        }
+
+        .cal-panel-empty {
             text-align: center;
+            padding: 2rem 0.5rem;
+            color: var(--cal-text-muted);
+        }
+
+        .cal-panel-empty-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 0.75rem;
+            border-radius: 50%;
+            background: var(--cal-hover-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cal-accent-dark);
+            font-size: 22px;
+        }
+
+        .cal-panel-empty-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--cal-text);
+            margin: 0 0 4px 0;
+        }
+
+        .cal-panel-empty-body {
+            font-size: 12px;
+            color: var(--cal-text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .cal-slot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .cal-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--cal-border);
+            border-radius: 10px;
+            background: var(--cal-surface);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cal-accent-dark);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+        }
+
+        .cal-slot:hover {
+            border-color: var(--cal-accent-mid);
+            background: var(--cal-hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .cal-slot.is-selected {
+            background: var(--cal-accent-dark);
+            border-color: var(--cal-accent-dark);
+            color: #ffffff;
+            box-shadow: 0 4px 12px -4px rgba(0, 60, 117, 0.45);
+        }
+
+        .cal-slot-session {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--cal-text-muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .cal-slot.is-selected .cal-slot-session {
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .cal-continue-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 0.01em;
+        }
+
+        .cal-continue-btn:hover:not(:disabled) {
+            background: var(--cal-accent-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px -6px rgba(0, 60, 117, 0.35);
+        }
+
+        .cal-continue-btn:disabled {
+            background: var(--cal-border-strong);
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .cal-panel-footnote {
+            font-size: 11px;
+            color: var(--cal-text-quiet);
+            text-align: center;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .cal-panel-footnote i {
+            color: var(--cal-primary);
+            margin-right: 4px;
+        }
+
+        .cal-panel-error {
+            padding: 10px 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #b91c1c;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        /* ──────────────────────────────────────────────────────────────
+           Inline booking form (meeting type + required attendees)
+        ────────────────────────────────────────────────────────────── */
+        .cal-field-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cal-field-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--cal-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 0;
+        }
+
+        .cal-field-required {
+            color: var(--cal-holiday-text);
+            margin-left: 2px;
+            font-weight: 700;
+        }
+
+        .cal-field-static {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--cal-hover-bg);
+            border: 1px solid var(--cal-border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--cal-accent-dark);
+            line-height: 1.3;
+        }
+
+        .cal-field-static i {
+            color: var(--cal-primary);
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .cal-field-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--cal-surface);
+            border: 1.5px solid var(--cal-border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            color: var(--cal-text);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        .cal-field-input::placeholder {
+            color: var(--cal-text-quiet);
+            font-weight: 400;
+        }
+
+        .cal-field-input:hover:not(:focus) {
+            border-color: var(--cal-border-strong);
+        }
+
+        .cal-field-input:focus {
+            border-color: var(--cal-accent-dark);
+            box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.12);
+        }
+
+        .cal-field-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--cal-text-quiet);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .cal-field-hint i {
+            color: var(--cal-primary);
+            font-size: 10px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .cal-submit-loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cal-spinner {
+            width: 14px;
+            height: 14px;
+            animation: cal-spin 0.8s linear infinite;
+        }
+
+        .cal-spinner circle {
+            opacity: 0.85;
+        }
+
+        @keyframes cal-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Allow the sticky panel to scroll internally on short viewports */
+        .cal-book-panel {
+            max-height: calc(100vh - 112px);
+            overflow-y: auto;
+        }
+        .cal-book-panel::-webkit-scrollbar { width: 6px; }
+        .cal-book-panel::-webkit-scrollbar-track { background: transparent; }
+        .cal-book-panel::-webkit-scrollbar-thumb { background: var(--cal-border); border-radius: 3px; }
+
+        /* ──────────────────────────────────────────────────────────────
+           Bulk attendees drawer
+        ────────────────────────────────────────────────────────────── */
+
+        /* Variables scoped to the teleported drawer root so the
+           drawer keeps the TimeTec palette after Alpine moves it
+           out of .calendar-container (which owns the vars otherwise). */
+        .cal-att-root {
+            --cal-primary: #00a4e0;
+            --cal-accent-dark: #003c75;
+            --cal-accent-mid: #1a6dd4;
+            --cal-hover-bg: #f0f7ff;
+            --cal-border: #e5e7eb;
+            --cal-border-strong: #d1d5db;
+            --cal-text: #111827;
+            --cal-text-muted: #6b7280;
+            --cal-text-quiet: #9ca3af;
+            --cal-surface: #ffffff;
+            --cal-holiday-text: #b91c1c;
+        }
+
+        /* Inline "Bulk edit" trigger that sits next to the field label */
+        .cal-field-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 20px;
+        }
+
+        .cal-att-btn-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px 3px 8px;
+            background: transparent;
+            border: 1px solid var(--cal-border);
+            border-radius: 999px;
+            color: var(--cal-accent-dark);
+            font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .cal-att-btn-inline:hover {
+            background: var(--cal-hover-bg);
+            border-color: var(--cal-accent-dark);
+            color: var(--cal-accent-mid);
+        }
+
+        .cal-att-btn-inline i {
+            font-size: 9px;
+            color: var(--cal-primary);
+        }
+
+        .cal-att-btn-inline:hover i {
+            color: var(--cal-accent-mid);
+        }
+
+        .cal-att-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.48);
+            backdrop-filter: blur(3px);
+            z-index: 200;
+        }
+
+        .cal-att-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 420px;
+            background: var(--cal-surface);
+            box-shadow: -24px 0 60px -16px rgba(15, 23, 42, 0.22);
+            z-index: 201;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .cal-att-head {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid var(--cal-border);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .cal-att-head-text {
+            min-width: 0;
+        }
+
+        .cal-att-head-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--cal-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 0 0 4px 0;
+        }
+
+        .cal-att-head-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--cal-accent-dark);
+            margin: 0;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+
+        .cal-att-head-sub {
+            font-size: 12px;
+            color: var(--cal-text-muted);
+            margin: 6px 0 0 0;
+            line-height: 1.45;
+        }
+
+        .cal-att-close {
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--cal-border);
+            border-radius: 10px;
+            background: var(--cal-surface);
+            color: var(--cal-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+
+        .cal-att-close:hover {
+            background: var(--cal-hover-bg);
+            color: var(--cal-accent-dark);
+            border-color: var(--cal-accent-dark);
+        }
+
+        .cal-att-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 24px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .cal-att-body::-webkit-scrollbar { width: 6px; }
+        .cal-att-body::-webkit-scrollbar-track { background: transparent; }
+        .cal-att-body::-webkit-scrollbar-thumb { background: var(--cal-border); border-radius: 3px; }
+
+        .cal-att-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            animation: cal-att-rowIn 0.18s ease-out;
+        }
+
+        @keyframes cal-att-rowIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .cal-att-row-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cal-att-row-num {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--cal-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .cal-att-row-remove {
+            width: 26px;
+            height: 26px;
+            border: none;
+            background: transparent;
+            color: var(--cal-text-quiet);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-size: 11px;
+        }
+
+        .cal-att-row-remove:hover {
+            background: #fef2f2;
+            color: var(--cal-holiday-text);
+        }
+
+        .cal-att-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--cal-surface);
+            border: 1.5px solid var(--cal-border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            color: var(--cal-text);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        .cal-att-input::placeholder {
+            color: var(--cal-text-quiet);
+            font-weight: 400;
+        }
+
+        .cal-att-input:hover:not(:focus) {
+            border-color: var(--cal-border-strong);
+        }
+
+        .cal-att-input:focus {
+            border-color: var(--cal-accent-dark);
+            box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.12);
+        }
+
+        .cal-att-input.is-invalid {
+            border-color: var(--cal-holiday-text);
+            background: #fef2f2;
+        }
+
+        .cal-att-input.is-invalid:focus {
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.14);
+        }
+
+        .cal-att-add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 12px;
+            background: transparent;
+            border: 1.5px dashed var(--cal-border-strong);
+            border-radius: 10px;
+            color: var(--cal-accent-dark);
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 0.01em;
+            margin-top: 2px;
+        }
+
+        .cal-att-add:hover:not(:disabled) {
+            background: var(--cal-hover-bg);
+            border-color: var(--cal-accent-dark);
+            border-style: solid;
+            color: var(--cal-accent-mid);
+        }
+
+        .cal-att-add:disabled {
+            color: var(--cal-text-quiet);
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+
+        .cal-att-counter {
+            font-size: 11px;
+            color: var(--cal-text-muted);
+            text-align: center;
+            font-weight: 500;
+            margin: 4px 0 8px 0;
+            letter-spacing: 0.02em;
+        }
+
+        .cal-att-counter.is-over {
+            color: var(--cal-holiday-text);
+            font-weight: 600;
+        }
+
+        .cal-att-foot {
+            padding: 14px 24px 18px;
+            border-top: 1px solid var(--cal-border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            background: var(--cal-surface);
+            flex-shrink: 0;
+        }
+
+        .cal-att-btn-cancel {
+            padding: 10px 18px;
+            background: var(--cal-surface);
+            border: 1.5px solid var(--cal-border);
+            border-radius: 10px;
+            color: var(--cal-text-muted);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .cal-att-btn-cancel:hover {
+            background: var(--cal-hover-bg);
+            border-color: var(--cal-accent-dark);
+            color: var(--cal-accent-dark);
+        }
+
+        .cal-att-btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .cal-att-btn-save:hover {
+            background: var(--cal-accent-mid);
+            box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35);
+            transform: translateY(-1px);
+        }
+
+        body.cal-att-drawer-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) {
+            .cal-att-drawer {
+                max-width: 100%;
+            }
         }
 
         .existing-bookings {
@@ -709,7 +1686,7 @@ use Carbon\Carbon;
             position: relative;
             padding: 2rem 2rem 1.5rem 2rem; /* Reduced padding */
             color: white;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #4f46e5 100%);
+            background: linear-gradient(135deg, #003c75 0%, #1a6dd4 55%, #00a4e0 100%);
         }
 
         .tutorial-header-pattern {
@@ -762,10 +1739,12 @@ use Carbon\Carbon;
         }
 
         .tutorial-title {
+            font-family: 'Poppins', sans-serif;
             font-size: 1.5rem; /* Reduced from 3xl */
             font-weight: 700;
             line-height: 1.2;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
         }
 
         .tutorial-step-info {
@@ -776,10 +1755,12 @@ use Carbon\Carbon;
         }
 
         .tutorial-step-badge {
+            font-family: 'Poppins', sans-serif;
             padding: 0.25rem 0.75rem;
             font-size: 0.75rem;
             font-weight: 500;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 20px;
             backdrop-filter: blur(10px);
         }
@@ -794,7 +1775,7 @@ use Carbon\Carbon;
             height: 8px;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.35);
         }
 
         .tutorial-dot.active {
@@ -817,8 +1798,8 @@ use Carbon\Carbon;
         }
 
         .tutorial-close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.28);
+            transform: scale(1.06);
         }
 
         .tutorial-progress-bar {
@@ -828,23 +1809,23 @@ use Carbon\Carbon;
 
         .tutorial-progress-bg {
             width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
+            height: 5px;
+            background: rgba(255, 255, 255, 0.22);
             border-radius: 20px;
             backdrop-filter: blur(10px);
         }
 
         .tutorial-progress-fill {
-            height: 6px;
+            height: 5px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
             transition: all 0.7s ease-out;
         }
 
         .tutorial-body {
             padding: 1.5rem 2rem; /* Reduced padding */
-            background: linear-gradient(135deg, #f9fafb 0%, white 100%);
+            background: #ffffff;
             text-align: center;
         }
 
@@ -857,18 +1838,19 @@ use Carbon\Carbon;
         }
 
         .tutorial-step-title {
+            font-family: 'Poppins', sans-serif;
             font-size: 1.25rem; /* Reduced from 3xl */
             font-weight: 700;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #003c75;
+            letter-spacing: -0.01em;
         }
 
         .tutorial-step-description {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
             font-size: 1rem; /* Reduced from xl */
-            color: #6b7280;
+            color: #4b5563;
             line-height: 1.6;
             max-width: 500px;
             margin-left: auto;
@@ -895,17 +1877,17 @@ use Carbon\Carbon;
         }
 
         .tutorial-card.blue {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border-color: #3b82f6;
+            background: #eff6ff;
+            border-color: #003c75;
         }
 
         .tutorial-card.purple {
-            background: linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 100%);
-            border-color: #8b5cf6;
+            background: #ecfeff;
+            border-color: #00a4e0;
         }
 
         .tutorial-card.green {
-            background: linear-gradient(135deg, #d1fae5 0%, #bbf7d0 100%);
+            background: #ecfdf5;
             border-color: #10b981;
         }
 
@@ -914,7 +1896,7 @@ use Carbon\Carbon;
             margin-top: 1rem;
             border-left: 4px solid #10b981;
             border-radius: 8px;
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            background: #ecfdf5;
         }
 
         .tutorial-footer {
@@ -923,12 +1905,13 @@ use Carbon\Carbon;
             justify-content: space-between;
             padding: 1rem 2rem; /* Reduced padding */
             border-top: 1px solid #e5e7eb;
-            background: linear-gradient(135deg, #f9fafb 0%, white 100%);
+            background: #ffffff;
         }
 
         .tutorial-btn {
             display: flex;
             align-items: center;
+            font-family: 'Poppins', sans-serif;
             padding: 0.75rem 1.5rem;
             border: 2px solid;
             border-radius: 12px;
@@ -946,21 +1929,22 @@ use Carbon\Carbon;
         }
 
         .tutorial-btn.secondary:hover {
-            background: #f9fafb;
-            border-color: #9ca3af;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: #f0f7ff;
+            color: #003c75;
+            border-color: #003c75;
+            box-shadow: 0 4px 6px -1px rgba(0, 60, 117, 0.1);
         }
 
         .tutorial-btn.primary {
             color: white;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            background: #003c75;
             border-color: transparent;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 60, 117, 0.25);
         }
 
         .tutorial-btn.primary:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            background: #1a6dd4;
+            box-shadow: 0 8px 20px -6px rgba(0, 60, 117, 0.35);
             transform: translateY(-1px);
         }
 
@@ -1111,13 +2095,13 @@ use Carbon\Carbon;
 
         @keyframes helpButtonPulse {
             0%, 85% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+                box-shadow: 0 0 0 0 rgba(0, 60, 117, 0.4);
             }
             90%, 95% {
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 10px rgba(0, 60, 117, 0);
             }
             100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+                box-shadow: 0 0 0 0 rgba(0, 60, 117, 0.4);
             }
         }
 
@@ -1173,231 +2157,340 @@ use Carbon\Carbon;
     <div class="calendar-container">
         <!-- Header Section -->
         <div class="calendar-header-section">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-4">
                 <!-- Title Section -->
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-12 h-12 mr-4 bg-indigo-600 bg-opacity-20 rounded-xl">
-                        <i class="text-xl text-indigo-600 fas fa-calendar-alt"></i>
+                <div class="cal-title-wrap">
+                    <div class="cal-title-icon">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">{{ $this->getSessionTitle() }}</h2>
-                        <p class="text-gray-600">Choose your preferred date and time</p>
+                    <div class="cal-title-text">
+                        <h2>{{ $this->getSessionTitle() }}</h2>
+                        <p>Pick a date on the left — available time slots appear on the right.</p>
                     </div>
                 </div>
 
                 <!-- Month Navigation -->
-                <div class="flex items-center gap-4">
-                    <button wire:click="previousMonth" class="nav-button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="cal-month-nav">
+                    <button wire:click="previousMonth" class="nav-button" aria-label="Previous month">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                     </button>
-
-                    <h3 class="text-xl font-semibold text-gray-700 min-w-[200px] text-center">
-                        {{ $currentDate->format('F Y') }}
-                    </h3>
-
-                    <button wire:click="nextMonth" class="nav-button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span class="cal-month-label">{{ $currentDate->format('F Y') }}</span>
+                    <button wire:click="nextMonth" class="nav-button" aria-label="Next month">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Existing Bookings -->
-            @if($hasExistingBooking)
-                <div class="existing-bookings">
-                    <div class="bookings-header" wire:click="toggleExistingBookings">
-                        <div class="flex items-center justify-between w-full">
-                            <h4 class="text-lg font-semibold text-gray-800">
-                                Your Scheduled Meetings
-                                @if(count($existingBookings) > 1)
-                                    <span class="ml-2 text-sm font-normal text-gray-600">({{ count($existingBookings) }} meetings)</span>
-                                @endif
-                            </h4>
-                            <div class="flex items-center">
-                                <span class="mr-2 text-sm text-gray-600">
-                                    {{ $showExistingBookings ? 'Hide' : 'Show' }}
-                                </span>
-                                <svg class="collapse-icon {{ $showExistingBookings ? 'rotated' : '' }}"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
+        <!-- Existing Bookings (kept above the split so both columns have full vertical space) -->
+        @if($hasExistingBooking)
+            <div class="existing-bookings" style="margin-bottom: 1.25rem;">
+                <div class="bookings-header" wire:click="toggleExistingBookings">
+                    <div class="flex items-center justify-between w-full">
+                        <h4 class="text-lg font-semibold text-gray-800">
+                            Your Scheduled Meetings
+                            @if(count($existingBookings) > 1)
+                                <span class="ml-2 text-sm font-normal text-gray-600">({{ count($existingBookings) }} meetings)</span>
+                            @endif
+                        </h4>
+                        <div class="flex items-center">
+                            <span class="mr-2 text-sm text-gray-600">
+                                {{ $showExistingBookings ? 'Hide' : 'Show' }}
+                            </span>
+                            <svg class="collapse-icon {{ $showExistingBookings ? 'rotated' : '' }}"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </div>
                     </div>
+                </div>
 
-                    <div class="bookings-list {{ $showExistingBookings ? 'expanded' : 'collapsed' }}">
-                        @foreach($existingBookings as $booking)
-                            <div class="booking-card">
-                                <div class="flex items-center gap-4">
-                                    <!-- Column 1: Date & Time -->
-                                    <div class="flex-1">
-                                        <h5 class="font-semibold text-gray-800">{{ $booking['date'] }}</h5>
-                                    </div>
-
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-600">{{ $booking['time'] }}&nbsp;({{ $booking['session'] }})</p>
-                                    </div>
-
-                                    <!-- Column 2: Meeting Details -->
-                                    <div class="flex-1">
-                                        <div class="text-sm text-gray-600">
-                                            {{ $booking['type'] }}
-                                        </div>
-                                    </div>
-
-                                    <!-- Column 3: Actions -->
-                                    <div class="flex flex-col items-end justify-center">
-                                        @php
-                                            $appointmentDate = Carbon::parse($booking['raw_date'])->format('Y-m-d');
-                                            $appointmentDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $appointmentDate . ' ' . $booking['start_time']);
-                                            $now = Carbon::now();
-
-                                            // Updated cancellation logic
-                                            $canCancel = ($booking['status'] === 'New') && // Only allow cancellation if status is 'New'
-                                                        ($appointmentDateTime->isFuture() || ($appointmentDateTime->isToday() && $appointmentDateTime->gt($now)));
-                                        @endphp
-
-                                        @if($canCancel)
-                                            <button wire:click="openCancelModal({{ $booking['id'] }})"
-                                                    class="cancel-button">
-                                                ❌ Cancel
-                                            </button>
-                                        @elseif($booking['status'] === 'Done')
-                                            <div class="px-3 py-2 text-xs font-semibold text-green-700 bg-green-100 rounded-lg">
-                                                ✅ Completed
-                                            </div>
-                                        @else
-                                            <button class="cancel-button" disabled>
-                                                🔒 Cannot Cancel
-                                            </button>
-                                            <div class="cancel-reason">
-                                                @if($appointmentDateTime->isPast())
-                                                    Session already passed
-                                                @else
-                                                    Session started/ongoing
-                                                @endif
-                                            </div>
-                                        @endif
+                <div class="bookings-list {{ $showExistingBookings ? 'expanded' : 'collapsed' }}">
+                    @foreach($existingBookings as $booking)
+                        <div class="booking-card">
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-gray-800">{{ $booking['date'] }}</h5>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-600">{{ $booking['time'] }}&nbsp;({{ $booking['session'] }})</p>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm text-gray-600">
+                                        {{ $booking['type'] }}
                                     </div>
                                 </div>
+                                <div class="flex flex-col items-end justify-center">
+                                    @php
+                                        $appointmentDate = Carbon::parse($booking['raw_date'])->format('Y-m-d');
+                                        $appointmentDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $appointmentDate . ' ' . $booking['start_time']);
+                                        $now = Carbon::now();
+                                        $canCancel = ($booking['status'] === 'New') &&
+                                                    ($appointmentDateTime->isFuture() || ($appointmentDateTime->isToday() && $appointmentDateTime->gt($now)));
+                                    @endphp
+
+                                    @if($canCancel)
+                                        <button wire:click="openCancelModal({{ $booking['id'] }})" class="cancel-button">
+                                            ❌ Cancel
+                                        </button>
+                                    @elseif($booking['status'] === 'Done')
+                                        <div class="px-3 py-2 text-xs font-semibold text-green-700 bg-green-100 rounded-lg">
+                                            ✅ Completed
+                                        </div>
+                                    @else
+                                        <button class="cancel-button" disabled>
+                                            🔒 Cannot Cancel
+                                        </button>
+                                        <div class="cancel-reason">
+                                            @if($appointmentDateTime->isPast())
+                                                Session already passed
+                                            @else
+                                                Session started/ongoing
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-        </div>
-
-        <!-- Calendar Days Header -->
-        <div class="calendar-days-header">
-            <div class="header-day">Mon</div>
-            <div class="header-day">Tue</div>
-            <div class="header-day">Wed</div>
-            <div class="header-day">Thu</div>
-            <div class="header-day">Fri</div>
-            <div class="header-day">Sat</div>
-            <div class="header-day">Sun</div>
-        </div>
-
-        <!-- Calendar Grid -->
-        <div class="calendar-grid">
-            @foreach($monthlyData as $dayData)
-                <div class="calendar-day
-                    {{ !$dayData['isCurrentMonth'] ? 'other-month' : '' }}
-                    {{ $dayData['isToday'] ? 'today' : '' }}
-                    {{ $dayData['isPast'] ? 'past' : '' }}
-                    {{ $dayData['isWeekend'] ? 'weekend' : '' }}
-                    {{ $dayData['isPublicHoliday'] ? 'holiday' : '' }}
-                    {{ $dayData['hasCustomerMeeting'] ? 'has-meeting' : '' }}
-                    {{ $dayData['canBook'] ? 'bookable' : '' }}
-                    {{ !$canScheduleMeeting && !$dayData['hasCustomerMeeting'] ? 'disabled' : '' }}
-                    {{ $dayData['isBeyondBookingWindow'] ? 'disabled' : '' }}"
-                    @if($dayData['canBook'])
-                        wire:click="openBookingModal('{{ $dayData['dateString'] }}')"
-                    @elseif($dayData['hasCustomerMeeting'])
-                        @php
-                            // Get the meeting for this specific date
-                            $todaysMeeting = collect($existingBookings)->first(function ($booking) use ($dayData) {
-                                return Carbon::parse($booking['date'])->format('Y-m-d') === $dayData['dateString'];
-                            });
-                        @endphp
-                        @if($todaysMeeting)
-                            wire:click="openMeetingDetailsModal({{ $todaysMeeting['id'] }})"
-                        @endif
-                    @endif>
-
-                    <div class="day-number">{{ $dayData['day'] }}</div>
-
-                    @if($dayData['hasCustomerMeeting'])
-                        @php
-                            // Get the meeting for this specific date to check its status
-                            $todaysMeeting = collect($existingBookings)->first(function ($booking) use ($dayData) {
-                                return Carbon::parse($booking['date'])->format('Y-m-d') === $dayData['dateString'];
-                            });
-                        @endphp
-
-                        @if($todaysMeeting && $todaysMeeting['status'] === 'Done')
-                            <div class="meeting-indicator completed">
-                                ✅ Completed
-                            </div>
-                        @elseif($todaysMeeting)
-                            <div class="meeting-indicator">
-                                📅 Your Meeting
-                            </div>
-                        @endif
-                    @elseif($dayData['isPublicHoliday'])
-                        <div class="text-xs font-semibold text-red-600">🏛️ Holiday</div>
-                    @elseif($dayData['isWeekend'])
-                        <div class="text-xs font-semibold text-amber-600">🎯 Weekend</div>
-                    @elseif($dayData['isPast'])
-                        <div class="text-xs text-gray-500">📅 Past</div>
-                    @elseif($dayData['isBeyondBookingWindow'])
-                        <div class="text-xs text-gray-400">🔒 Beyond Booking Window</div>
-                    @elseif(!$canScheduleMeeting)
-                        <div class="text-xs text-gray-400">
-                            @if($hasNewAppointment)
-                                🔒 Pending Meeting
-                            @else
-                                🔒 Scheduling Disabled
-                            @endif
                         </div>
-                    @elseif($dayData['availableCount'] > 0)
-                        <div class="available-count">✨ {{ $dayData['availableCount'] }} available</div>
-                    @elseif($dayData['isCurrentMonth'])
-                        <div class="text-xs font-medium text-red-500">🔒 Fully booked</div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-
-        <!-- Legend -->
-        <div class="legend-container">
-            <h4 class="mb-3 font-semibold text-gray-700">📋 Calendar Legend</h4>
-            <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-5">
-                <div class="flex items-center">
-                    <div class="w-4 h-4 mr-2 border-2 border-green-500 rounded bg-gradient-to-br from-green-200 to-green-300"></div>
-                    <span>Available</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 mr-2 border-2 border-indigo-500 rounded bg-gradient-to-br from-indigo-200 to-indigo-300"></div>
-                    <span>Your Meeting</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 mr-2 rounded bg-gradient-to-br from-amber-100 to-amber-200"></div>
-                    <span>Weekend</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 mr-2 rounded bg-gradient-to-br from-red-100 to-red-200"></div>
-                    <span>Holiday</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 mr-2 bg-gray-200 rounded"></div>
-                    <span>Unavailable</span>
+                    @endforeach
                 </div>
             </div>
+        @endif
+
+        <!-- ─── Split Canvas ─────────────────────────────────────────── -->
+        <div class="cal-split">
+
+            <!-- LEFT: Calendar Grid + Legend chip row -->
+            <div class="cal-left">
+
+                <!-- Compact legend chip row -->
+                <div class="cal-legend-row">
+                    <span class="cal-legend-chip"><span class="cal-legend-dot avail"></span>Available</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot meet"></span>Your Meeting</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot wknd"></span>Weekend</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot hol"></span>Holiday</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot full"></span>Unavailable</span>
+                </div>
+
+                <!-- Calendar Days Header -->
+                <div class="calendar-days-header">
+                    <div class="header-day">Mon</div>
+                    <div class="header-day">Tue</div>
+                    <div class="header-day">Wed</div>
+                    <div class="header-day">Thu</div>
+                    <div class="header-day">Fri</div>
+                    <div class="header-day">Sat</div>
+                    <div class="header-day">Sun</div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="calendar-grid">
+                    @foreach($monthlyData as $dayData)
+                        @php
+                            $isSelected = $selectedDate === $dayData['dateString'];
+                            $todaysMeeting = null;
+                            if ($dayData['hasCustomerMeeting']) {
+                                $todaysMeeting = collect($existingBookings)->first(function ($booking) use ($dayData) {
+                                    return Carbon::parse($booking['date'])->format('Y-m-d') === $dayData['dateString'];
+                                });
+                            }
+                        @endphp
+                        <div class="calendar-day
+                            {{ !$dayData['isCurrentMonth'] ? 'other-month' : '' }}
+                            {{ $dayData['isToday'] ? 'today' : '' }}
+                            {{ $dayData['isPast'] ? 'past' : '' }}
+                            {{ $dayData['isWeekend'] ? 'weekend' : '' }}
+                            {{ $dayData['isPublicHoliday'] ? 'holiday' : '' }}
+                            {{ $dayData['hasCustomerMeeting'] ? 'has-meeting' : '' }}
+                            {{ $dayData['canBook'] ? 'bookable' : '' }}
+                            {{ $isSelected ? 'selected' : '' }}
+                            {{ !$canScheduleMeeting && !$dayData['hasCustomerMeeting'] ? 'disabled' : '' }}
+                            {{ $dayData['isBeyondBookingWindow'] ? 'disabled' : '' }}"
+                            @if($dayData['canBook'])
+                                wire:click="selectDateInline('{{ $dayData['dateString'] }}')"
+                            @elseif($dayData['hasCustomerMeeting'] && $todaysMeeting)
+                                wire:click="openMeetingDetailsModal({{ $todaysMeeting['id'] }})"
+                            @endif>
+
+                            <div class="day-number">{{ $dayData['day'] }}</div>
+
+                            {{-- Corner state pictogram --}}
+                            @if($dayData['hasCustomerMeeting'] && $todaysMeeting)
+                                @if($todaysMeeting['status'] === 'Done')
+                                    <span class="cal-day-icon"><i class="fas fa-circle-check"></i></span>
+                                @else
+                                    <span class="cal-day-icon"><i class="fas fa-video"></i></span>
+                                @endif
+                            @elseif($dayData['isPublicHoliday'] && $dayData['isCurrentMonth'])
+                                <span class="cal-day-icon"><i class="fas fa-flag"></i></span>
+                            @elseif($dayData['isWeekend'] && $dayData['isCurrentMonth'])
+                                <span class="cal-day-icon"><i class="fas fa-umbrella-beach"></i></span>
+                            @elseif($dayData['canBook'])
+                                <span class="cal-day-icon"><i class="fas fa-bolt"></i></span>
+                            @endif
+
+                            {{-- Bottom status badge --}}
+                            @if($dayData['hasCustomerMeeting'] && $todaysMeeting)
+                                @if($todaysMeeting['status'] === 'Done')
+                                    <div class="meeting-indicator completed"><i class="fas fa-check"></i>Done</div>
+                                @else
+                                    <div class="meeting-indicator"><i class="fas fa-calendar-check"></i>Your slot</div>
+                                @endif
+                            @elseif($dayData['canBook'])
+                                <div class="available-count"><i class="fas fa-star"></i>{{ $dayData['availableCount'] }} open</div>
+                            @elseif($dayData['isCurrentMonth'] && !$dayData['isPast'] && !$dayData['isWeekend'] && !$dayData['isPublicHoliday'] && !$dayData['isBeyondBookingWindow'] && $canScheduleMeeting)
+                                <div class="cal-full-marker"><i class="fas fa-lock"></i>Full</div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- RIGHT: Booking panel -->
+            <aside class="cal-book-panel">
+
+                @if(!$canScheduleMeeting)
+                    {{-- Scheduling-disabled state --}}
+                    <div class="cal-panel-empty">
+                        <div class="cal-panel-empty-icon" style="background:#fef3c7;color:#b45309;">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <p class="cal-panel-empty-title">Booking unavailable</p>
+                        <p class="cal-panel-empty-body">
+                            You have a pending or completed meeting request. Please wait for it to be resolved before scheduling another one.
+                        </p>
+                    </div>
+
+                @elseif(!$selectedDate)
+                    {{-- Idle state --}}
+                    <div class="cal-panel-empty">
+                        <div class="cal-panel-empty-icon">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <p class="cal-panel-empty-title">Pick an available day</p>
+                        <p class="cal-panel-empty-body">
+                            Days outlined in green have open slots. Click one to see time options.
+                        </p>
+                    </div>
+                    <p class="cal-panel-footnote">
+                        <i class="fas fa-circle-info"></i>
+                        Bookings open for the next 3 weeks only.
+                    </p>
+
+                @else
+                    {{-- Date-selected state --}}
+                    <div class="cal-panel-head">
+                        <div>
+                            <p class="cal-panel-eyebrow">Selected date</p>
+                            <p class="cal-panel-date">{{ Carbon::parse($selectedDate)->format('l') }}</p>
+                            <p class="cal-panel-sub">{{ Carbon::parse($selectedDate)->format('F j, Y') }} · {{ count($availableSessions) }} {{ count($availableSessions) === 1 ? 'slot' : 'slots' }}</p>
+                        </div>
+                        <button type="button" class="cal-panel-clear" wire:click="clearSelectedDate" title="Clear selection">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    @if(count($availableSessions) > 0)
+                        {{-- Time slot selection --}}
+                        <div class="cal-field-block">
+                            <p class="cal-field-label">Time slot <span class="cal-field-required">*</span></p>
+                            <div class="cal-slot-grid">
+                                @foreach($availableSessions as $index => $session)
+                                    @php $isSlotSelected = $selectedSession && $selectedSession['start_time'] === $session['start_time']; @endphp
+                                    <button type="button"
+                                            class="cal-slot {{ $isSlotSelected ? 'is-selected' : '' }}"
+                                            wire:click="selectSession({{ $index }})">
+                                        <span>{{ $session['formatted_start'] }}</span>
+                                        <span class="cal-slot-session">{{ $session['session_name'] }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Meeting type (read-only) --}}
+                        <div class="cal-field-block">
+                            <p class="cal-field-label">Meeting type</p>
+                            <div class="cal-field-static">
+                                <i class="fas fa-video"></i>
+                                <span>Online Meeting via Microsoft Teams</span>
+                            </div>
+                        </div>
+
+                        {{-- Required attendees --}}
+                        <div class="cal-field-block">
+                            <div class="cal-field-label-row">
+                                <label for="cal-attendees-input" class="cal-field-label">
+                                    Required attendees <span class="cal-field-required">*</span>
+                                </label>
+                                <button type="button"
+                                        class="cal-att-btn-inline"
+                                        onclick="window.dispatchEvent(new CustomEvent('cal-open-attendees'))"
+                                        title="Open bulk editor">
+                                    <i class="fas fa-users"></i>
+                                    <span>Bulk edit</span>
+                                </button>
+                            </div>
+                            <input type="text"
+                                   id="cal-attendees-input"
+                                   class="cal-field-input"
+                                   wire:model.live.debounce.500ms="requiredAttendees"
+                                   wire:keydown.enter="submitBooking"
+                                   placeholder="john@example.com;jane@example.com">
+                            <p class="cal-field-hint">
+                                <i class="fas fa-circle-info"></i>
+                                Separate multiple emails with semicolons (;)
+                            </p>
+                        </div>
+
+                        @if($sessionValidationError)
+                            <div class="cal-panel-error">{{ $sessionValidationError }}</div>
+                        @endif
+
+                        <button type="button"
+                                class="cal-continue-btn"
+                                wire:click="submitBooking"
+                                wire:loading.attr="disabled"
+                                wire:target="submitBooking"
+                                @if(!$selectedSession || empty(trim($requiredAttendees))) disabled @endif>
+                            <span wire:loading.remove wire:target="submitBooking" class="cal-submit-loading">
+                                @if(!$selectedSession)
+                                    Select a time slot
+                                @elseif(empty(trim($requiredAttendees)))
+                                    Add attendees first
+                                @else
+                                    <i class="fas fa-paper-plane"></i>
+                                    Confirm booking
+                                @endif
+                            </span>
+                            <span wire:loading wire:target="submitBooking" class="cal-submit-loading">
+                                <svg class="cal-spinner" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="42 28"/>
+                                </svg>
+                                Submitting…
+                            </span>
+                        </button>
+
+                        <p class="cal-panel-footnote">
+                            <i class="fas fa-envelope"></i>
+                            A Microsoft Teams invite will be emailed to all attendees after booking.
+                        </p>
+                    @else
+                        <div class="cal-panel-empty" style="padding:1rem 0.5rem;">
+                            <div class="cal-panel-empty-icon" style="background:#fef2f2;color:#b91c1c;">
+                                <i class="fas fa-calendar-xmark"></i>
+                            </div>
+                            <p class="cal-panel-empty-title">No slots on this day</p>
+                            <p class="cal-panel-empty-body">All sessions are booked or outside the allowed window. Try a different day.</p>
+                        </div>
+                    @endif
+                @endif
+            </aside>
+
         </div>
     </div>
 
@@ -1801,38 +2894,38 @@ use Carbon\Carbon;
 
                         <div class="tutorial-grid">
                             <div class="tutorial-card blue">
-                                <h5 style="font-weight: 700; color: #1e40af; margin-bottom: 0.5rem;">Kick-Off <br>Meetings</h5>
+                                <h5 style="font-weight: 700; color: #003c75; margin-bottom: 0.5rem;">Kick-Off <br>Meetings</h5>
                             </div>
                             <div class="tutorial-card purple">
-                                <h5 style="font-weight: 700; color: #6b21a8; margin-bottom: 0.5rem;">Review <br>Sessions</h5>
+                                <h5 style="font-weight: 700; color: #005170; margin-bottom: 0.5rem;">Review <br>Sessions</h5>
                             </div>
                         </div>
 
                         <div class="tutorial-tip">
-                            <p style="color: #047857; font-size: 0.875rem;">
-                                <strong style="color: #059669;">Green dates</strong> are available for booking, and your existing meetings appear in <strong style="color: #2563eb;">blue</strong>.
+                            <p style="color: #065f46; font-size: 0.875rem;">
+                                <strong style="color: #10b981;">Green dates</strong> are available for booking, and your existing meetings appear in <strong style="color: #003c75;">blue</strong>.
                             </p>
                         </div>
 
                     @elseif($currentTutorialStep == 2)
                         <h4 class="tutorial-step-title">Finding Available Dates</h4>
                         <p class="tutorial-step-description">
-                            Look for dates highlighted in <span style="padding: 0.25rem 0.75rem; background: #dcfce7; color: #166534; border-radius: 20px; font-weight: 600;">green</span>
+                            Look for dates highlighted in <span style="padding: 0.25rem 0.75rem; background: #ecfdf5; color: #065f46; border-radius: 20px; font-weight: 600;">green</span>
                         </p>
 
                         <!-- Mini Calendar Preview -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem auto; max-width: 600px;">
                             <div class="tutorial-card green" style="text-align: center; padding: 0.75rem;">
-                                <div style="font-weight: 700; color: #166534;">15</div>
-                                <div style="font-size: 0.75rem; color: #059669; margin-top: 0.25rem;">✨ 3 available</div>
+                                <div style="font-weight: 700; color: #065f46;">15</div>
+                                <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">✨ 3 available</div>
                             </div>
-                            <div style="padding: 0.75rem; background: #f3f4f6; border: 2px solid #d1d5db; border-radius: 12px; text-align: center; opacity: 0.6;">
-                                <div style="font-weight: 700; color: #6b7280;">16</div>
-                                <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">Weekend</div>
+                            <div style="padding: 0.75rem; background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; text-align: center;">
+                                <div style="font-weight: 700; color: #b45309;">16</div>
+                                <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem;">Weekend</div>
                             </div>
                             <div class="tutorial-card blue" style="text-align: center; padding: 0.75rem;">
-                                <div style="font-weight: 700; color: #1e40af;">17</div>
-                                <div style="font-size: 0.75rem; color: #2563eb; margin-top: 0.25rem;">📅 Your Meeting</div>
+                                <div style="font-weight: 700; color: #003c75;">17</div>
+                                <div style="font-size: 0.75rem; color: #003c75; margin-top: 0.25rem;">📅 Your Meeting</div>
                             </div>
                         </div>
 
@@ -1841,18 +2934,18 @@ use Carbon\Carbon;
 
                         <!-- Session Selector Preview -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1.5rem 0;">
-                            <div style="padding: 1rem; border: 2px solid #e5e7eb; border-radius: 12px; text-align: center; background: white;">
-                                <div style="font-weight: 700; color: #374151; font-size: 0.875rem;">SESSION 1</div>
-                                <div style="color: #6b7280; font-size: 0.75rem;">9:30 AM</div>
+                            <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
+                                <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 1</div>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">9:30 AM</div>
                             </div>
-                            <div style="padding: 1rem; border: 2px solid #3b82f6; border-radius: 12px; text-align: center; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); transform: scale(1.05);">
-                                <div style="font-weight: 700; color: #1e40af; font-size: 0.875rem;">SESSION 2</div>
-                                <div style="color: #2563eb; font-size: 0.75rem;">11:00 AM</div>
-                                <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: #3b82f6; color: white; border-radius: 20px; font-size: 0.625rem;">Selected</div>
+                            <div style="padding: 1rem; border: 1.5px solid #003c75; border-radius: 12px; text-align: center; background: #003c75; transform: scale(1.05); box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35); font-family: 'Poppins', sans-serif;">
+                                <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">SESSION 2</div>
+                                <div style="color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; margin-top: 0.25rem;">11:00 AM</div>
+                                <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255, 255, 255, 0.18); color: white; border-radius: 20px; font-size: 0.625rem; letter-spacing: 0.04em;">Selected</div>
                             </div>
-                            <div style="padding: 1rem; border: 2px solid #e5e7eb; border-radius: 12px; text-align: center; background: white;">
-                                <div style="font-weight: 700; color: #374151; font-size: 0.875rem;">SESSION 3</div>
-                                <div style="color: #6b7280; font-size: 0.75rem;">2:00 PM</div>
+                            <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
+                                <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 3</div>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">2:00 PM</div>
                             </div>
                         </div>
 
@@ -1860,15 +2953,15 @@ use Carbon\Carbon;
                         <h4 class="tutorial-step-title">Add Attendees & Submit</h4>
 
                         <!-- Form Preview -->
-                        <div style="padding: 1rem; border: 2px solid #10b981; border-radius: 12px; background: #ecfdf5; margin: 1.5rem 0; text-align: left;">
-                            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <div style="padding: 1rem; border: 2px solid #10b981; border-radius: 12px; background: #ecfdf5; margin: 1.5rem 0; text-align: left; font-family: 'Poppins', sans-serif;">
+                            <label style="display: block; font-weight: 600; color: #065f46; margin-bottom: 0.5rem; font-size: 0.875rem;">
                                 Required Attendees <span style="color: #ef4444;">*</span>
                             </label>
                             <input type="text"
-                                style="width: 100%; padding: 0.75rem; border: 2px solid #10b981; border-radius: 8px; background: #f0fdf4; font-size: 0.875rem;"
+                                style="width: 100%; padding: 0.75rem; border: 2px solid #10b981; border-radius: 8px; background: #f0fdf4; font-size: 0.875rem; font-family: 'Poppins', sans-serif;"
                                 placeholder="john@example.com;jane@example.com"
                                 disabled>
-                            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #059669;">💡 Separate multiple emails with semicolons (;)</p>
+                            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #065f46;">💡 Separate multiple emails with semicolons (;)</p>
                         </div>
                     @endif
                 </div>
@@ -1909,4 +3002,179 @@ use Carbon\Carbon;
             </div>
         </div>
     @endif
+
+    {{-- ──────────────────────────────────────────────────────────────
+         Bulk Attendees Drawer (Alpine-only, teleported to <body>)
+         Triggered by CustomEvent 'cal-open-attendees' from window.
+    ────────────────────────────────────────────────────────────── --}}
+    <div x-data="{
+            show: false,
+            emails: [''],
+            maxEmails: 10,
+            emailRe: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            open() {
+                const current = this.$wire.get('requiredAttendees') || '';
+                const parsed = current.split(';').map(e => e.trim()).filter(e => e.length > 0);
+                this.emails = parsed.length > 0 ? parsed : [''];
+                this.show = true;
+                this.$nextTick(() => {
+                    const first = document.querySelector('.cal-att-body input.cal-att-input');
+                    if (first) first.focus();
+                });
+            },
+            close() { this.show = false; },
+            addRow() {
+                if (this.emails.length < this.maxEmails) {
+                    this.emails.push('');
+                    this.$nextTick(() => {
+                        const inputs = document.querySelectorAll('.cal-att-body input.cal-att-input');
+                        inputs[inputs.length - 1]?.focus();
+                    });
+                }
+            },
+            removeRow(i) {
+                this.emails.splice(i, 1);
+                if (this.emails.length === 0) this.emails = [''];
+            },
+            handlePaste(ev, idx) {
+                const text = (ev.clipboardData || window.clipboardData).getData('text') || '';
+                if (!/[;,\n\t]/.test(text)) return;
+                ev.preventDefault();
+                const parts = text.split(/[;,\n\t]+/).map(e => e.trim()).filter(e => e.length > 0);
+                if (parts.length === 0) return;
+                this.emails[idx] = parts[0];
+                for (let i = 1; i < parts.length && this.emails.length < this.maxEmails; i++) {
+                    this.emails.push(parts[i]);
+                }
+            },
+            isInvalid(email) {
+                const t = (email || '').trim();
+                return t.length > 0 && !this.emailRe.test(t);
+            },
+            uniqueCount() {
+                const seen = new Set();
+                let n = 0;
+                for (const e of this.emails) {
+                    const k = (e || '').trim().toLowerCase();
+                    if (k && !seen.has(k)) { seen.add(k); n++; }
+                }
+                return n;
+            },
+            save() {
+                const seen = new Set();
+                const cleaned = [];
+                for (const e of this.emails) {
+                    const trimmed = (e || '').trim();
+                    const key = trimmed.toLowerCase();
+                    if (trimmed && !seen.has(key)) {
+                        seen.add(key);
+                        cleaned.push(trimmed);
+                    }
+                }
+                // Single server roundtrip: update the Livewire property,
+                // persist to customers.saved_attendees for reuse on future
+                // bookings, and push a success notification — all in the
+                // saveAttendeeList() method on the component.
+                this.$wire.call('saveAttendeeList', cleaned.join(';'));
+                this.close();
+            }
+        }"
+        x-effect="document.body.classList.toggle('cal-att-drawer-open', show)"
+        @cal-open-attendees.window="open()"
+        @keydown.escape.window="show && close()">
+
+        <template x-teleport="body">
+            <div x-show="show" x-cloak class="cal-att-root">
+                {{-- Backdrop --}}
+                <div class="cal-att-backdrop"
+                     x-show="show"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     @click="close()"
+                     style="opacity: 1;"></div>
+
+                {{-- Drawer --}}
+                <aside class="cal-att-drawer"
+                       role="dialog"
+                       aria-modal="true"
+                       aria-labelledby="cal-att-title"
+                       x-show="show"
+                       x-transition:enter="transition ease-out duration-300"
+                       x-transition:enter-start="transform translate-x-full"
+                       x-transition:enter-end="transform translate-x-0"
+                       x-transition:leave="transition ease-in duration-200"
+                       x-transition:leave-start="transform translate-x-0"
+                       x-transition:leave-end="transform translate-x-full"
+                       style="transform: translateX(0);">
+
+                    <header class="cal-att-head">
+                        <div class="cal-att-head-text">
+                            <p class="cal-att-head-eyebrow">Required attendees</p>
+                            <h3 id="cal-att-title" class="cal-att-head-title">Manage attendee list</h3>
+                            <p class="cal-att-head-sub">
+                                Add up to <span x-text="maxEmails"></span> email addresses. You can paste a comma- or semicolon-separated list into any row.
+                            </p>
+                        </div>
+                        <button type="button" class="cal-att-close" @click="close()" aria-label="Close drawer">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </header>
+
+                    <div class="cal-att-body">
+                        <template x-for="(email, idx) in emails" :key="idx">
+                            <div class="cal-att-row">
+                                <div class="cal-att-row-head">
+                                    <span class="cal-att-row-num" x-text="'Attendee ' + (idx + 1)"></span>
+                                    <button type="button"
+                                            class="cal-att-row-remove"
+                                            @click="removeRow(idx)"
+                                            aria-label="Remove attendee">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <input type="email"
+                                       class="cal-att-input"
+                                       :class="{ 'is-invalid': isInvalid(email) }"
+                                       x-model="emails[idx]"
+                                       @paste="handlePaste($event, idx)"
+                                       @keydown.enter.prevent="idx === emails.length - 1 ? addRow() : null"
+                                       placeholder="name@example.com"
+                                       autocomplete="off"
+                                       spellcheck="false">
+                            </div>
+                        </template>
+
+                        <button type="button"
+                                class="cal-att-add"
+                                @click="addRow()"
+                                :disabled="emails.length >= maxEmails">
+                            <i class="fas fa-plus"></i>
+                            <span x-text="emails.length >= maxEmails ? 'Attendee limit reached' : 'Add another attendee'"></span>
+                        </button>
+
+                        <p class="cal-att-counter" :class="{ 'is-over': emails.length > maxEmails }">
+                            <span x-text="emails.length"></span> of <span x-text="maxEmails"></span>
+                            <template x-if="uniqueCount() !== emails.filter(e => (e || '').trim().length > 0).length">
+                                <span> · <span x-text="uniqueCount()"></span> unique after dedupe</span>
+                            </template>
+                        </p>
+                    </div>
+
+                    <footer class="cal-att-foot">
+                        <button type="button" class="cal-att-btn-cancel" @click="close()">Cancel</button>
+                        <button type="button" class="cal-att-btn-save" @click="save()">
+                            <i class="fas fa-check"></i>
+                            Save attendees
+                        </button>
+                    </footer>
+
+                </aside>
+            </div>
+        </template>
+    </div>
+
 </div>
