@@ -42,6 +42,17 @@ class CustomerImplementerThread extends Component
         return auth('customer')->user();
     }
 
+    public function getCanCreateTicketProperty(): bool
+    {
+        $customer = $this->getCustomer();
+
+        if (!$customer || !$customer->lead_id) {
+            return false;
+        }
+
+        return ImplementerTicket::where('lead_id', $customer->lead_id)->exists();
+    }
+
     public function getTickets()
     {
         $customer = $this->getCustomer();
@@ -162,6 +173,10 @@ class CustomerImplementerThread extends Component
     // Create ticket
     public function openCreateModal()
     {
+        if (!$this->canCreateTicket) {
+            return;
+        }
+
         $this->showCreateModal = true;
         $this->resetCreateForm();
     }
@@ -184,6 +199,11 @@ class CustomerImplementerThread extends Component
 
     public function createTicket()
     {
+        if (!$this->canCreateTicket) {
+            $this->dispatch('notify', message: 'Your implementer hasn\'t sent the first session summary yet.');
+            return;
+        }
+
         $this->validate([
             'newSubject' => 'required|string|max:255',
             'newDescription' => 'required|string',

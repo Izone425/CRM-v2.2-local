@@ -58,6 +58,22 @@ class ImplementerTicket extends Model
     protected static function booted(): void
     {
         static::created(function (ImplementerTicket $ticket) {
+            $swId = $ticket->software_handover_id;
+
+            if ($swId) {
+                $sequence = ImplementerTicket::where('software_handover_id', $swId)
+                    ->where('id', '<=', $ticket->id)
+                    ->count();
+
+                $ticket->update([
+                    'ticket_number' => 'SW_'
+                        . str_pad((string) $swId, 6, '0', STR_PAD_LEFT)
+                        . '_IMP'
+                        . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT),
+                ]);
+                return;
+            }
+
             $year = $ticket->created_at ? $ticket->created_at->format('y') : date('y');
             $ticket->update([
                 'ticket_number' => 'IMP-' . $year . str_pad($ticket->id, 4, '0', STR_PAD_LEFT),
@@ -114,6 +130,13 @@ class ImplementerTicket extends Model
     {
         if ($this->ticket_number) {
             return $this->ticket_number;
+        }
+
+        if ($this->software_handover_id) {
+            return 'SW_'
+                . str_pad((string) $this->software_handover_id, 6, '0', STR_PAD_LEFT)
+                . '_IMP'
+                . str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
         }
 
         $year = $this->created_at ? $this->created_at->format('y') : date('y');

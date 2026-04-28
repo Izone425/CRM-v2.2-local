@@ -19,12 +19,16 @@ use Filament\Support\Enums\ActionSize;
 use App\Models\Lead;
 use App\Models\ActivityLog;
 use App\Models\Appointment;
+use App\Models\Customer;
 use App\Models\EmailTemplate;
 use App\Models\ImplementerAppointment;
 use App\Models\ImplementerLogs;
+use App\Models\ImplementerTicket;
+use App\Models\ImplementerTicketReply;
 use App\Models\SoftwareHandover;
 use App\Models\InvalidLeadReason;
 use App\Models\User;
+use App\Notifications\ImplementerTicketNotification;
 use App\Services\MicrosoftGraphService;
 use App\Services\QuotationService;
 use Beta\Microsoft\Graph\Model\Event;
@@ -2723,6 +2727,22 @@ class ImplementerActions
                         'session_recording_link' => $data['session_recording_link'] ?? $record->session_recording_link,
                     ]);
 
+                    // Auto-create the implementer ticket from this session summary so it appears
+                    // in the customer portal Implementer Thread tab as the first thread.
+                    // Wrapped in its own try/catch — if ticket creation fails, the email and
+                    // appointment update have already succeeded and we do not want to surface
+                    // a UI error.
+                    try {
+                        self::createTicketFromSessionSummary($record, $data, auth()->user(), $softwareHandover);
+                    } catch (\Throwable $e) {
+                        Log::error('Failed to auto-create implementer ticket from session summary', [
+                            'appointment_id' => $record->id,
+                            'lead_id'        => $record->lead_id,
+                            'error'          => $e->getMessage(),
+                            'trace'          => $e->getTraceAsString(),
+                        ]);
+                    }
+
                     // ✅ Clean up temporary onboarding files - EXACTLY same as RelationManager
                     if (!empty($data['onboarding_attachments'])) {
                         foreach ($data['onboarding_attachments'] as $fileName) {
@@ -2779,6 +2799,160 @@ class ImplementerActions
                         ->send();
                 }
             });
+    }
+
+    /**
+     * Auto-create an ImplementerTicket from a Send Session Summary submission.
+     * The ticket appears in the customer's portal Implementer Thread tab as the
+     * first thread and unlocks the customer's "Create New Ticket" gate.
+     *
+     * Returns null if no Customer exists for the lead (logged warning, not an error).
+     */
+    public static function createTicketFromSessionSummary(
+        ImplementerAppointment $record,
+        array $data,
+        User $implementer,
+        ?SoftwareHandover $softwareHandover = null
+    ): ?ImplementerTicket {
+        $customer = Customer::where('lead_id', $record->lead_id)->first();
+
+        if (!$customer) {
+            Log::warning('Session summary: no Customer found for lead, skipping ticket creation', [
+                'lead_id'        => $record->lead_id,
+                'appointment_id' => $record->id,
+            ]);
+            return null;
+        }
+
+        $softwareHandover = $softwareHandover
+            ?? SoftwareHandover::where('lead_id', $record->lead_id)->latest()->first();
+
+        // Mirror the placeholder substitutions used by the email-send pipeline so
+        // the persisted ticket subject/body are fully resolved (no raw {company_name},
+        // {customer_name}, {implementer_name} etc. leaking into the customer portal).
+        $placeholders = self::buildSessionSummaryPlaceholders(
+            $record,
+            $customer,
+            $softwareHandover,
+            $implementer,
+            $data
+        );
+
+        $resolvedSubject = str_replace(
+            array_keys($placeholders),
+            array_values($placeholders),
+            $data['email_subject'] ?? 'Session Summary'
+        );
+
+        $resolvedBody = str_replace(
+            array_keys($placeholders),
+            array_values($placeholders),
+            $data['email_content'] ?? ''
+        );
+
+        $ticket = ImplementerTicket::create([
+            'customer_id'          => $customer->id,
+            'implementer_user_id'  => $implementer->id,
+            'implementer_name'     => $implementer->name,
+            'lead_id'              => $record->lead_id,
+            'software_handover_id' => $softwareHandover?->id,
+            'subject'              => $resolvedSubject,
+            'description'          => $resolvedBody,
+            'status'               => 'open',
+            'priority'             => 'medium',
+            'category'             => 'Session Summary',
+            'module'               => 'General',
+            'attachments'          => null,
+            'first_responded_at'   => now(),
+        ]);
+
+        // First reply mirrors the email body so the customer sees the full session
+        // summary content in the thread (the customer portal renders replies, not
+        // the ticket description). Remarks are appended below as a labelled block.
+        $firstReply = $resolvedBody;
+
+        if (!empty($data['notes'])) {
+            $firstReply .= '<hr style="margin:16px 0;border:0;border-top:1px solid #E2E8F0;"/>'
+                . '<p style="margin:0 0 8px 0;"><strong>Implementer Remarks</strong></p>'
+                . $data['notes'];
+        }
+
+        $replyAttachments = [];
+        foreach ($data['project_plan_files'] ?? [] as $f) {
+            $replyAttachments[] = $f;
+        }
+
+        ImplementerTicketReply::create([
+            'implementer_ticket_id' => $ticket->id,
+            'sender_type'           => User::class,
+            'sender_id'             => $implementer->id,
+            'message'               => $firstReply,
+            'attachments'           => $replyAttachments ?: null,
+            'is_internal_note'      => false,
+        ]);
+
+        $customer->notifyNow(new ImplementerTicketNotification(
+            $ticket,
+            'replied_by_implementer',
+            $implementer->name
+        ));
+
+        Log::info('Session summary auto-created implementer ticket', [
+            'ticket_id'      => $ticket->id,
+            'ticket_number'  => $ticket->fresh()->ticket_number,
+            'customer_id'    => $customer->id,
+            'lead_id'        => $record->lead_id,
+            'appointment_id' => $record->id,
+        ]);
+
+        return $ticket;
+    }
+
+    /**
+     * Build the placeholder map used to resolve {company_name}, {customer_name},
+     * {implementer_name}, recording-link tokens and the rest in session-summary
+     * subject/body when persisting to ImplementerTicket. Mirrors the inline map
+     * used by the email-send pipeline (see processFollowUpWithEmail).
+     */
+    private static function buildSessionSummaryPlaceholders(
+        ImplementerAppointment $record,
+        Customer $customer,
+        ?SoftwareHandover $softwareHandover,
+        User $implementer,
+        array $data
+    ): array {
+        $lead = $record->lead;
+        $companyName = $softwareHandover?->company_name
+            ?? $lead?->companyDetail?->company_name
+            ?? ($customer->company_name ?? 'Unknown Company');
+
+        $portalBase = str_replace('http://', 'https://', config('app.url'));
+        $portalLink = '<a href="' . $portalBase . '/customer/login" target="_blank" style="color:#3b82f6;text-decoration:underline;">'
+            . $portalBase . '/customer/login</a>';
+
+        $projectPlanLink = (!empty($softwareHandover?->project_plan_link) && $softwareHandover->project_plan_link !== 'Not Generated Yet')
+            ? '<a href="' . $softwareHandover->project_plan_link . '" target="_blank" style="color:#3b82f6;text-decoration:underline;">'
+                . $softwareHandover->project_plan_link . '</a>'
+            : 'Not Generated Yet';
+
+        $recording = self::formatRecordingLinksForEmail($data['session_recording_link'] ?? '');
+
+        return [
+            '{customer_name}'           => $lead?->contact_name ?? ($customer->name ?? ''),
+            '{company_name}'            => $companyName,
+            '{implementer_name}'        => $data['implementer_name'] ?? $implementer->name,
+            '{implementer_designation}' => $data['implementer_designation'] ?? 'Implementer',
+            '{lead_owner}'              => $lead?->lead_owner ?? '',
+            '{follow_up_date}'          => $data['follow_up_date'] ?? date('d M Y'),
+            '{recording_links}'         => $recording,
+            '{session_recording_link}'  => $recording,
+            '{recording_link}'          => $recording,
+            '{session_recordings}'      => $recording,
+            '{customer_email}'          => $customer->email ?? '',
+            '{customer_password}'       => $customer->plain_password ?? '',
+            '{customer_portal_url}'     => $portalLink,
+            '{project_plan_link}'       => $projectPlanLink,
+        ];
     }
 
     public static function viewAppointmentAction(): Action

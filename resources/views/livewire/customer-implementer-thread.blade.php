@@ -22,15 +22,29 @@
     <div class="cit-dashboard">
 
         {{-- Header --}}
+        @php $canCreate = $this->canCreateTicket; @endphp
         <div class="cit-header">
             <div>
                 <h1 class="cit-title">Implementer Thread</h1>
                 <p class="cit-subtitle">Manage and track your support requests</p>
             </div>
-            <button wire:click="openCreateModal" class="cit-btn-primary">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                Create New Ticket
-            </button>
+            <div class="cit-create-wrap" x-data="{ tip: false }">
+                <button
+                    wire:click="openCreateModal"
+                    @if(!$canCreate) disabled aria-disabled="true" @endif
+                    @if(!$canCreate) @mouseenter="tip = true" @mouseleave="tip = false" @endif
+                    class="cit-btn-primary {{ !$canCreate ? 'cit-btn-disabled' : '' }}"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    Create New Ticket
+                </button>
+                @if(!$canCreate)
+                    <div x-show="tip" x-cloak x-transition class="cit-tooltip">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        <span>Available after your implementer sends the first session summary.</span>
+                    </div>
+                @endif
+            </div>
         </div>
 
         {{-- Stats Cards --}}
@@ -117,7 +131,7 @@
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
                             <div class="cit-dropdown-item {{ !$categoryFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '')" @click="open = false">All Categories</div>
-                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
+                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Session Summary', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
                                 <div class="cit-dropdown-item {{ $categoryFilter === $cat ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '{{ $cat }}')" @click="open = false">{{ $cat }}</div>
                             @endforeach
                         </div>
@@ -157,12 +171,21 @@
                     <div class="cit-empty-desc">Try adjusting your search or filters to find what you're looking for.</div>
                     <button wire:click="resetFilters" class="cit-btn-outline" style="margin-top: 12px;">Clear Filters</button>
                 @else
-                    <div class="cit-empty-title">No threads yet</div>
-                    <div class="cit-empty-desc">Create your first support ticket to get started with your implementer.</div>
-                    <button wire:click="openCreateModal" class="cit-btn-primary" style="margin-top: 16px; font-size: 0.82rem;">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                        Create New Ticket
-                    </button>
+                    @if($this->canCreateTicket)
+                        <div class="cit-empty-title">No threads yet</div>
+                        <div class="cit-empty-desc">Create your first support ticket to get started with your implementer.</div>
+                        <button wire:click="openCreateModal" class="cit-btn-primary" style="margin-top: 16px; font-size: 0.82rem;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                            Create New Ticket
+                        </button>
+                    @else
+                        <div class="cit-empty-title">Waiting for your first session summary</div>
+                        <div class="cit-empty-desc">Your implementer will start the conversation by sending the first session summary. You'll be able to reply and create new tickets here once that happens.</div>
+                        <div class="cit-empty-hint">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                            <span>Check back here after your kickoff session.</span>
+                        </div>
+                    @endif
                 @endif
             </div>
         @else
@@ -579,7 +602,7 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
+                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Session Summary', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
                                 <div class="cit-dropdown-item {{ $newCategory === $cat ? 'cit-dropdown-selected' : '' }}" wire:click="$set('newCategory', '{{ $cat }}')" @click="open = false">{{ $cat }}</div>
                             @endforeach
                         </div>
@@ -756,6 +779,38 @@
 }
 .cit-btn-primary:hover { box-shadow: 0 6px 20px rgba(102,126,234,0.35); transform: translateY(-1px); }
 .cit-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Gated create button ── */
+.cit-create-wrap { position: relative; display: inline-block; }
+.cit-btn-disabled {
+    opacity: 0.5; cursor: not-allowed;
+    background: linear-gradient(135deg, #94A3B8 0%, #64748B 100%);
+    filter: grayscale(0.3);
+}
+.cit-btn-disabled:hover { transform: none; box-shadow: none; }
+.cit-tooltip {
+    position: absolute; top: calc(100% + 10px); right: 0;
+    background: #0F172A; color: #fff;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 0.78rem; font-weight: 500; line-height: 1.4;
+    max-width: 280px; min-width: 220px;
+    display: inline-flex; align-items: flex-start; gap: 8px;
+    box-shadow: 0 10px 25px rgba(15,23,42,0.25);
+    z-index: 50;
+}
+.cit-tooltip svg { color: #FBBF24; margin-top: 1px; }
+.cit-tooltip::before {
+    content: ''; position: absolute; top: -5px; right: 18px;
+    width: 10px; height: 10px; background: #0F172A;
+    transform: rotate(45deg);
+}
+.cit-empty-hint {
+    margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 999px;
+    background: #FEF3C7; color: #92400E;
+    font-size: 0.76rem; font-weight: 500;
+}
+.cit-empty-hint svg { color: #B45309; }
 .cit-btn-outline {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 9px 20px; border: 1px solid #E2E8F0; border-radius: 10px;

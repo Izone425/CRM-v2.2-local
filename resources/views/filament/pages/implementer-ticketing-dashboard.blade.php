@@ -4146,7 +4146,7 @@
                                                 </div>
                                             @else
                                                 <div class="imp-detail-msg-body">{!! preg_replace(
-                                                '/(IMP-\d+)/',
+                                                '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
                                                 strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
                                             ) !!}</div>
@@ -4179,7 +4179,7 @@
                                                 </div>
                                             </div>
                                             <div class="imp-detail-msg-body">{!! preg_replace(
-                                                '/(IMP-\d+)/',
+                                                '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
                                                 strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
                                             ) !!}</div>
