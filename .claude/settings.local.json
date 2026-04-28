@@ -1,14 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep:*)",
-      "WebFetch(domain:www.figma.com)",
-      "Bash(php artisan:*)",
-      "Bash(php -l resources/views/filament/pages/implementer-ticketing-dashboard.blade.php)",
-      "Bash(find 'c:/Users/Muhammad Izzuwan/Documents/TT CRM v2 latest/vendor/filament' -type f -name *topbar* -o -name *header* -o -name *layout*)",
-      "Read(//c/Users/Muhammad Izzuwan/.claude/**)",
-      "Bash(find 'C:\\\\Users\\\\Muhammad Izzuwan\\\\Documents\\\\TT CRM v2 latest\\\\resources\\\\views\\\\filament' -type f -name *.blade.php)",
-      "Bash(grep -r ^class.*extends 'C:\\\\Users\\\\Muhammad Izzuwan\\\\Documents\\\\TT CRM v2 latest\\\\app\\\\Models\\\\User.php')"
+      "Bash(git --version)",
+      "Bash(git clone *)",
+      "Bash(git -C \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)\" init)",
+      "Bash(git -C \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)\" remote add origin https://github.com/Izone425/CRM-v2.2-local.git)",
+      "Bash(git -C \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)\" fetch origin)",
+      "Bash(rm \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)/.claude/settings.local.json\")",
+      "Bash(git -C \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)\" checkout -b main --track origin/main)",
+      "Bash(php \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)/artisan\" migrate)",
+      "Bash(php \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)/artisan\" migrate:status)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(php \"c:/Users/User/Documents/002-CRMv3\\(customer portal\\)/artisan\" config:clear)",
+      "Bash(php 'c:/Users/User/Documents/002-CRMv3\\(customer portal\\)/artisan' tinker '--execute=try { \\\\DB::connection\\('\\\\''frontenddb'\\\\''\\)->select\\('\\\\''SELECT 1 as ok'\\\\''\\); echo '\\\\''frontenddb: OK'\\\\''; } catch \\(\\\\Throwable $e\\) { echo '\\\\''frontenddb: '\\\\''.$e->getMessage\\(\\); }')",
+      "Bash(php artisan *)",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app = require '\\\\''bootstrap/app.php'\\\\''; $app->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\); try { $compiled = \\(new \\\\Illuminate\\\\View\\\\Compilers\\\\BladeCompiler\\($app['\\\\''files'\\\\''], storage_path\\('\\\\''framework/views'\\\\''\\)\\)\\)->compileString\\(file_get_contents\\('\\\\''resources/views/livewire/customer-dashboard.blade.php'\\\\''\\)\\); echo '\\\\''Blade compile OK \\('\\\\'' . strlen\\($compiled\\) . '\\\\'' bytes\\)'\\\\''; } catch \\(\\\\Throwable $e\\) { echo '\\\\''COMPILE ERR: '\\\\'' . $e->getMessage\\(\\); }')",
+      "Bash(php -l app/Livewire/CustomerDashboard.php)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8000/customer/dashboard)",
+      "Bash(ipconfig)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

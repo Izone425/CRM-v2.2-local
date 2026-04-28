@@ -463,6 +463,15 @@
     <!-- Left Sidebar (Below Header) -->
     <div class="sidebar">
         <div class="sidebar-menu">
+            {{-- Dashboard — top-level item --}}
+            <button onclick="switchTab('dashboard')"
+                    id="dashboard-tab"
+                    class="menu-item"
+                    style="margin-bottom: 12px;">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </button>
+
             {{-- Implementation — collapsible group --}}
             <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
                 <i class="fas fa-cogs"></i>
@@ -477,7 +486,7 @@
             <div id="implementation-sub" class="menu-sub-items" style="display: none;">
                 <button onclick="switchTab('calendar')"
                         id="calendar-tab"
-                        class="menu-item active">
+                        class="menu-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Meeting Schedule</span>
                 </button>
@@ -570,8 +579,13 @@
     <div class="main-wrapper">
         <!-- Main Content -->
         <main class="tt-content">
+            <!-- Dashboard Tab Content (default landing) -->
+            <div id="dashboard-content" class="tab-content" style="display: block;">
+                @livewire('customer-dashboard')
+            </div>
+
             <!-- Calendar Tab Content -->
-            <div id="calendar-content" class="tab-content" style="display: block;">
+            <div id="calendar-content" class="tab-content" style="display: none;">
                 @livewire('customer-calendar')
             </div>
 
@@ -708,12 +722,12 @@
             const urlTab = urlParams.get('tab');
             const urlTicket = urlParams.get('ticket');
 
-            let activeTab = urlTab || localStorage.getItem('activeTab') || 'calendar';
+            let activeTab = urlTab || localStorage.getItem('activeTab') || 'dashboard';
 
-            // If project plan doesn't exist and user tries to access it, fallback to calendar
+            // If project plan doesn't exist and user tries to access it, fallback to dashboard
             if (activeTab === 'project' && !hasProjectPlan) {
-                activeTab = 'calendar';
-                localStorage.setItem('activeTab', 'calendar');
+                activeTab = 'dashboard';
+                localStorage.setItem('activeTab', 'dashboard');
             }
 
             // Force initial display state via inline !important

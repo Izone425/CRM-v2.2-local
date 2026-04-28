@@ -531,53 +531,126 @@ use Carbon\Carbon;
             line-height: 1.5;
         }
 
+        /* One slot per row — horizontal layout */
         .cal-slot-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            grid-template-columns: 1fr;
+            gap: 6px;
         }
 
         .cal-slot {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 2px;
-            padding: 10px 12px;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
             border: 1.5px solid var(--cal-border);
             border-radius: 10px;
             background: var(--cal-surface);
             font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.18s ease;
+            text-align: left;
+            min-height: 52px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cal-slot::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--cal-accent-dark);
+            transform: scaleY(0);
+            transform-origin: center;
+            transition: transform 0.2s ease;
+        }
+
+        .cal-slot-icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            background: var(--cal-hover-bg);
+            color: var(--cal-accent-dark);
+            flex-shrink: 0;
             font-size: 13px;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.18s ease;
+        }
+
+        .cal-slot-time-range {
+            font-size: 14px;
             font-weight: 600;
             color: var(--cal-accent-dark);
-            cursor: pointer;
-            transition: all 0.15s;
-            text-align: left;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .cal-slot-divider {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--cal-text-quiet);
+            line-height: 1;
+            user-select: none;
+        }
+
+        .cal-slot-session-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--cal-text-muted);
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .cal-slot-arrow {
+            color: var(--cal-text-quiet);
+            font-size: 12px;
+            transition: transform 0.18s ease, color 0.15s ease;
+            flex-shrink: 0;
+            margin-left: auto;
         }
 
         .cal-slot:hover {
             border-color: var(--cal-accent-mid);
             background: var(--cal-hover-bg);
-            transform: translateY(-1px);
+        }
+        .cal-slot:hover::before { transform: scaleY(0.7); }
+        .cal-slot:hover .cal-slot-icon {
+            background: var(--cal-accent-mid);
+            color: #ffffff;
+            transform: rotate(-6deg) scale(1.04);
+        }
+        .cal-slot:hover .cal-slot-arrow {
+            transform: translateX(4px);
+            color: var(--cal-accent-mid);
         }
 
         .cal-slot.is-selected {
             background: var(--cal-accent-dark);
             border-color: var(--cal-accent-dark);
+            box-shadow: 0 6px 16px -6px rgba(0, 60, 117, 0.45);
+        }
+        .cal-slot.is-selected::before { transform: scaleY(1); background: #ffffff; }
+        .cal-slot.is-selected .cal-slot-icon {
+            background: rgba(255, 255, 255, 0.18);
             color: #ffffff;
-            box-shadow: 0 4px 12px -4px rgba(0, 60, 117, 0.45);
+            transform: none;
         }
-
-        .cal-slot-session {
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--cal-text-muted);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .cal-slot.is-selected .cal-slot-session {
-            color: rgba(255, 255, 255, 0.72);
+        .cal-slot.is-selected .cal-slot-time-range { color: #ffffff; }
+        .cal-slot.is-selected .cal-slot-session-label { color: rgba(255, 255, 255, 0.78); }
+        .cal-slot.is-selected .cal-slot-divider { color: rgba(255, 255, 255, 0.55); }
+        .cal-slot.is-selected .cal-slot-arrow {
+            color: #ffffff;
+            transform: translateX(0);
         }
 
         .cal-continue-btn {
@@ -2405,8 +2478,13 @@ use Carbon\Carbon;
                                     <button type="button"
                                             class="cal-slot {{ $isSlotSelected ? 'is-selected' : '' }}"
                                             wire:click="selectSession({{ $index }})">
-                                        <span>{{ $session['formatted_start'] }}</span>
-                                        <span class="cal-slot-session">{{ $session['session_name'] }}</span>
+                                        <span class="cal-slot-icon">
+                                            <i class="far fa-clock"></i>
+                                        </span>
+                                        <span class="cal-slot-time-range">{{ $session['formatted_start'] }} – {{ $session['formatted_end'] }}</span>
+                                        <span class="cal-slot-divider" aria-hidden="true">·</span>
+                                        <span class="cal-slot-session-label">{{ $session['session_name'] }}</span>
+                                        <i class="cal-slot-arrow fas fa-arrow-right"></i>
                                     </button>
                                 @endforeach
                             </div>

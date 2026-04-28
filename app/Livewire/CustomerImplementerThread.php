@@ -318,6 +318,7 @@ class CustomerImplementerThread extends Component
         $this->replyMessage = '';
         $this->replyAttachments = [];
         $this->js("document.querySelector('.cit-reply-editor')?.innerHTML = ''");
+        $this->dispatch('reply-sent');
     }
 
     public function reopenTicket()

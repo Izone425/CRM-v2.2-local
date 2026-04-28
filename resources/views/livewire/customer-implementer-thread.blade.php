@@ -511,9 +511,41 @@
                     @endforelse
                 </div>
 
-                {{-- Reply Box --}}
+                {{-- Reply Section: collapsed bar by default, expands on click --}}
                 @if($selectedTicket->status !== \App\Enums\ImplementerTicketStatus::CLOSED)
-                <div class="cit-reply-box">
+                @php
+                    $customerInitial = strtoupper(substr(auth('customer')->user()->name ?? 'C', 0, 1));
+                    $pendingAttachments = $replyAttachments ? count($replyAttachments) : 0;
+                @endphp
+
+                {{-- Collapsed reply trigger --}}
+                <button type="button"
+                        x-show="!replyOpen"
+                        @click="openReply()"
+                        @keydown.enter.prevent="openReply()"
+                        class="cit-reply-collapsed"
+                        aria-label="Open reply composer">
+                    <span class="cit-reply-collapsed-avatar">{{ $customerInitial }}</span>
+                    <span class="cit-reply-collapsed-prompt">Click to reply...</span>
+                    @if($pendingAttachments > 0)
+                        <span class="cit-reply-collapsed-meta">
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                            {{ $pendingAttachments }} attached
+                        </span>
+                    @endif
+                    <span class="cit-reply-collapsed-icon">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    </span>
+                </button>
+
+                {{-- Expanded reply composer --}}
+                <div class="cit-reply-box"
+                     x-show="replyOpen"
+                     x-transition:enter="cit-reply-enter"
+                     x-transition:enter-start="cit-reply-enter-start"
+                     x-transition:enter-end="cit-reply-enter-end"
+                     @keydown.escape.window="if(replyOpen) closeReply()"
+                     style="display: none;">
                     <div class="cit-reply-toolbar" wire:ignore>
                         <button type="button" @click="exec('bold')" title="Bold" class="cit-toolbar-btn">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>
@@ -527,6 +559,9 @@
                         <span class="cit-toolbar-divider"></span>
                         <button type="button" @click="$refs.replyFileInput.click()" title="Attach File" class="cit-toolbar-btn">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                        </button>
+                        <button type="button" @click="closeReply()" title="Minimize (Esc)" class="cit-toolbar-btn cit-reply-minimize">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
                         </button>
                     </div>
 
@@ -714,6 +749,31 @@
     function citApp() {
         return {
             showFilters: false,
+            replyOpen: false,
+            init() {
+                if (this.$wire) {
+                    this.$wire.on('reply-sent', () => { this.replyOpen = false; });
+                }
+            },
+            openReply() {
+                this.replyOpen = true;
+                this.$nextTick(() => {
+                    const editor = this.$refs.replyEditor;
+                    if (editor) {
+                        editor.focus();
+                        // Move cursor to end
+                        const range = document.createRange();
+                        range.selectNodeContents(editor);
+                        range.collapse(false);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                });
+            },
+            closeReply() {
+                this.replyOpen = false;
+            },
             exec(command, value = null) {
                 document.execCommand(command, false, value);
                 this.$refs.replyEditor?.focus();
@@ -1151,6 +1211,107 @@
     font-size: 0.74rem; color: #2563EB; text-decoration: none; transition: background 0.15s;
 }
 .cit-attachment-chip:hover { background: #DBEAFE; }
+
+/* ── Collapsed Reply Bar ── */
+.cit-reply-collapsed {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-top: 1px solid #E2E5EB;
+    background: #FFFFFF;
+    border-radius: 0 0 12px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.18s ease, box-shadow 0.18s ease;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.025);
+    font-family: inherit;
+}
+.cit-reply-collapsed:hover {
+    background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+    box-shadow: 0 -3px 12px rgba(102,126,234,0.06);
+}
+.cit-reply-collapsed:focus-visible {
+    outline: none;
+    background: #F0F4FF;
+    box-shadow: 0 -2px 8px rgba(102,126,234,0.12);
+}
+.cit-reply-collapsed-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+    color: #1D4ED8;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(29,78,216,0.15);
+}
+.cit-reply-collapsed-prompt {
+    flex: 1;
+    font-size: 0.84rem;
+    color: #94A3B8;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cit-reply-collapsed:hover .cit-reply-collapsed-prompt {
+    color: #64748B;
+}
+.cit-reply-collapsed-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: #EFF6FF;
+    color: #2563EB;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.cit-reply-collapsed-icon {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 999px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(102,126,234,0.30);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cit-reply-collapsed:hover .cit-reply-collapsed-icon {
+    transform: translateX(2px) rotate(-8deg);
+    box-shadow: 0 3px 10px rgba(102,126,234,0.40);
+}
+.cit-reply-minimize {
+    margin-left: auto;
+    color: #94A3B8;
+}
+.cit-reply-minimize:hover {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+}
+
+/* ── Reply expand transition ── */
+.cit-reply-enter {
+    transition: transform 0.22s cubic-bezier(0.32, 0.72, 0.30, 1.00),
+                opacity 0.18s ease,
+                max-height 0.22s ease;
+    overflow: hidden;
+}
+.cit-reply-enter-start {
+    opacity: 0;
+    transform: translateY(8px);
+    max-height: 0;
+}
+.cit-reply-enter-end {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 480px;
+}
 
 /* ── Reply Box ── */
 .cit-reply-box {
