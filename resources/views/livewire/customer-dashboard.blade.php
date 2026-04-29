@@ -28,28 +28,28 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
         }
         .cdb-greeting-text h1 {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--cdb-accent-dark);
-            line-height: 1.3;
+            line-height: 1.25;
         }
         .cdb-greeting-text p {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--cdb-text-secondary);
             margin-top: 2px;
         }
         .cdb-stage-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
+            gap: 5px;
+            padding: 3px 9px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             letter-spacing: 0.04em;
             text-transform: uppercase;
@@ -60,10 +60,10 @@
         .cdb-refresh-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
+            gap: 5px;
+            padding: 5px 10px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             color: var(--cdb-text-secondary);
             background: transparent;
@@ -81,7 +81,7 @@
         .cdb-card {
             background: var(--cdb-surface);
             border: 1px solid var(--cdb-border);
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: var(--cdb-shadow-sm);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             overflow: hidden;
@@ -105,31 +105,31 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            padding: 18px 20px 12px;
+            padding: 14px 16px 10px;
         }
         .cdb-card-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
         }
         .cdb-card-title i {
             color: var(--cdb-primary);
-            font-size: 13px;
+            font-size: 12px;
         }
         .cdb-card-action {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--cdb-primary);
             background: transparent;
             border: none;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 3px 7px;
+            border-radius: 5px;
             transition: background 0.15s ease;
             text-decoration: none;
         }
@@ -137,7 +137,7 @@
             background: var(--cdb-info-bg);
         }
         .cdb-card-body {
-            padding: 0 20px 20px;
+            padding: 0 16px 16px;
             flex: 1;
         }
 
@@ -145,8 +145,8 @@
         .cdb-hero {
             display: grid;
             grid-template-columns: 8fr 4fr;
-            gap: 20px;
-            margin-bottom: 24px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
         @media (max-width: 1279px) {
             .cdb-hero { grid-template-columns: 1fr; }
@@ -154,21 +154,21 @@
 
         /* Journey Track */
         .cdb-journey {
-            padding: 24px;
+            padding: 18px 20px;
             background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
             border: 1px solid var(--cdb-border);
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: var(--cdb-shadow-sm);
             position: relative;
             overflow: hidden;
         }
         .cdb-journey-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         .cdb-track {
             display: grid;
@@ -192,7 +192,7 @@
         .cdb-track-node + .cdb-track-node::before {
             content: '';
             position: absolute;
-            top: 22px;
+            top: 18px;
             right: 50%;
             width: 100%;
             height: 2px;
@@ -201,18 +201,18 @@
         }
         .cdb-track-node-done + .cdb-track-node::before,
         .cdb-track-node-current + .cdb-track-node::before {
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, var(--cdb-accent-dark) 0%, var(--cdb-primary) 100%);
-            top: 21.5px;
+            top: 18px;
         }
         .cdb-track-dot {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: 999px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 13px;
             background: var(--cdb-surface);
             border: 2px solid var(--cdb-border);
             color: var(--cdb-text-muted);
@@ -237,16 +237,16 @@
                 box-shadow: 0 0 0 0 rgba(0, 164, 224, 0.5);
             }
             70% {
-                box-shadow: 0 0 0 12px rgba(0, 164, 224, 0);
+                box-shadow: 0 0 0 10px rgba(0, 164, 224, 0);
             }
             100% {
                 box-shadow: 0 0 0 0 rgba(0, 164, 224, 0);
             }
         }
         .cdb-track-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
-            margin-top: 8px;
+            margin-top: 6px;
             text-align: center;
             color: var(--cdb-text-secondary);
             line-height: 1.3;
@@ -256,66 +256,66 @@
             color: var(--cdb-text);
         }
         .cdb-track-date {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--cdb-text-muted);
             margin-top: 2px;
-            min-height: 12px;
+            min-height: 11px;
         }
         .cdb-track-current-caption {
-            margin-top: 18px;
-            padding: 10px 14px;
+            margin-top: 14px;
+            padding: 8px 12px;
             background: var(--cdb-info-bg);
             border-left: 3px solid var(--cdb-primary);
-            border-radius: 6px;
-            font-size: 13px;
+            border-radius: 5px;
+            font-size: 12px;
             color: var(--cdb-accent-dark);
             font-weight: 500;
         }
 
         /* Hero Companion */
         .cdb-hero-side {
-            padding: 24px;
+            padding: 16px 18px;
             background: var(--cdb-surface);
             border: 1px solid var(--cdb-border);
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: var(--cdb-shadow-sm);
             display: flex;
             flex-direction: column;
-            min-height: 220px;
+            min-height: 180px;
         }
         .cdb-companion-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         /* Next Session */
         .cdb-session {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             align-items: flex-start;
             flex: 1;
         }
         .cdb-session-date {
-            min-width: 64px;
+            min-width: 54px;
             text-align: center;
-            padding: 10px 8px;
+            padding: 8px 6px;
             background: linear-gradient(135deg, var(--cdb-accent-dark), var(--cdb-primary));
             color: #fff;
-            border-radius: 10px;
+            border-radius: 8px;
             line-height: 1;
-            box-shadow: 0 4px 12px rgba(0, 164, 224, 0.25);
+            box-shadow: 0 3px 10px rgba(0, 164, 224, 0.22);
         }
         .cdb-session-day {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
             display: block;
         }
         .cdb-session-month {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
             letter-spacing: 0.1em;
             margin-top: 2px;
@@ -326,45 +326,45 @@
             min-width: 0;
         }
         .cdb-session-label {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--cdb-text-secondary);
         }
         .cdb-session-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--cdb-text);
-            margin: 4px 0 6px;
+            margin: 3px 0 5px;
             line-height: 1.3;
         }
         .cdb-session-time {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text-secondary);
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 5px;
+            margin-bottom: 3px;
         }
         .cdb-session-implementer {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text-secondary);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .cdb-session-implementer i {
             color: var(--cdb-text-muted);
-            font-size: 11px;
+            font-size: 10px;
         }
         .cdb-join-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-            padding: 8px 14px;
+            gap: 5px;
+            margin-top: 10px;
+            padding: 6px 12px;
             background: var(--cdb-primary);
             color: #fff;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -379,51 +379,51 @@
         .cdb-welcome-step {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            font-size: 13px;
+            gap: 9px;
+            padding: 6px 0;
+            font-size: 12px;
             color: var(--cdb-text-secondary);
         }
         .cdb-welcome-step i {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
             background: var(--cdb-info-bg);
             color: var(--cdb-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             flex-shrink: 0;
         }
         .cdb-live-stat {
             display: flex;
             align-items: baseline;
-            gap: 8px;
-            margin: 12px 0 14px;
+            gap: 7px;
+            margin: 10px 0 12px;
         }
         .cdb-live-stat-value {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--cdb-accent-dark);
             line-height: 1;
         }
         .cdb-live-stat-label {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--cdb-text-secondary);
         }
         .cdb-live-modules {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 5px;
         }
         .cdb-live-module {
-            padding: 4px 10px;
+            padding: 3px 9px;
             background: var(--cdb-success-bg);
             border: 1px solid #b9ecd6;
             border-radius: 999px;
             color: #047857;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
@@ -434,20 +434,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 18px;
             color: var(--cdb-text-muted);
             text-align: center;
             flex: 1;
         }
         .cdb-no-session i {
-            font-size: 28px;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 6px;
         }
         .cdb-no-session-cta {
-            margin-top: 8px;
+            margin-top: 6px;
             color: var(--cdb-primary);
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             background: none;
             border: none;
@@ -457,8 +457,8 @@
         /* Rows */
         .cdb-row {
             display: grid;
-            gap: 20px;
-            margin-bottom: 24px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
         .cdb-row-primary {
             grid-template-columns: 5fr 4fr 3fr;
@@ -483,9 +483,9 @@
         .cdb-list-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            border-radius: 8px;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 7px;
             text-decoration: none;
             color: inherit;
             transition: background 0.15s ease;
@@ -493,7 +493,7 @@
             cursor: pointer;
         }
         .cdb-list-item + .cdb-list-item {
-            margin-top: 4px;
+            margin-top: 3px;
         }
         .cdb-list-item:hover {
             background: var(--cdb-info-bg);
@@ -506,16 +506,16 @@
             background: #fde7e7;
         }
         .cdb-list-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
             background: var(--cdb-info-bg);
             color: var(--cdb-primary);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 14px;
+            font-size: 12px;
         }
         .cdb-urgent .cdb-list-icon {
             background: #fbe6e6;
@@ -523,7 +523,7 @@
         }
         .cdb-list-content { flex: 1; min-width: 0; }
         .cdb-list-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--cdb-text);
             white-space: nowrap;
@@ -531,18 +531,18 @@
             text-overflow: ellipsis;
         }
         .cdb-list-subtitle {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text-secondary);
-            margin-top: 2px;
+            margin-top: 1px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .cdb-list-age {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--cdb-text-muted);
             white-space: nowrap;
-            margin-left: 8px;
+            margin-left: 6px;
         }
 
         .cdb-empty {
@@ -550,22 +550,22 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 28px 12px;
+            padding: 22px 12px;
             color: var(--cdb-text-muted);
             text-align: center;
-            min-height: 140px;
+            min-height: 120px;
         }
         .cdb-empty-icon {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: var(--cdb-success-bg);
             color: var(--cdb-success);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 8px;
         }
         .cdb-empty-icon.cdb-empty-neutral {
             background: #f1f5f9;
@@ -576,14 +576,14 @@
             color: var(--cdb-text-muted);
         }
         .cdb-empty-text {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--cdb-text-secondary);
         }
         .cdb-empty-subtext {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text-muted);
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
         /* Badge in card header */
@@ -591,9 +591,9 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             background: var(--cdb-info-bg);
             color: var(--cdb-primary);
@@ -608,29 +608,29 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
+            gap: 12px;
         }
         .cdb-gauge-svg {
-            width: 96px;
-            height: 96px;
+            width: 78px;
+            height: 78px;
             transform: rotate(-90deg);
         }
         .cdb-gauge-track {
             stroke: #e5edf5;
             fill: none;
-            stroke-width: 8;
+            stroke-width: 7;
         }
         .cdb-gauge-fill {
             stroke: var(--cdb-primary);
             fill: none;
-            stroke-width: 8;
+            stroke-width: 7;
             stroke-linecap: round;
             transition: stroke-dashoffset 0.6s ease;
         }
         .cdb-gauge-text {
             position: relative;
-            margin-top: -96px;
-            height: 96px;
+            margin-top: -78px;
+            height: 78px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -638,30 +638,30 @@
             pointer-events: none;
         }
         .cdb-gauge-value {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--cdb-accent-dark);
             line-height: 1;
         }
         .cdb-gauge-suffix {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--cdb-text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             margin-top: 2px;
         }
         .cdb-gauge-meta {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--cdb-text-secondary);
         }
 
-        .cdb-modules { margin-top: 14px; }
+        .cdb-modules { margin-top: 10px; }
         .cdb-module-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 6px 0;
-            font-size: 12px;
+            gap: 9px;
+            padding: 4px 0;
+            font-size: 11px;
         }
         .cdb-module-name {
             flex: 1;
@@ -671,7 +671,7 @@
             text-overflow: ellipsis;
         }
         .cdb-module-bar {
-            width: 80px;
+            width: 70px;
             height: 4px;
             background: #e5edf5;
             border-radius: 999px;
@@ -685,10 +685,10 @@
             transition: width 0.6s ease;
         }
         .cdb-module-count {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--cdb-text-muted);
             white-space: nowrap;
-            min-width: 36px;
+            min-width: 32px;
             text-align: right;
         }
 
@@ -696,9 +696,9 @@
         .cdb-ticket-row {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            padding: 12px 14px;
-            border-radius: 8px;
+            gap: 5px;
+            padding: 9px 12px;
+            border-radius: 7px;
             text-decoration: none;
             color: inherit;
             transition: background 0.15s ease;
@@ -707,28 +707,28 @@
             background: var(--cdb-info-bg);
         }
         .cdb-ticket-row + .cdb-ticket-row {
-            margin-top: 4px;
+            margin-top: 3px;
         }
         .cdb-ticket-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 7px;
         }
         .cdb-ticket-number {
             font-family: 'JetBrains Mono', 'Menlo', monospace;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: var(--cdb-accent-dark);
             background: var(--cdb-info-bg);
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 4px;
             white-space: nowrap;
         }
         .cdb-sla-pill {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 999px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
@@ -738,7 +738,7 @@
         .cdb-sla-overdue { background: var(--cdb-danger-bg); color: var(--cdb-danger); }
         .cdb-sla-resolved { background: #f1f5f9; color: var(--cdb-text-muted); }
         .cdb-ticket-subject {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--cdb-text);
             font-weight: 500;
             white-space: nowrap;
@@ -746,24 +746,24 @@
             text-overflow: ellipsis;
         }
         .cdb-ticket-meta {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--cdb-text-muted);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
-        .cdb-ticket-meta i { font-size: 10px; }
+        .cdb-ticket-meta i { font-size: 9px; }
 
         /* Migration tiles */
         .cdb-tiles {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 7px;
+            margin-bottom: 10px;
         }
         .cdb-tile {
-            padding: 12px 10px;
-            border-radius: 8px;
+            padding: 10px 8px;
+            border-radius: 7px;
             text-align: center;
             border: 1px solid var(--cdb-border);
             background: var(--cdb-surface);
@@ -773,17 +773,17 @@
         }
         .cdb-tile:hover { transform: translateY(-1px); }
         .cdb-tile-value {
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 700;
             color: var(--cdb-text);
             line-height: 1;
         }
         .cdb-tile-label {
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
-            margin-top: 4px;
+            margin-top: 3px;
             font-weight: 600;
         }
         .cdb-tile-pending { background: #f8fafc; }
@@ -796,12 +796,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text-secondary);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .cdb-progress-bar {
-            height: 6px;
+            height: 5px;
             background: #e5edf5;
             border-radius: 999px;
             overflow: hidden;
@@ -817,8 +817,8 @@
         .cdb-activity-row {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            padding: 8px 12px 8px 9px;
+            gap: 9px;
+            padding: 7px 10px 7px 8px;
             border-radius: 6px;
             border-left: 3px solid transparent;
             text-decoration: none;
@@ -834,15 +834,15 @@
             background: var(--cdb-info-bg);
         }
         .cdb-activity-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
             background: #f1f5f9;
             color: var(--cdb-text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             flex-shrink: 0;
             margin-top: 2px;
         }
@@ -852,7 +852,7 @@
         }
         .cdb-activity-content { flex: 1; min-width: 0; }
         .cdb-activity-message {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--cdb-text);
             line-height: 1.4;
             display: -webkit-box;
@@ -861,7 +861,7 @@
             overflow: hidden;
         }
         .cdb-activity-time {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--cdb-text-muted);
             margin-top: 2px;
         }
@@ -870,62 +870,62 @@
         .cdb-resource-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 8px;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: 7px;
             text-decoration: none;
             color: inherit;
             transition: background 0.15s ease;
         }
-        .cdb-resource-row + .cdb-resource-row { margin-top: 4px; }
+        .cdb-resource-row + .cdb-resource-row { margin-top: 3px; }
         .cdb-resource-row:hover { background: var(--cdb-info-bg); }
         .cdb-resource-icon {
-            width: 36px; height: 36px; border-radius: 8px;
+            width: 30px; height: 30px; border-radius: 7px;
             background: var(--cdb-info-bg); color: var(--cdb-primary);
             display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-size: 14px;
+            flex-shrink: 0; font-size: 12px;
         }
         .cdb-resource-icon.cdb-resource-video {
             background: #fef2f2; color: var(--cdb-danger);
         }
         .cdb-resource-content { flex: 1; min-width: 0; }
         .cdb-resource-title {
-            font-size: 12px; font-weight: 600; color: var(--cdb-text);
+            font-size: 11px; font-weight: 600; color: var(--cdb-text);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .cdb-resource-meta {
-            font-size: 10px; color: var(--cdb-text-muted);
+            font-size: 9px; color: var(--cdb-text-muted);
             margin-top: 2px;
         }
         .cdb-resource-action {
-            color: var(--cdb-text-muted); font-size: 12px; flex-shrink: 0;
+            color: var(--cdb-text-muted); font-size: 11px; flex-shrink: 0;
         }
 
         /* Quick Actions */
         .cdb-quick-actions {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-            padding: 16px;
+            gap: 10px;
+            padding: 12px;
             background: var(--cdb-surface);
             border: 1px solid var(--cdb-border);
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: var(--cdb-shadow-sm);
         }
         @media (max-width: 1023px) {
-            .cdb-quick-actions { overflow-x: auto; grid-template-columns: repeat(5, minmax(160px, 1fr)); }
+            .cdb-quick-actions { overflow-x: auto; grid-template-columns: repeat(5, minmax(140px, 1fr)); }
         }
         .cdb-qa-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 12px 14px;
+            gap: 7px;
+            padding: 9px 12px;
             background: var(--cdb-surface);
             border: 1px solid var(--cdb-border);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--cdb-text);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
@@ -941,7 +941,7 @@
         }
         .cdb-qa-btn i {
             color: var(--cdb-primary);
-            font-size: 14px;
+            font-size: 12px;
         }
         .cdb-qa-btn:hover i {
             transform: scale(1.05);
@@ -952,20 +952,20 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 10px 14px;
-            margin-bottom: 18px;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 14px;
             background: var(--cdb-info-bg);
             border: 1px solid #c8e7fa;
-            border-radius: 10px;
-            font-size: 12px;
+            border-radius: 8px;
+            font-size: 11px;
             color: var(--cdb-accent-dark);
         }
-        .cdb-tip-text { display: inline-flex; align-items: center; gap: 8px; }
+        .cdb-tip-text { display: inline-flex; align-items: center; gap: 7px; }
         .cdb-tip-text i { color: var(--cdb-primary); }
         .cdb-tip-dismiss {
             background: transparent; border: none; cursor: pointer;
-            color: var(--cdb-text-secondary); font-size: 13px; padding: 4px;
+            color: var(--cdb-text-secondary); font-size: 12px; padding: 3px;
         }
         .cdb-tip-dismiss:hover { color: var(--cdb-danger); }
     </style>

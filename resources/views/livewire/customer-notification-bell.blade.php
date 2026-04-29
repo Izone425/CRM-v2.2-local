@@ -11,8 +11,8 @@
             background: var(--tt-surface, #ffffff);
             border: 1px solid var(--tt-border, #e5e7eb);
             border-radius: 50%;
-            width: 42px;
-            height: 42px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -29,8 +29,8 @@
         }
 
         .cnb-bell-btn svg {
-            width: 22px;
-            height: 22px;
+            width: 16px;
+            height: 16px;
         }
 
         .cnb-badge {
@@ -39,17 +39,17 @@
             right: -2px;
             background: #EF4444;
             color: white;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
-            min-width: 18px;
-            height: 18px;
+            min-width: 15px;
+            height: 15px;
             padding: 0 4px;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             line-height: 1;
-            border: 2px solid #ffffff;
+            border: 1.5px solid #ffffff;
         }
 
         .cnb-dropdown {

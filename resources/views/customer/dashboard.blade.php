@@ -35,43 +35,43 @@
             background: var(--tt-surface);
             border-bottom: 1px solid var(--tt-border);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            height: 80px;
+            height: 56px;
         }
 
         .tt-header-inner {
             height: 100%;
             max-width: 100%;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 1.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         @media (min-width: 1024px) {
             .tt-header-inner {
-                padding: 0 2rem;
+                padding: 0 1.5rem;
             }
         }
 
         .tt-brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
             min-width: 0;
         }
 
         .tt-brand-logo {
-            width: 48px;
-            height: 48px;
+            width: 34px;
+            height: 34px;
             object-fit: contain;
             flex-shrink: 0;
         }
 
         .tt-brand-title {
             font-family: 'Poppins', sans-serif;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--tt-accent-dark);
             letter-spacing: -0.01em;
@@ -81,29 +81,29 @@
         .tt-header-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .tt-header-info {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 2px;
-            line-height: 1.3;
+            gap: 1px;
+            line-height: 1.25;
             white-space: nowrap;
         }
 
         .tt-info-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: 12px;
         }
 
         .tt-info-row i {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--tt-accent-dark);
-            width: 14px;
+            width: 13px;
             text-align: center;
         }
 
@@ -124,16 +124,16 @@
         .tt-info-implementer .tt-info-value {
             color: var(--tt-text-secondary);
             font-weight: 500;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .tt-info-implementer .tt-info-label {
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .tt-header-divider {
             width: 1px;
-            height: 36px;
+            height: 28px;
             background: var(--tt-border);
             flex-shrink: 0;
         }
@@ -141,14 +141,14 @@
         .tt-logout-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 18px;
+            gap: 6px;
+            padding: 6px 14px;
             font-family: 'Poppins', sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--tt-danger);
             background: var(--tt-surface);
-            border: 1.5px solid var(--tt-danger);
+            border: 1.25px solid var(--tt-danger);
             border-radius: 999px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -156,7 +156,7 @@
         }
 
         .tt-logout-btn i {
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .tt-logout-btn:hover {
@@ -172,7 +172,7 @@
                 display: none;
             }
             .tt-brand-title {
-                font-size: 16px;
+                font-size: 13px;
             }
         }
 
@@ -230,24 +230,25 @@
         .sidebar {
             position: absolute;
             left: 0;
-            top: 80px;
-            width: 260px;
+            top: 56px;
+            width: 220px;
             z-index: 50;
         }
 
         .sidebar-menu {
-            padding: 20px;
+            padding: 14px;
+            font-size: 13px;
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            margin-bottom: 8px;
-            border-radius: 10px;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            border-radius: 8px;
             color: #64748b;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             cursor: pointer;
             font-weight: 500;
             border: none;
@@ -259,18 +260,18 @@
         .menu-item:hover {
             background: #f1f5f9;
             color: #667eea;
-            transform: translateX(4px);
+            transform: translateX(2px);
         }
 
         .menu-item.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.28);
         }
 
         .menu-item i {
-            font-size: 18px;
-            width: 24px;
+            font-size: 14px;
+            width: 18px;
             text-align: center;
         }
 
@@ -278,10 +279,10 @@
         .menu-group-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            margin-bottom: 4px;
-            border-radius: 10px;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            border-radius: 8px;
             color: #64748b;
             font-weight: 500;
             cursor: pointer;
@@ -289,7 +290,7 @@
             background: transparent;
             width: 100%;
             text-align: left;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
         .menu-group-header:hover {
             background: #f1f5f9;
@@ -299,13 +300,13 @@
             color: #667eea;
         }
         .menu-group-header i {
-            font-size: 18px;
-            width: 24px;
+            font-size: 14px;
+            width: 18px;
             text-align: center;
         }
         .menu-group-chevron {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             margin-left: auto;
             transition: transform 0.2s;
             color: #9CA3AF;
@@ -314,28 +315,28 @@
             transform: rotate(90deg);
         }
         .menu-sub-items {
-            padding-left: 20px;
+            padding-left: 14px;
         }
         .menu-sub-items .menu-item {
-            padding: 10px 16px;
-            font-size: 13px;
-            margin-bottom: 4px;
+            padding: 6px 10px;
+            font-size: 12px;
+            margin-bottom: 2px;
         }
         .menu-sub-items .menu-item i {
-            font-size: 14px;
-            width: 20px;
+            font-size: 12px;
+            width: 16px;
         }
 
         /* Sidebar notification badge */
         .sidebar-badge {
             background: #EF4444;
             color: white;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
-            min-width: 18px;
-            height: 18px;
+            min-width: 16px;
+            height: 16px;
             padding: 0 5px;
-            border-radius: 10px;
+            border-radius: 9px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -354,26 +355,26 @@
 
         /* Main Content with Sidebar */
         .main-wrapper {
-            margin-left: 260px;
-            padding: 80px 2rem 2rem;
+            margin-left: 220px;
+            padding: 56px 1.5rem 1.5rem;
             flex: 1;
             min-width: 0;
         }
 
         @media (max-width: 1024px) {
             .main-wrapper {
-                padding: 80px 1.25rem 1.5rem;
+                padding: 56px 1rem 1rem;
             }
         }
 
         .tt-content {
-            max-width: 1600px;
+            max-width: 1480px;
             margin: 0 auto;
             width: 100%;
         }
 
         .tab-content {
-            padding: 1.5rem 0;
+            padding: 1rem 0;
         }
 
         .tab-content.active {
