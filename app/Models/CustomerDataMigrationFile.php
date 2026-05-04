@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\ImplementerTicketReply;
 
 class CustomerDataMigrationFile extends Model
 {
@@ -20,6 +22,10 @@ class CustomerDataMigrationFile extends Model
         'remark',
         'implementer_remark',
         'status',
+        'uploaded_by_type',
+        'uploaded_by_user_id',
+        'source_ticket_reply_id',
+        'source_attachment_path',
     ];
 
     public function lead()
@@ -30,6 +36,26 @@ class CustomerDataMigrationFile extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function uploadedByUser()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by_user_id');
+    }
+
+    public function sourceTicketReply()
+    {
+        return $this->belongsTo(ImplementerTicketReply::class, 'source_ticket_reply_id');
+    }
+
+    public function scopeFromCustomer($query)
+    {
+        return $query->where('uploaded_by_type', 'customer');
+    }
+
+    public function scopeFromImplementer($query)
+    {
+        return $query->where('uploaded_by_type', 'implementer');
     }
 
     public static function nextVersion(int $leadId, string $section, string $item): int

@@ -52,8 +52,13 @@ class CustomerNotificationBell extends Component
         $notification->markAsRead();
 
         $data = $notification->data;
-        $ticketId = $data['entity_id'] ?? null;
+        $entityType = $data['entity_type'] ?? null;
 
+        if ($entityType === 'customer_data_migration_file') {
+            return $this->redirect('/customer/dashboard?tab=dataMigration');
+        }
+
+        $ticketId = $data['entity_id'] ?? null;
         if ($ticketId) {
             return $this->redirect('/customer/dashboard?tab=impThread&ticket=' . $ticketId);
         }

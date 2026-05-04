@@ -1349,6 +1349,130 @@ Route::get('/admin/data-migration-file/{file}/download', function (\App\Models\C
     return response()->download($path, $file->file_name);
 })->middleware(['auth'])->name('admin.data-migration-file.download');
 
+Route::post('/admin/api/data-migration-file/assign-from-raw', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'lead_id'         => 'required|integer|exists:leads,id',
+        'section'         => 'required|string|max:50',
+        'item'            => 'required|string|max:100',
+        'ticket_reply_id' => 'required|integer|exists:implementer_ticket_replies,id',
+        'attachment_path' => 'required|string|max:500',
+    ]);
+
+    if (!\App\Support\DataFileSections::isValid($request->section, $request->item)) {
+        return response()->json(['error' => 'Invalid section or item.'], 422);
+    }
+
+    $reply = \App\Models\ImplementerTicketReply::with('ticket')->findOrFail($request->ticket_reply_id);
+
+    if (!$reply->ticket || (int) $reply->ticket->lead_id !== (int) $request->lead_id) {
+        return response()->json(['error' => 'Source ticket does not belong to this lead.'], 403);
+    }
+
+    $attachments = is_array($reply->attachments) ? $reply->attachments : [];
+    if (!in_array($request->attachment_path, $attachments, true)) {
+        return response()->json(['error' => 'Attachment not found on source reply.'], 422);
+    }
+
+    if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($request->attachment_path)) {
+        return response()->json(['error' => 'Source file no longer exists on disk.'], 422);
+    }
+
+    $leadId = (int) $request->lead_id;
+    $section = $request->section;
+    $item = $request->item;
+    $sourcePath = $request->attachment_path;
+    $originalName = basename($sourcePath);
+    $ext = pathinfo($originalName, PATHINFO_EXTENSION) ?: 'bin';
+
+    try {
+        $created = \Illuminate\Support\Facades\DB::transaction(function () use ($leadId, $section, $item, $sourcePath, $originalName, $ext, $reply) {
+            \Illuminate\Support\Facades\DB::table('customer_data_migration_files')
+                ->where('lead_id', $leadId)
+                ->where('section', $section)
+                ->where('item', $item)
+                ->lockForUpdate()
+                ->max('version');
+
+            $version = \App\Models\CustomerDataMigrationFile::nextVersion($leadId, $section, $item);
+            $destination = "customer-data-migration/{$leadId}/{$section}/{$item}/v{$version}.{$ext}";
+
+            if (!\Illuminate\Support\Facades\Storage::disk('public')->copy($sourcePath, $destination)) {
+                throw new \RuntimeException('Storage copy returned false (likely a filesystem permissions issue on storage/app/public).');
+            }
+
+            $ticketLabel = $reply->ticket->ticket_number ?? ('#' . $reply->implementer_ticket_id);
+
+            return \App\Models\CustomerDataMigrationFile::create([
+                'lead_id'                => $leadId,
+                'customer_id'            => $reply->ticket->customer_id,
+                'section'                => $section,
+                'item'                   => $item,
+                'version'                => $version,
+                'file_name'              => $originalName,
+                'file_path'              => $destination,
+                'remark'                 => null,
+                'implementer_remark'     => 'Assigned from ticket ' . $ticketLabel,
+                'status'                 => 'accepted',
+                'uploaded_by_type'       => 'implementer',
+                'uploaded_by_user_id'    => auth()->id(),
+                'source_ticket_reply_id' => $reply->id,
+                'source_attachment_path' => $sourcePath,
+            ]);
+        });
+    } catch (\Throwable $e) {
+        return response()->json(['error' => 'Assignment failed: ' . $e->getMessage()], 500);
+    }
+
+    try {
+        $sections = \App\Support\DataFileSections::map();
+        $sectionLabel = $sections[$created->section]['label'] ?? $created->section;
+        $itemLabel = $sections[$created->section]['items'][$created->item]['label'] ?? $created->item;
+        $implementerName = auth()->user()->name ?? 'Implementer';
+
+        $customer = $reply->ticket->customer;
+        if ($customer) {
+            $customer->notifyNow(new \App\Notifications\DataFileAssignedByImplementerNotification(
+                $created,
+                $sectionLabel,
+                $itemLabel,
+                $implementerName
+            ));
+        }
+    } catch (\Throwable $e) {
+        \Log::warning('Data file assignment notification failed: ' . $e->getMessage(), [
+            'file_id' => $created->id,
+        ]);
+    }
+
+    return response()->json([
+        'success'            => true,
+        'id'                 => $created->id,
+        'section'            => $created->section,
+        'item'               => $created->item,
+        'version'            => $created->version,
+        'file_name'          => $created->file_name,
+        'status'             => $created->status,
+        'created_at'         => $created->created_at->format('M d, Y H:i'),
+        'download_url'       => route('admin.data-migration-file.download', $created->id),
+        'uploaded_by_type'   => $created->uploaded_by_type,
+        'from_ticket_number' => $reply->ticket->ticket_number ?? null,
+    ]);
+})->middleware(['auth'])->name('admin.data-migration-file.assign-from-raw');
+
+Route::delete('/admin/api/data-migration-file/{file}/unassign', function (\App\Models\CustomerDataMigrationFile $file) {
+    if ($file->uploaded_by_type !== 'implementer') {
+        return response()->json(['error' => 'Only implementer-uploaded files can be unassigned here.'], 403);
+    }
+
+    if ($file->file_path) {
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($file->file_path);
+    }
+    $id = $file->id;
+    $file->delete();
+
+    return response()->json(['success' => true, 'id' => $id]);
+})->middleware(['auth'])->name('admin.data-migration-file.unassign');
+
 Route::post('/admin/software-handover-process-file/upload', function (\Illuminate\Http\Request $request) {
     $user = auth()->user();
     if (!$user || !in_array($user->role_id, [1, 3, 4, 5])) {
@@ -1403,4 +1527,51 @@ Route::get('/admin/software-handover-process-file/{file}/download', function (\A
     }
     return response()->download($path, $file->file_name);
 })->middleware(['auth'])->name('admin.software-handover-process-file.download');
+
+Route::get('/admin/implementer-ticket-attachment/download', function (\Illuminate\Http\Request $request) {
+    // Role gate — match the dashboard's visibility (1=Lead Owner, 3=Manager, 4/5=Implementer)
+    $allowedRoles = [1, 3, 4, 5];
+    if (!in_array(auth()->user()->role_id ?? null, $allowedRoles, true)) {
+        abort(403, 'You do not have access to ticket attachments.');
+    }
+
+    $path = (string) $request->query('path', '');
+
+    // Prefix whitelist + cheap traversal guard
+    $allowedPrefixes = ['implementer-tickets/', 'implementer-ticket-replies/'];
+    $hasAllowedPrefix = false;
+    foreach ($allowedPrefixes as $prefix) {
+        if (str_starts_with($path, $prefix)) {
+            $hasAllowedPrefix = true;
+            break;
+        }
+    }
+    if (!$hasAllowedPrefix || str_contains($path, '..') || str_contains($path, "\0")) {
+        abort(403, 'Invalid attachment path.');
+    }
+
+    // Locate the owning ticket via either column
+    $ticket = \App\Models\ImplementerTicket::whereJsonContains('attachments', $path)->first();
+    if (!$ticket) {
+        $reply = \App\Models\ImplementerTicketReply::whereJsonContains('attachments', $path)
+            ->with('ticket')->first();
+        $ticket = $reply?->ticket;
+    }
+    if (!$ticket) {
+        abort(404, 'Attachment not found.');
+    }
+
+    // Belt-and-suspenders: realpath containment under the public storage root
+    $absolute = storage_path('app/public/' . $path);
+    if (!file_exists($absolute)) {
+        abort(404, 'File not found on disk.');
+    }
+    $realPath = realpath($absolute) ?: '';
+    $publicRoot = realpath(storage_path('app/public')) ?: '';
+    if ($publicRoot === '' || !str_starts_with($realPath, $publicRoot . DIRECTORY_SEPARATOR)) {
+        abort(403, 'Path resolution out of bounds.');
+    }
+
+    return response()->download($realPath, basename($path));
+})->middleware(['auth'])->name('admin.implementer-ticket-attachment.download');
 

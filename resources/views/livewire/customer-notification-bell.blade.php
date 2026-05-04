@@ -137,6 +137,7 @@
         .cnb-icon-status { background: #FEF3C7; color: #D97706; }
         .cnb-icon-closed { background: #D1FAE5; color: #059669; }
         .cnb-icon-created { background: #EDE9FE; color: #7C3AED; }
+        .cnb-icon-data-file { background: #ECFEFF; color: #0E7490; }
         .cnb-icon-default { background: #F3F4F6; color: #6B7280; }
 
         .cnb-item-body {
@@ -238,7 +239,10 @@
                     $isUnread = is_null($notification->read_at);
 
                     // Determine icon class based on notification type
-                    if (str_contains($type, 'replied')) {
+                    if (str_contains($type, 'data_file')) {
+                        $iconClass = 'cnb-icon-data-file';
+                        $iconHtml = '<i class="fas fa-file-alt"></i>';
+                    } elseif (str_contains($type, 'replied')) {
                         $iconClass = 'cnb-icon-reply';
                         $iconHtml = '<i class="fas fa-reply"></i>';
                     } elseif (str_contains($type, 'status')) {

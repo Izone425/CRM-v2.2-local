@@ -15,6 +15,7 @@
                     'remark' => $file->remark,
                     'implementer_remark' => $file->implementer_remark ?? '',
                     'status' => $file->status,
+                    'uploaded_by_type' => $file->uploaded_by_type ?? 'customer',
                     'created_at' => $file->created_at->format('M d, Y H:i'),
                     'download_url' => route('customer.data-migration-file.download', $file->id),
                 ];
@@ -29,20 +30,24 @@
             max-width: 1000px;
         }
         .dmt-title {
-            font-size: 28px;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: #667eea;
-            margin-bottom: 4px;
+            margin: 0 0 2px;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #003c75 0%, #1a6dd4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .dmt-subtitle {
-            font-size: 14px;
+            font-size: 0.76rem;
             color: #64748b;
-            margin-bottom: 32px;
+            margin: 0 0 14px;
         }
         .dmt-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
         }
         @media (max-width: 600px) {
             .dmt-grid {
@@ -52,8 +57,8 @@
         .dmt-card {
             background: #fff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 10px;
+            padding: 18px;
             transition: all 0.3s ease;
         }
         .dmt-card:hover {
@@ -63,28 +68,28 @@
         .dmt-card-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #f1f5f9;
         }
         .dmt-card-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 15px;
             flex-shrink: 0;
         }
         .dmt-card-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: #1e293b;
         }
         .dmt-sub-item {
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #f1f5f9;
         }
         .dmt-sub-item:last-child {
@@ -124,7 +129,7 @@
             padding: 7px 16px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
             color: #fff;
             font-size: 12px;
             font-weight: 600;
@@ -134,7 +139,7 @@
         }
         .dmt-download-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(26, 109, 212, 0.4);
         }
         .dmt-download-btn i {
             font-size: 11px;
@@ -202,7 +207,7 @@
             font-size: 11px;
         }
         .dmt-version-open {
-            color: #667eea;
+            color: #1a6dd4;
             font-size: 11px;
             font-weight: 600;
             flex-shrink: 0;
@@ -215,7 +220,7 @@
         }
         .dmt-toggle {
             font-size: 11px;
-            color: #667eea;
+            color: #1a6dd4;
             cursor: pointer;
             background: none;
             border: none;
@@ -249,7 +254,7 @@
         }
         .dmt-upload-form textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #1a6dd4;
         }
         .dmt-upload-form-actions {
             display: flex;
@@ -425,7 +430,7 @@
             padding: 10px 16px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
             color: #fff;
             font-size: 13px;
             font-weight: 600;
@@ -435,7 +440,7 @@
         }
         .dmt-btn-download-slider:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(26, 109, 212, 0.4);
             color: #fff;
         }
         .dmt-slider-no-remark {
@@ -443,10 +448,25 @@
             color: #94a3b8;
             font-style: italic;
         }
+        .dmt-from-implementer {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ecfeff;
+            color: #0e7490;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            letter-spacing: 0.4px;
+        }
+        .dmt-from-implementer i { font-size: 9px; }
     </style>
 
     <div class="dmt-container" x-data="dmtCustomer()" x-cloak>
-        <h2 class="dmt-title">Data Migration Templates</h2>
+        <h2 class="dmt-title">Data File</h2>
         <p class="dmt-subtitle">Download Excel templates, fill them in, and upload back for processing</p>
 
         @if(session()->has('success'))
@@ -492,9 +512,6 @@
                                         <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')" class="dmt-download-btn">
                                             <i class="fas fa-download"></i> Template
                                         </button>
-                                        <button wire:click="startUpload('{{ $sectionKey }}', '{{ $itemKey }}')" class="dmt-upload-btn">
-                                            <i class="fas fa-upload"></i> Upload
-                                        </button>
                                     @else
                                         <span class="dmt-coming-soon">Coming soon</span>
                                     @endif
@@ -506,7 +523,14 @@
                                 {{-- Latest version row --}}
                                 <div class="dmt-version-row" @click="openSlider({{ $latest->id }}, '{{ addslashes($item['label']) }}')">
                                     <div>
-                                        <div><strong>v{{ $latest->version }}</strong> &mdash; {{ $latest->file_name }}</div>
+                                        <div>
+                                            <strong>v{{ $latest->version }}</strong> &mdash; {{ $latest->file_name }}
+                                            @if(($latest->uploaded_by_type ?? 'customer') === 'implementer')
+                                                <span class="dmt-from-implementer" title="Uploaded by implementer">
+                                                    <i class="fas fa-user-tie"></i> From Implementer
+                                                </span>
+                                            @endif
+                                        </div>
                                         <div class="dmt-version-meta">{{ $latest->created_at->format('M d, Y H:i') }}</div>
                                     </div>
                                     <span class="dmt-version-open"><i class="fas fa-chevron-right"></i></span>
@@ -524,7 +548,14 @@
                                             @foreach($versions->skip(1) as $file)
                                                 <div class="dmt-version-row" @click="openSlider({{ $file->id }}, '{{ addslashes($item['label']) }}')">
                                                     <div>
-                                                        <div><strong>v{{ $file->version }}</strong> &mdash; {{ $file->file_name }}</div>
+                                                        <div>
+                                                            <strong>v{{ $file->version }}</strong> &mdash; {{ $file->file_name }}
+                                                            @if(($file->uploaded_by_type ?? 'customer') === 'implementer')
+                                                                <span class="dmt-from-implementer" title="Uploaded by implementer">
+                                                                    <i class="fas fa-user-tie"></i> From Implementer
+                                                                </span>
+                                                            @endif
+                                                        </div>
                                                         <div class="dmt-version-meta">{{ $file->created_at->format('M d, Y H:i') }}</div>
                                                     </div>
                                                     <span class="dmt-version-open"><i class="fas fa-chevron-right"></i></span>
