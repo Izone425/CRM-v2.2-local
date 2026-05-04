@@ -15,6 +15,8 @@ class ImplementerTicketReply extends Model
         'implementer_ticket_id',
         'sender_type',
         'sender_id',
+        'email_template_id',
+        'thread_label',
         'message',
         'attachments',
         'is_internal_note',

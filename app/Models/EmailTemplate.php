@@ -9,12 +9,15 @@ class EmailTemplate extends Model
 {
     use HasFactory;
 
+    public const KICK_OFF_TEMPLATE_ID = 17;
+
     protected $fillable = [
         'name',
         'subject',
         'content',
         'type',
         'category',
+        'thread_label',
         'created_by',
     ];
 
