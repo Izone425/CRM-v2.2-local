@@ -3174,6 +3174,6 @@ class ImplementerActions
             }
 
             return $reply;
-        });
+        }, 3);
     }
 }
