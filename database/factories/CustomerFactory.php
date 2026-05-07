@@ -20,7 +20,7 @@ class CustomerFactory extends Factory
             'name'     => $this->faker->name(),
             'email'    => $this->faker->unique()->safeEmail(),
             'phone'    => $this->faker->phoneNumber(),
-            'password' => bcrypt('password'),
+            'password' => 'password',
         ];
     }
 }
