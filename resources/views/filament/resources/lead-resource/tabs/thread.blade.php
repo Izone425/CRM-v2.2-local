@@ -3,6 +3,9 @@
     use App\Enums\ImplementerTicketStatus;
 
     $lead = $this->record;
+    // Use the live request URL so the encrypted lead ID + active tab survive the round-trip.
+    // (LeadResource::getUrl() returns the raw integer ID, which ViewLeadRecord::mount can't decrypt.)
+    $leadViewUrl = urlencode(request()->fullUrl());
 
     $tickets = ImplementerTicket::where('lead_id', $lead->id)
         ->with(['customer', 'implementerUser', 'replies'])
@@ -82,7 +85,7 @@
                             data-search="{{ strtolower($ticket->ticket_number . ' ' . $ticket->subject . ' ' . ($ticket->category ?? '') . ' ' . ($ticket->module ?? '')) }}"
                             x-show="matchesFilter($el)"
                             x-transition:enter="thr-row-enter"
-                            @click="window.location.href = '/admin/implementer-ticketing-dashboard?ticket={{ $ticket->id }}'"
+                            @click="window.location.href = '/admin/implementer-ticketing-dashboard?ticket={{ $ticket->id }}&from={{ $leadViewUrl }}'"
                             style="cursor: pointer; animation-delay: {{ $loop->index * 30 }}ms"
                         >
                             <td class="thr-td">
