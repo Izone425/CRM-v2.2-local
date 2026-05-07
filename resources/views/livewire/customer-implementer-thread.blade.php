@@ -55,7 +55,7 @@
                     <span class="cit-stat-value">{{ $statusCounts['open'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #EFF6FF; color: #3B82F6;">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
                 </div>
             </div>
             <div class="cit-stat-card {{ $statusFilter === 'pending_support' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('pending_support')" style="--stat-color: #F59E0B">
@@ -64,7 +64,7 @@
                     <span class="cit-stat-value">{{ $statusCounts['pending_support'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #FFFBEB; color: #F59E0B;">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                 </div>
             </div>
             <div class="cit-stat-card {{ $statusFilter === 'pending_client' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('pending_client')" style="--stat-color: #8B5CF6">
@@ -73,7 +73,7 @@
                     <span class="cit-stat-value">{{ $statusCounts['pending_client'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #F5F3FF; color: #8B5CF6;">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
                 </div>
             </div>
             <div class="cit-stat-card {{ $statusFilter === 'closed' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('closed')" style="--stat-color: #10B981">
@@ -82,7 +82,7 @@
                     <span class="cit-stat-value">{{ $statusCounts['closed'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #ECFDF5; color: #10B981;">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
                 </div>
             </div>
         </div>
@@ -490,6 +490,11 @@
                                     <span class="cit-bubble-badge {{ $isCustomer ? 'blue' : 'purple' }}">{{ $reply->getSenderTypeLabel() }}</span>
                                 </div>
                             </div>
+                            @if(!empty($reply->thread_label))
+                                <div style="margin: 0 0 6px 0;">
+                                    <span class="cit-bubble-badge cit-bubble-badge--thread-label">{{ $reply->thread_label }}</span>
+                                </div>
+                            @endif
                             <div class="cit-bubble-body">{!! $reply->message !!}</div>
                             @if($reply->attachments && count($reply->attachments))
                                 <div class="cit-attachment-list">
@@ -573,13 +578,19 @@
                              @paste.prevent="handlePaste($event)"></div>
                     </div>
 
-                    <input type="file" x-ref="replyFileInput" wire:model="replyAttachments" multiple class="cit-hidden" />
+                    <input type="file"
+                           x-ref="replyFileInput"
+                           wire:model.live="replyAttachments"
+                           wire:key="cit-reply-file-{{ $selectedTicketId }}"
+                           multiple
+                           accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.doc,.docx,.csv,.txt"
+                           class="cit-hidden" />
 
                     @if($replyAttachments && count($replyAttachments))
                         <div class="cit-file-list">
                             @foreach($replyAttachments as $i => $file)
                                 <div class="cit-file-item">
-                                    <svg width="14" height="14" fill="none" stroke="#667eea" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                                    <svg width="14" height="14" fill="none" stroke="#1a6dd4" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                                     <span class="cit-file-name">{{ $file->getClientOriginalName() }}</span>
                                     <button wire:click="removeReplyAttachment({{ $i }})" class="cit-file-remove">&times;</button>
                                 </div>
@@ -716,12 +727,18 @@
                         <svg width="28" height="28" fill="none" stroke="#94A3B8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
                         <span>Click to upload files</span>
                     </div>
-                    <input type="file" x-ref="newFileInput" wire:model="newAttachments" multiple class="cit-hidden" />
+                    <input type="file"
+                           x-ref="newFileInput"
+                           wire:model.live="newAttachments"
+                           wire:key="cit-new-file-input"
+                           multiple
+                           accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.doc,.docx,.csv,.txt"
+                           class="cit-hidden" />
                     @if($newAttachments && count($newAttachments))
                         <div class="cit-file-list" style="margin-top: 8px;">
                             @foreach($newAttachments as $i => $file)
                                 <div class="cit-file-item">
-                                    <svg width="14" height="14" fill="none" stroke="#667eea" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                                    <svg width="14" height="14" fill="none" stroke="#1a6dd4" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
                                     <span class="cit-file-name">{{ $file->getClientOriginalName() }}</span>
                                     <button wire:click="removeNewAttachment({{ $i }})" class="cit-file-remove">&times;</button>
                                 </div>
@@ -815,29 +832,35 @@
     {{-- ═══════════════════════════════════════════════════════════ --}}
     <style>
 /* ── Base ── */
-.cit-wrap { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+.cit-wrap {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
 .cit-hidden { display: none !important; }
 [x-cloak] { display: none !important; }
 
 /* ── Header ── */
-.cit-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+.cit-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; gap: 16px; flex-wrap: wrap; }
 .cit-title {
-    font-size: 1.65rem; font-weight: 800; margin: 0 0 4px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 1.25rem; font-weight: 700; margin: 0 0 2px; letter-spacing: -0.01em;
+    background: linear-gradient(135deg, #003c75 0%, #1a6dd4 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.cit-subtitle { font-size: 0.85rem; color: #64748B; margin: 0; }
+.cit-subtitle { font-size: 0.76rem; color: #64748B; margin: 0; }
 
 /* ── Buttons ── */
 .cit-btn-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 22px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff; font-size: 0.82rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border: none; border-radius: 8px;
+    background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
+    color: #fff; font-size: 0.78rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.cit-btn-primary:hover { box-shadow: 0 6px 20px rgba(102,126,234,0.35); transform: translateY(-1px); }
+.cit-btn-primary:hover { box-shadow: 0 6px 20px rgba(26,109,212,0.35); transform: translateY(-1px); }
 .cit-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── Gated create button ── */
@@ -880,40 +903,40 @@
 .cit-btn-outline:hover { background: #F8FAFC; border-color: #CBD5E1; }
 
 /* ── Stats ── */
-.cit-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.cit-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
 .cit-stat-card {
-    background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 18px 20px;
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px 14px;
     display: flex; align-items: center; justify-content: space-between;
     cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
 }
 .cit-stat-card::before {
-    content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%;
-    background: var(--stat-color); border-radius: 12px 0 0 12px; opacity: 0.5; transition: opacity 0.2s;
+    content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%;
+    background: var(--stat-color); border-radius: 10px 0 0 10px; opacity: 0.5; transition: opacity 0.2s;
 }
-.cit-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+.cit-stat-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
 .cit-stat-card:hover::before { opacity: 1; }
-.cit-stat-active { border-color: var(--stat-color); box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.cit-stat-active { border-color: var(--stat-color); box-shadow: 0 3px 10px rgba(0,0,0,0.07); }
 .cit-stat-active::before { opacity: 1; }
-.cit-stat-content { display: flex; flex-direction: column; gap: 2px; }
-.cit-stat-label { font-size: 0.76rem; color: #64748B; font-weight: 500; }
-.cit-stat-value { font-size: 1.75rem; font-weight: 800; color: #1E293B; line-height: 1.1; }
-.cit-stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.cit-stat-content { display: flex; flex-direction: column; gap: 1px; }
+.cit-stat-label { font-size: 0.72rem; color: #64748B; font-weight: 500; }
+.cit-stat-value { font-size: 1.25rem; font-weight: 700; color: #1E293B; line-height: 1.1; }
+.cit-stat-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
 
 /* ── Search ── */
-.cit-search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.cit-search-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .cit-search-wrap { flex: 1; position: relative; }
-.cit-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.cit-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .cit-search-input {
-    width: 100%; height: 42px; padding: 0 14px 0 42px;
-    border: 1px solid #E2E8F0; border-radius: 10px; font-size: 0.82rem; color: #334155;
+    width: 100%; height: 34px; padding: 0 12px 0 36px;
+    border: 1px solid #E2E8F0; border-radius: 8px; font-size: 0.78rem; color: #334155;
     background: #fff; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
 }
-.cit-search-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+.cit-search-input:focus { border-color: #1a6dd4; box-shadow: 0 0 0 3px rgba(26,109,212,0.1); }
 .cit-search-input::placeholder { color: #CBD5E1; }
 .cit-filter-btn {
-    display: inline-flex; align-items: center; gap: 8px; padding: 0 18px; height: 42px;
-    border: 1px solid #E2E8F0; border-radius: 10px; background: #fff; color: #475569;
-    font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; height: 34px;
+    border: 1px solid #E2E8F0; border-radius: 8px; background: #fff; color: #475569;
+    font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
 }
 .cit-filter-btn:hover { background: #F8FAFC; }
 .cit-filter-active { background: #F5F3FF; border-color: #C4B5FD; color: #6D28D9; }
@@ -923,8 +946,8 @@
 .cit-filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .cit-filter-label { display: block; font-size: 0.74rem; font-weight: 600; color: #64748B; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
 .cit-filter-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
-.cit-filter-clear { background: none; border: none; color: #667eea; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
-.cit-filter-clear:hover { color: #764ba2; text-decoration: underline; }
+.cit-filter-clear { background: none; border: none; color: #1a6dd4; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
+.cit-filter-clear:hover { color: #003c75; text-decoration: underline; }
 .cit-filter-enter { transition: all 0.2s ease; }
 .cit-filter-enter-start { opacity: 0; transform: translateY(-8px); }
 .cit-filter-enter-end { opacity: 1; transform: translateY(0); }
@@ -948,15 +971,15 @@
 .cit-dropdown-item {
     padding: 8px 14px; font-size: 0.82rem; color: #334155; cursor: pointer; transition: background 0.1s;
 }
-.cit-dropdown-item:hover { background: #F5F3FF; color: #667eea; }
-.cit-dropdown-selected { background: #F5F3FF; color: #667eea; font-weight: 600; }
+.cit-dropdown-item:hover { background: #EFF6FF; color: #1a6dd4; }
+.cit-dropdown-selected { background: #EFF6FF; color: #1a6dd4; font-weight: 600; }
 
 /* ── Table ── */
 .cit-table-wrap { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
 .cit-table-header-bar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px; border-bottom: 1px solid #E2E8F0;
-    background: linear-gradient(135deg, #F5F3FF 0%, #EFF6FF 100%);
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
 }
 .cit-table-title { font-size: 0.92rem; font-weight: 700; color: #1E293B; }
 .cit-table-count { font-size: 0.76rem; color: #64748B; }
@@ -974,12 +997,12 @@
 .cit-table-row td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; }
 .cit-ticket-id {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.78rem; font-weight: 600; color: #667eea;
+    font-size: 0.78rem; font-weight: 600; color: #1a6dd4;
 }
 .cit-ticket-subject { font-size: 0.84rem; font-weight: 500; color: #1E293B; }
 .cit-meta-text { font-size: 0.8rem; color: #64748B; }
 .cit-date-text { font-size: 0.78rem; color: #94A3B8; }
-.cit-view-btn { color: #667eea; cursor: pointer; }
+.cit-view-btn { color: #1a6dd4; cursor: pointer; }
 
 /* ── Badges ── */
 .cit-status-badge {
@@ -1002,7 +1025,7 @@
     background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px;
     cursor: pointer; transition: all 0.15s; animation: citFadeIn 0.3s ease both;
 }
-.cit-mobile-card:hover { border-color: #C4B5FD; box-shadow: 0 4px 14px rgba(102,126,234,0.08); }
+.cit-mobile-card:hover { border-color: #93C5FD; box-shadow: 0 4px 14px rgba(26,109,212,0.08); }
 .cit-mobile-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .cit-mobile-card-subject { font-size: 0.88rem; font-weight: 600; color: #1E293B; margin-bottom: 8px; line-height: 1.3; }
 .cit-mobile-card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -1022,9 +1045,10 @@
 .cit-detail {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 210px);
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
-    margin: -32px -32px 0 -32px;
+    margin: 0 -32px;
     padding: 8px 16px 0;
 }
 .cit-detail-topbar { flex-shrink: 0; padding: 4px 0 8px; }
@@ -1062,7 +1086,7 @@
     border-radius: 6px; font-size: 0.72rem; font-weight: 600; animation: citPulse 2s infinite;
 }
 .cit-detail-id { font-size: 0.84rem; color: #64748B; margin-top: 4px; }
-.cit-detail-id span { color: #667eea; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.cit-detail-id span { color: #1a6dd4; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 .cit-detail-meta-grid {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
     padding-top: 14px; border-top: 1px solid #F1F5F9;
@@ -1074,7 +1098,7 @@
 /* ── SLA Card ── */
 .cit-sla-card {
     margin-top: 14px; padding: 12px 16px; border-radius: 10px;
-    background: linear-gradient(135deg, #F5F3FF 0%, #EFF6FF 100%);
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
     border: 1px solid #E0E7FF;
 }
 .cit-sla-card-overdue { background: linear-gradient(135deg, #FEF2F2 0%, #FFFBEB 100%); border-color: #FECACA; }
@@ -1113,7 +1137,7 @@
     border-bottom: 1px solid #F1F5F9;
     flex-shrink: 0;
 }
-.cit-thread-title svg { color: #667eea; }
+.cit-thread-title svg { color: #1a6dd4; }
 
 /* ── Thread Search ── */
 .cit-thread-search {
@@ -1193,6 +1217,7 @@
 .cit-bubble-badge { font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
 .cit-bubble-badge.blue { background: #DBEAFE; color: #1E40AF; }
 .cit-bubble-badge.purple { background: #EDE9FE; color: #5B21B6; }
+.cit-bubble-badge.cit-bubble-badge--thread-label { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
 .cit-bubble-body { font-size: 13.5px; color: #334155; line-height: 1.65; word-wrap: break-word; }
 .cit-bubble-body p { margin: 0 0 6px; }
 .cit-bubble-time { font-size: 10px; color: #94A3B8; display: block; margin-top: 6px; font-weight: 500; }
@@ -1201,7 +1226,7 @@
 
 /* ── Search Highlighting ── */
 .cit-msg-dimmed { opacity: 0.08 !important; pointer-events: none; transition: opacity 0.3s ease; }
-.cit-msg-highlight { box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25); transition: box-shadow 0.3s ease; }
+.cit-msg-highlight { box-shadow: 0 0 0 2px rgba(26, 109, 212, 0.25); transition: box-shadow 0.3s ease; }
 
 /* ── Attachments ── */
 .cit-attachment-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
@@ -1232,12 +1257,12 @@
 }
 .cit-reply-collapsed:hover {
     background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
-    box-shadow: 0 -3px 12px rgba(102,126,234,0.06);
+    box-shadow: 0 -3px 12px rgba(26,109,212,0.06);
 }
 .cit-reply-collapsed:focus-visible {
     outline: none;
     background: #F0F4FF;
-    box-shadow: 0 -2px 8px rgba(102,126,234,0.12);
+    box-shadow: 0 -2px 8px rgba(26,109,212,0.12);
 }
 .cit-reply-collapsed-avatar {
     width: 28px; height: 28px; border-radius: 50%;
@@ -1275,16 +1300,16 @@
 .cit-reply-collapsed-icon {
     width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
     color: #fff;
     border-radius: 999px;
     flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(102,126,234,0.30);
+    box-shadow: 0 2px 6px rgba(26,109,212,0.30);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .cit-reply-collapsed:hover .cit-reply-collapsed-icon {
     transform: translateX(2px) rotate(-8deg);
-    box-shadow: 0 3px 10px rgba(102,126,234,0.40);
+    box-shadow: 0 3px 10px rgba(26,109,212,0.40);
 }
 .cit-reply-minimize {
     margin-left: auto;
@@ -1340,10 +1365,10 @@
     border-radius: 0 0 8px 8px; font-size: 0.84rem; color: #334155;
     line-height: 1.6; outline: none; background: #fff;
 }
-.cit-reply-editor:focus { border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.08); }
+.cit-reply-editor:focus { border-color: #1a6dd4; box-shadow: 0 0 0 2px rgba(26,109,212,0.08); }
 .cit-reply-editor:empty::before { content: attr(data-placeholder); color: #CBD5E1; }
 .cit-reply-editor p { margin: 0 0 6px; }
-.cit-reply-editor a { color: #667eea; text-decoration: underline; }
+.cit-reply-editor a { color: #1a6dd4; text-decoration: underline; }
 .cit-desc-editor { min-height: 160px; }
 .cit-reply-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
 .cit-reply-send { font-size: 0.82rem; }
@@ -1355,7 +1380,7 @@
     font-size: 0.84rem; color: #047857; font-weight: 500;
 }
 .cit-reopen-btn {
-    margin-left: auto; padding: 6px 14px; background: #667eea; color: #fff;
+    margin-left: auto; padding: 6px 14px; background: #1a6dd4; color: #fff;
     border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
     cursor: pointer; transition: background 0.2s; white-space: nowrap;
 }
@@ -1395,7 +1420,7 @@
 .cit-modal-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
     border-radius: 16px 16px 0 0;
 }
 .cit-modal-header h2 { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
@@ -1423,7 +1448,7 @@
     font-size: 0.84rem; color: #334155; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
     box-sizing: border-box;
 }
-.cit-form-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+.cit-form-input:focus { border-color: #1a6dd4; box-shadow: 0 0 0 3px rgba(26,109,212,0.1); }
 .cit-form-input::placeholder { color: #94A3B8; }
 .cit-error { display: block; font-size: 0.74rem; color: #EF4444; margin-top: 4px; }
 
