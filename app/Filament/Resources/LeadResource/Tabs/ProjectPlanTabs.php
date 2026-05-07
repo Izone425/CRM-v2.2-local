@@ -819,12 +819,10 @@ class ProjectPlanTabs
                                     }
                                 }
 
-                                // Clean up temporary attachments
-                                if (!empty($data['email_attachments'])) {
-                                    foreach ($data['email_attachments'] as $file) {
-                                        \Illuminate\Support\Facades\Storage::delete($file);
-                                    }
-                                }
+                                // Note: temp email attachments are NOT deleted — they
+                                // persist as customer thread reply attachments via the
+                                // mirror helper. Deleting them would 404 the chips in
+                                // the customer portal.
 
                                 // Log the email sent with complete information
                                 Log::info('Project Closing Email Sent', [
