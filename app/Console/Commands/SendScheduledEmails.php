@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
-use Illuminate\Mail\Message;
 
 class SendScheduledEmails extends Command
 {
@@ -55,46 +54,75 @@ class SendScheduledEmails extends Command
                 // Get CC recipients (if stored in email data)
                 $ccRecipients = $emailData['cc_recipients'] ?? [];
 
-                // Get attachments data
-                $attachmentsData = $emailData['attachments_data'] ?? [];
-
-                // Validate that attachment files still exist
-                $validAttachments = [];
-                foreach ($attachmentsData as $attachment) {
-                    if (isset($attachment['path']) && file_exists($attachment['path'])) {
-                        $validAttachments[] = $attachment;
-                    } else {
-                        $this->warn("Attachment file not found: " . ($attachment['path'] ?? 'Unknown path'));
-                        Log::warning("Scheduled email attachment not found", [
-                            'email_id' => $email->id,
-                            'attachment_path' => $attachment['path'] ?? 'Unknown',
-                            'quotation_id' => $attachment['quotation_id'] ?? 'Unknown'
-                        ]);
-                    }
+                // Pre-resolve master ticket id for the CTA URL (re-checked at send-time
+                // so a master created since the email was scheduled is reflected).
+                $masterTicketId = null;
+                if (!empty($emailData['software_handover_id'])) {
+                    $existingMaster = \App\Models\ImplementerTicket::where('software_handover_id', $emailData['software_handover_id'])
+                        ->orderBy('id', 'asc')
+                        ->first();
+                    $masterTicketId = $existingMaster?->id;
                 }
 
-                // Send the email with attachments
-                Mail::html($emailData['content'], function (Message $message) use ($emailData, $ccRecipients, $validAttachments) {
-                    $message->to($emailData['recipients'])
-                        ->subject($emailData['subject'])
-                        ->from($emailData['sender_email'], $emailData['sender_name']);
+                $portalBase = str_replace('http://', 'https://', config('app.url'));
+                $portalUrl  = $portalBase . '/customer/dashboard?tab=impThread'
+                    . ($masterTicketId ? '&ticket=' . $masterTicketId : '');
 
-                    // Add CC recipients if we have any
-                    if (!empty($ccRecipients)) {
-                        $message->cc($ccRecipients);
+                $mailable = new \App\Mail\ImplementerThreadNotificationMail(
+                    emailSubject:           $emailData['subject'] ?? 'Customer portal update',
+                    portalUrl:              $portalUrl,
+                    implementerName:        $emailData['sender_name'] ?? '',
+                    implementerDesignation: $emailData['implementer_designation'] ?? 'Implementer',
+                    implementerCompany:     $emailData['implementer_company'] ?? 'TimeTec Cloud Sdn Bhd',
+                    implementerPhone:       $emailData['implementer_phone'] ?? '',
+                    implementerEmail:       $emailData['implementer_email'] ?? '',
+                    senderEmail:            $emailData['sender_email'] ?? '',
+                    senderName:             $emailData['sender_name'] ?? '',
+                );
+
+                $mailBuilder = Mail::to($emailData['recipients'] ?? []);
+
+                if (!empty($ccRecipients)) {
+                    $mailBuilder->cc($ccRecipients);
+                }
+                if (!empty($emailData['sender_email'])) {
+                    $mailBuilder->bcc($emailData['sender_email']);
+                }
+
+                $mailBuilder->send($mailable);
+
+                // === Mirror to customer thread (template-driven) ===
+                try {
+                    if (!empty($emailData['template_id'])) {
+                        $template = \App\Models\EmailTemplate::find($emailData['template_id']);
+                        $handover = !empty($emailData['software_handover_id'])
+                            ? \App\Models\SoftwareHandover::find($emailData['software_handover_id'])
+                            : null;
+                        $customer = !empty($emailData['customer_id'])
+                            ? \App\Models\Customer::find($emailData['customer_id'])
+                            : null;
+                        $implementer = !empty($emailData['implementer_user_id'])
+                            ? \App\Models\User::find($emailData['implementer_user_id'])
+                            : null;
+
+                        if ($template && $implementer) {
+                            \App\Filament\Actions\ImplementerActions::mirrorTemplateEmailToThread(
+                                $template,
+                                $handover,
+                                $customer,
+                                $implementer,
+                                $emailData['subject'] ?? '',
+                                $emailData['content'] ?? '',
+                                $emailData['project_plan_attachments'] ?? []
+                            );
+                        }
                     }
-
-                    // BCC the sender
-                    $message->bcc($emailData['sender_email']);
-
-                    // Add PDF attachments
-                    foreach ($validAttachments as $attachment) {
-                        $message->attach($attachment['path'], [
-                            'as' => $attachment['name'],
-                            'mime' => $attachment['mime']
-                        ]);
-                    }
-                });
+                } catch (\Throwable $e) {
+                    Log::error('Thread mirror failed in SendScheduledEmails: ' . $e->getMessage(), [
+                        'scheduled_email_id' => $email->id,
+                        'template_id'        => $emailData['template_id'] ?? null,
+                    ]);
+                }
 
                 // Mark the email as sent
                 DB::table('scheduled_emails')
@@ -105,7 +133,7 @@ class SendScheduledEmails extends Command
                         'updated_at' => Carbon::now(),
                     ]);
 
-                $this->info("Email ID {$email->id} sent successfully with " . count($validAttachments) . " attachment(s)");
+                $this->info("Email ID {$email->id} sent successfully");
 
                 // Log successful send
                 Log::info('Scheduled email sent', [
@@ -113,7 +141,7 @@ class SendScheduledEmails extends Command
                     'recipients' => $emailData['recipients'],
                     'cc_recipients' => $ccRecipients,
                     'subject' => $emailData['subject'],
-                    'attachments_count' => count($validAttachments),
+                    'master_ticket_id' => $masterTicketId,
                     'template' => $emailData['template_name'] ?? 'Unknown',
                 ]);
 
