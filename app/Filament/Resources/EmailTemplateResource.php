@@ -48,6 +48,13 @@ class EmailTemplateResource extends Resource
                     ->required()
                     ->columnSpanFull()
                     ->helperText('You can use placeholders like {customer_name}, {company_name}, etc. These will be replaced with actual values when the email is sent.'),
+
+                TextInput::make('thread_label')
+                    ->label('Thread Label')
+                    ->maxLength(50)
+                    ->helperText('Short tag shown on customer thread replies (e.g., "Follow Up-Migration"). Leave empty to skip thread mirroring for this template.')
+                    ->visible(fn (callable $get) => $get('type') === 'implementer')
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -67,6 +74,10 @@ class EmailTemplateResource extends Resource
                 TextColumn::make('subject')
                     ->searchable()
                     ->limit(50),
+                TextColumn::make('thread_label')
+                    ->label('Thread Label')
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('creator.name')
                     ->label('Created By'),
                 TextColumn::make('created_at')
