@@ -170,4 +170,16 @@ class ImplementerThreadMirrorTest extends TestCase
         $this->assertNull($reply);
         $this->assertSame(0, ImplementerTicket::where('software_handover_id', $h->id)->count());
     }
+
+    public function test_missing_software_handover_logs_warning_and_skips(): void
+    {
+        $template = $this->kickOffTemplate();
+        ['customer' => $c, 'implementer' => $u] = $this->makeContext($template);
+
+        $reply = ImplementerActions::mirrorTemplateEmailToThread(
+            $template, null, $c, $u, 'X', '<p>X</p>', []
+        );
+
+        $this->assertNull($reply);
+    }
 }

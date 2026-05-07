@@ -3082,4 +3082,98 @@ class ImplementerActions
             return $html;
         }
     }
+
+    /**
+     * Mirror an implementer email-template send into the customer's master
+     * thread (SW_XXXXXX_IMP0001). Returns the created reply, or null if the
+     * mirror was skipped (no thread label, no software handover, no customer,
+     * or pre-Kickoff non-trigger template before the master exists).
+     */
+    public static function mirrorTemplateEmailToThread(
+        \App\Models\EmailTemplate $template,
+        ?\App\Models\SoftwareHandover $softwareHandover,
+        ?\App\Models\Customer $customer,
+        \App\Models\User $implementer,
+        string $resolvedSubject,
+        string $resolvedContent,
+        array $attachments = []
+    ): ?\App\Models\ImplementerTicketReply {
+        if (empty($template->thread_label)) {
+            return null;
+        }
+
+        if (!$softwareHandover) {
+            \Illuminate\Support\Facades\Log::warning('Thread mirror skipped: no SoftwareHandover', [
+                'template_id' => $template->id,
+            ]);
+            return null;
+        }
+
+        if (!$customer) {
+            \Illuminate\Support\Facades\Log::warning('Thread mirror skipped: no Customer for lead', [
+                'lead_id' => $softwareHandover->lead_id,
+                'software_handover_id' => $softwareHandover->id,
+                'template_id' => $template->id,
+            ]);
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\DB::transaction(function () use (
+            $template, $softwareHandover, $customer, $implementer, $resolvedSubject, $resolvedContent, $attachments
+        ) {
+            $master = \App\Models\ImplementerTicket::where('software_handover_id', $softwareHandover->id)
+                ->orderBy('id', 'asc')
+                ->lockForUpdate()
+                ->first();
+
+            $isKickoff = (int) $template->id === \App\Models\EmailTemplate::KICK_OFF_TEMPLATE_ID;
+
+            if (!$master) {
+                if (!$isKickoff) {
+                    return null;
+                }
+
+                $master = \App\Models\ImplementerTicket::create([
+                    'customer_id'          => $customer->id,
+                    'implementer_user_id'  => $implementer->id,
+                    'implementer_name'     => $implementer->name,
+                    'lead_id'              => $softwareHandover->lead_id,
+                    'software_handover_id' => $softwareHandover->id,
+                    'subject'              => $resolvedSubject,
+                    'description'          => $resolvedContent,
+                    'status'               => 'open',
+                    'priority'             => 'medium',
+                    'category'             => 'Kick-Off Meeting',
+                    'module'               => 'General',
+                    'first_responded_at'   => now(),
+                ]);
+            }
+
+            $reply = \App\Models\ImplementerTicketReply::create([
+                'implementer_ticket_id' => $master->id,
+                'sender_type'           => \App\Models\User::class,
+                'sender_id'             => $implementer->id,
+                'email_template_id'     => $template->id,
+                'thread_label'          => $template->thread_label,
+                'message'               => $resolvedContent,
+                'attachments'           => !empty($attachments) ? $attachments : null,
+                'is_internal_note'      => false,
+            ]);
+
+            try {
+                $customer->notifyNow(new \App\Notifications\ImplementerTicketNotification(
+                    $master->fresh(),
+                    'replied_by_implementer',
+                    $implementer->name
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Thread mirror notification failed', [
+                    'reply_id' => $reply->id,
+                    'error'    => $e->getMessage(),
+                ]);
+            }
+
+            return $reply;
+        });
+    }
 }
