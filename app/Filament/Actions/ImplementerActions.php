@@ -2893,6 +2893,20 @@ class ImplementerActions
                 ]);
             }
 
+            // Normalize attachment paths: customer portal renders chips via
+            // Storage::disk('public')->url($path), which requires paths
+            // relative to storage/app/public/. Some callers (e.g. Send
+            // Session Summary via ImplementerAppointmentRelationManager)
+            // pass absolute paths built with storage_path('app/public/...');
+            // strip the prefix here so chips resolve correctly.
+            $publicDiskRoot = storage_path('app/public/');
+            $normalizedAttachments = array_map(function ($path) use ($publicDiskRoot) {
+                if (is_string($path) && str_starts_with($path, $publicDiskRoot)) {
+                    return substr($path, strlen($publicDiskRoot));
+                }
+                return $path;
+            }, $attachments);
+
             $reply = \App\Models\ImplementerTicketReply::create([
                 'implementer_ticket_id' => $master->id,
                 'sender_type'           => \App\Models\User::class,
@@ -2900,7 +2914,7 @@ class ImplementerActions
                 'email_template_id'     => $template->id,
                 'thread_label'          => $template->thread_label,
                 'message'               => $resolvedContent,
-                'attachments'           => !empty($attachments) ? $attachments : null,
+                'attachments'           => !empty($normalizedAttachments) ? $normalizedAttachments : null,
                 'is_internal_note'      => false,
             ]);
 

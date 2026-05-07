@@ -142,6 +142,31 @@ class ImplementerThreadMirrorTest extends TestCase
         $this->assertSame(['file1.pdf'], $reply->attachments);
     }
 
+    public function test_absolute_storage_paths_are_normalized_to_relative_for_public_disk_chips(): void
+    {
+        $template = EmailTemplate::factory()->create([
+            'name' => 'Session - Completed Online Kick-Off Meeting',
+            'thread_label' => 'Test',
+        ]);
+        ['handover' => $h, 'customer' => $c, 'implementer' => $u, 'lead' => $l] = $this->makeContext($template);
+
+        $master = ImplementerTicket::factory()->create([
+            'lead_id' => $l->id,
+            'software_handover_id' => $h->id,
+            'customer_id' => $c->id,
+            'implementer_user_id' => $u->id,
+        ]);
+
+        $absolutePath = storage_path('app/public/temp_onboarding_attachments/abc.pdf');
+
+        $reply = ImplementerActions::mirrorTemplateEmailToThread(
+            $template, $h, $c, $u, 'Subject', '<p>Body</p>', [$absolutePath]
+        );
+
+        $this->assertNotNull($reply);
+        $this->assertSame(['temp_onboarding_attachments/abc.pdf'], $reply->attachments);
+    }
+
     public function test_template_with_null_thread_label_skips_mirror(): void
     {
         $template = $this->kickOffTemplate();
