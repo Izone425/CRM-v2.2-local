@@ -37,7 +37,8 @@ class EmailTemplateResource extends Resource
                         'admin_renewal_v2' => 'Admin - Renewal v2',
                     ])
                     ->default('general')
-                    ->required(),
+                    ->required()
+                    ->live(),
 
                 TextInput::make('subject')
                     ->required()
@@ -51,7 +52,7 @@ class EmailTemplateResource extends Resource
 
                 TextInput::make('thread_label')
                     ->label('Thread Label')
-                    ->maxLength(50)
+                    ->maxLength(80)
                     ->helperText('Short tag shown on customer thread replies (e.g., "Follow Up-Migration"). Leave empty to skip thread mirroring for this template.')
                     ->visible(fn (callable $get) => $get('type') === 'implementer')
                     ->columnSpanFull(),
