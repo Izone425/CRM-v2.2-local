@@ -1569,6 +1569,11 @@
             display: none !important;
         }
 
+        /* Ticket detail: hide topbar + reclaim chrome padding */
+        body.imp-detail-fullscreen .fi-topbar { display: none !important; }
+        body.imp-detail-fullscreen .fi-main { padding-top: 0 !important; }
+        body.imp-detail-fullscreen .fi-page { padding: 0 !important; }
+
         /* === Ticket Detail Full Page === */
         .imp-fullpage-detail {
             background: transparent;
@@ -1576,7 +1581,7 @@
             border: none;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 120px);
+            height: calc(100dvh - 24px);
             overflow: hidden;
             box-shadow: none;
             padding: 0 4px;
@@ -1855,7 +1860,7 @@
 
         /* Left Sidebar */
         .imp-detail-sidebar {
-            width: 280px;
+            width: 320px;
             flex-shrink: 0;
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -2161,6 +2166,10 @@
             background: #EEF2FF;
             color: #4338CA;
             border: 1px solid #C7D2FE;
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .imp-detail-msg-time {
             font-size: 10px;
@@ -2601,6 +2610,97 @@
             flex-shrink: 0;
             box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
             border-radius: 0 0 12px 12px;
+        }
+
+        /* Collapsed reply pill (mirrors customer cit-reply-collapsed) */
+        .imp-reply-collapsed {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-top: 1px solid #E2E5EB;
+            background: #FFFFFF;
+            border-radius: 0 0 12px 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.18s ease, box-shadow 0.18s ease;
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.025);
+            font-family: inherit;
+        }
+        .imp-reply-collapsed:hover {
+            background: linear-gradient(180deg, #F8F6FF 0%, #FFFFFF 100%);
+            box-shadow: 0 -3px 12px rgba(99,102,241,0.06);
+        }
+        .imp-reply-collapsed:focus-visible {
+            outline: none;
+            background: #F4F0FF;
+            box-shadow: 0 -2px 8px rgba(107,91,203,0.12);
+        }
+        .imp-reply-collapsed-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #EDEAF7, #DDD6FE);
+            color: #6B5BCB;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(107,91,203,0.15);
+        }
+        .imp-reply-collapsed-prompt {
+            flex: 1;
+            font-size: 0.84rem;
+            color: #94A3B8;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .imp-reply-collapsed:hover .imp-reply-collapsed-prompt {
+            color: #64748B;
+        }
+        .imp-reply-collapsed-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #F0EBFF;
+            color: #6B5BCB;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .imp-reply-collapsed-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6B5BCB 0%, #4C3FA1 100%);
+            color: #fff;
+            border-radius: 999px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(107,91,203,0.30);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .imp-reply-collapsed:hover .imp-reply-collapsed-icon {
+            transform: translateX(2px) rotate(-8deg);
+            box-shadow: 0 3px 10px rgba(107,91,203,0.40);
+        }
+        .imp-reply-minimize {
+            margin-left: auto;
+            color: #94A3B8;
+        }
+        .imp-reply-minimize:hover {
+            background: #FEE2E2 !important;
+            color: #DC2626 !important;
         }
         .imp-reply-chevron {
             width: 16px;
@@ -3892,7 +3992,10 @@
     @else
 
     <!-- Ticket Detail Full Page -->
-    <div class="imp-fullpage-detail">
+    <div class="imp-fullpage-detail"
+         x-data="{}"
+         x-init="document.body.classList.add('imp-detail-fullscreen')"
+         x-destroy="document.body.classList.remove('imp-detail-fullscreen')">
         <!-- Back Button -->
         <div class="imp-back-row">
             <button wire:click="closeTicketDetail" class="imp-back-btn">
@@ -4181,13 +4284,11 @@
                                                     <span class="imp-detail-msg-badge {{ $isClient ? 'blue' : 'purple' }}">
                                                         {{ $isClient ? 'Client' : 'HR Support' }}
                                                     </span>
+                                                    @if(!empty($reply->thread_label))
+                                                        <span class="imp-detail-msg-badge thread-label" title="{{ $reply->thread_label }}">{{ $reply->thread_label }}</span>
+                                                    @endif
                                                 </div>
                                             </div>
-                                            @if(!empty($reply->thread_label))
-                                                <div style="margin: 0 0 6px 0;">
-                                                    <span class="imp-detail-msg-badge thread-label">{{ $reply->thread_label }}</span>
-                                                </div>
-                                            @endif
                                             <div class="imp-detail-msg-body">{!! preg_replace(
                                                 '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
@@ -4216,9 +4317,12 @@
                             @endif
                         </div>
 
-                        <!-- Reply Box -->
-                        <div class="imp-detail-reply-box"
-                             x-data="{
+                        <!-- Reply Composer (collapsed pill OR expanded panel) -->
+                        @php
+                            $replyUserInitial = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
+                            $pendingReplyAttachments = !empty($replyAttachments) ? count($replyAttachments) : 0;
+                        @endphp
+                        <div x-data="{
                                 exec(command, value = null) {
                                     document.execCommand(command, false, value);
                                     this.$refs.replyEditor.focus();
@@ -4254,23 +4358,45 @@
                                     replyOpen = false;
                                 });
                              "
+                             @keydown.escape.window="if (replyOpen) replyOpen = false"
+                             style="flex-shrink: 0;"
                         >
-                            <div class="imp-detail-reply-header" @click="replyOpen = !replyOpen" style="cursor: pointer;">
-                                <label class="imp-detail-reply-label" style="cursor: pointer;">
+                            <!-- Collapsed: single pill -->
+                            <button type="button"
+                                    x-show="!replyOpen"
+                                    @click="replyOpen = true; $nextTick(() => $refs.replyEditor && $refs.replyEditor.focus())"
+                                    class="imp-reply-collapsed"
+                                    aria-label="Open reply composer">
+                                <span class="imp-reply-collapsed-avatar">{{ $replyUserInitial }}</span>
+                                <span class="imp-reply-collapsed-prompt">{{ $isInternalNote ? 'Click to add internal note...' : 'Click to reply to client...' }}</span>
+                                @if($pendingReplyAttachments > 0)
+                                    <span class="imp-reply-collapsed-meta">
+                                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                                        {{ $pendingReplyAttachments }} attached
+                                    </span>
+                                @endif
+                                <span class="imp-reply-collapsed-icon">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                </span>
+                            </button>
+
+                            <!-- Expanded: full composer -->
+                            <div class="imp-detail-reply-box" x-show="replyOpen" x-collapse x-cloak>
+                            <div class="imp-detail-reply-header">
+                                <label class="imp-detail-reply-label">
                                     {{ $isInternalNote ? 'Internal Note (Private)' : 'Reply to Client' }}
                                 </label>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label class="imp-detail-internal-toggle" @click.stop>
+                                    <label class="imp-detail-internal-toggle">
                                         <input type="checkbox" wire:model.live="isInternalNote">
                                         <span>Internal Note</span>
                                     </label>
-                                    <svg class="imp-reply-chevron" :class="{ 'expanded': replyOpen }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                    </svg>
+                                    <button type="button" @click="replyOpen = false" title="Minimize (Esc)" class="imp-reply-minimize" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: none; background: none; border-radius: 5px; cursor: pointer; transition: all 0.15s;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
+                                    </button>
                                 </div>
                             </div>
 
-                            <div x-show="replyOpen" x-collapse x-cloak>
 
                             <!-- TO / CC / BCC fields (hidden when Internal Note) -->
                             <div class="imp-detail-reply-email-fields" x-show="!$wire.isInternalNote" x-cloak>
@@ -4366,11 +4492,11 @@
                                 </button>
                             </div>
 
-                            </div><!-- end x-collapse wrapper -->
-                        </div>
-                    </div>
-                </div>
-    </div>
+                            </div><!-- end .imp-detail-reply-box -->
+                        </div><!-- end reply composer x-data wrapper -->
+                    </div><!-- end .imp-detail-thread-panel -->
+                </div><!-- end .imp-detail-content -->
+    </div><!-- end .imp-fullpage-detail -->
 
     {{-- Split Ticket Drawer --}}
     @if($showSplitDrawer)
