@@ -2157,6 +2157,11 @@
         .imp-detail-msg-badge.blue { background: #DBEAFE; color: #1E40AF; }
         .imp-detail-msg-badge.purple { background: #EDE9FE; color: #5B21B6; }
         .imp-detail-msg-badge.yellow { background: #FEF3C7; color: #854D0E; }
+        .imp-detail-msg-badge.thread-label {
+            background: #EEF2FF;
+            color: #4338CA;
+            border: 1px solid #C7D2FE;
+        }
         .imp-detail-msg-time {
             font-size: 10px;
             color: #94A3B8;
@@ -4178,6 +4183,11 @@
                                                     </span>
                                                 </div>
                                             </div>
+                                            @if(!empty($reply->thread_label))
+                                                <div style="margin: 0 0 6px 0;">
+                                                    <span class="imp-detail-msg-badge thread-label">{{ $reply->thread_label }}</span>
+                                                </div>
+                                            @endif
                                             <div class="imp-detail-msg-body">{!! preg_replace(
                                                 '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
