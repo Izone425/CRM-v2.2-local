@@ -698,24 +698,72 @@ class ProjectClosingNew extends Component implements HasForms, HasTable
             // Generate System Go Live PDF (single PDF with all selected PICs)
             $pdfPath = $this->generateSystemGoLivePdf($handover, $lead, $data);
 
-            // Send email with PDF attachment
-            Mail::html($content, function ($message) use ($subject, $validRecipients, $senderEmail, $senderName, $pdfPath) {
-                $message->from($senderEmail, $senderName)
-                    ->to($validRecipients)
-                    ->cc($senderEmail)
-                    ->subject($subject);
+            // Pre-resolve master ticket for CTA URL
+            $existingMaster = \App\Models\ImplementerTicket::where('software_handover_id', $handover->id)
+                ->orderBy('id', 'asc')
+                ->first();
+            $portalBase = str_replace('http://', 'https://', config('app.url'));
+            $portalUrl = $portalBase . '/customer/dashboard?tab=impThread'
+                . ($existingMaster ? '&ticket=' . $existingMaster->id : '');
 
-                if ($pdfPath && file_exists($pdfPath)) {
-                    $message->attach($pdfPath, [
-                        'as' => basename($pdfPath),
-                        'mime' => 'application/pdf',
-                    ]);
-                }
-            });
+            $mailable = new \App\Mail\ImplementerThreadNotificationMail(
+                emailSubject:           $subject,
+                portalUrl:              $portalUrl,
+                implementerName:        $senderName,
+                implementerDesignation: $data['implementer_designation'] ?? 'Implementer',
+                implementerCompany:     $data['implementer_company'] ?? 'TimeTec Cloud Sdn Bhd',
+                implementerPhone:       $data['implementer_phone'] ?? '',
+                implementerEmail:       $senderEmail,
+                senderEmail:            $senderEmail,
+                senderName:             $senderName,
+            );
 
-            // Clean up temporary PDF
+            Mail::to($validRecipients)
+                ->bcc($senderEmail)
+                ->send($mailable);
+
+            // Move the System Go Live PDF from the temp dir to the public disk so it can
+            // be referenced by the customer thread reply attachment chip. After the move,
+            // the temp file is safe to delete (the public-disk copy is the source of truth).
+            $mirrorAttachments = [];
             if ($pdfPath && file_exists($pdfPath)) {
-                unlink($pdfPath);
+                $publicRelPath = 'system-go-live/' . $handover->id . '/' . basename($pdfPath);
+                try {
+                    \Illuminate\Support\Facades\Storage::disk('public')->put(
+                        $publicRelPath,
+                        file_get_contents($pdfPath)
+                    );
+                    $mirrorAttachments = [$publicRelPath];
+                    @unlink($pdfPath);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to persist System Go Live PDF for mirror: ' . $e->getMessage(), [
+                        'pdf_path' => $pdfPath,
+                        'sw_id'    => $handover->id,
+                    ]);
+                    // If move failed, leave temp file alone (caller may want to debug); skip mirror attachment.
+                }
+            }
+
+            // === Mirror to customer thread ===
+            try {
+                $template = \App\Models\EmailTemplate::find($data['email_template'] ?? null);
+                if ($template) {
+                    $customer = \App\Models\Customer::where('lead_id', $lead->id)->first();
+                    \App\Filament\Actions\ImplementerActions::mirrorTemplateEmailToThread(
+                        $template,
+                        $handover,
+                        $customer,
+                        auth()->user(),
+                        $subject,
+                        $content,
+                        $mirrorAttachments
+                    );
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Thread mirror failed in sendProjectClosingEmail: ' . $e->getMessage(), [
+                    'lead_id'     => $lead->id,
+                    'template_id' => $data['email_template'] ?? null,
+                ]);
             }
 
             // Update ALL software handovers with approved requests to Closed
