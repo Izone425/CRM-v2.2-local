@@ -1772,6 +1772,21 @@ class ImplementerActions
                                 'scheduler_type' => $schedulerType
                             ]);
 
+                            $customerForPayload = isset($customer)
+                                ? $customer
+                                : \App\Models\Customer::where('lead_id', $record->lead_id)->first();
+                            $implementerForPayload = auth()->user();
+
+                            // Pre-resolve master ticket for the email CTA URL. If the
+                            // master doesn't exist yet (e.g. this IS the Kick-Off send),
+                            // the CTA degrades to the thread-list URL; the mirror call
+                            // below will create the master, and subsequent sends will
+                            // include &ticket=ID.
+                            $existingMaster = \App\Models\ImplementerTicket::where('software_handover_id', $record->id)
+                                ->orderBy('id', 'asc')
+                                ->first();
+                            $masterTicketIdForCta = $existingMaster?->id;
+
                             // Store email data for scheduling
                             $emailData = [
                                 'content' => $content,
@@ -1785,6 +1800,15 @@ class ImplementerActions
                                 'scheduler_type' => $schedulerType,
                                 'project_plan_attachments' => $data['project_plan_attachments'] ?? [], // ✅ Ensure this is passed
                                 'session_recording_link' => $data['session_recording_link'] ?? null,
+                                'master_ticket_id'         => $masterTicketIdForCta,
+                                'template_id'              => $data['email_template'] ?? null,
+                                'software_handover_id'     => $record->id,
+                                'customer_id'              => $customerForPayload?->id,
+                                'implementer_user_id'      => $implementerForPayload?->id,
+                                'implementer_designation'  => $data['implementer_designation'] ?? 'Implementer',
+                                'implementer_company'      => $data['implementer_company'] ?? 'TimeTec Cloud Sdn Bhd',
+                                'implementer_phone'        => $data['implementer_phone'] ?? '',
+                                'implementer_email'        => $data['implementer_email'] ?? '',
                             ];
 
                             // ✅ ENHANCED: Log the final email data before sending
@@ -1838,6 +1862,47 @@ class ImplementerActions
                                     ->success()
                                     ->send();
                             }
+
+                            // === Mirror to customer thread (template-driven) ===
+                            // Decision: Mirror happens ONLY for instant sends here. Scheduled
+                            // sends mirror at cron send-time inside SendScheduledEmails (so the
+                            // master-ticket existence check is fresh when the cron fires).
+                            if ($schedulerType === 'instant' || $schedulerType === 'both') {
+                                try {
+                                    $template = EmailTemplate::find($data['email_template'] ?? null);
+                                    if ($template) {
+                                        // Defensive customer re-resolution: the local $customer is
+                                        // declared inside `if ($lead)` at line ~1697 and may be
+                                        // undefined if Lead::find returned null. Re-query
+                                        // explicitly so we never reference an undefined variable.
+                                        $customerForMirror = $customerForPayload
+                                            ?? \App\Models\Customer::where('lead_id', $record->lead_id)->first();
+
+                                        self::mirrorTemplateEmailToThread(
+                                            $template,
+                                            $record,
+                                            $customerForMirror,
+                                            auth()->user(),
+                                            $subject,
+                                            $content,
+                                            $data['project_plan_attachments'] ?? []
+                                        );
+                                    }
+                                } catch (\Throwable $e) {
+                                    \Illuminate\Support\Facades\Log::error('Thread mirror failed in processFollowUpWithEmail: ' . $e->getMessage(), [
+                                        'lead_id' => $record->lead_id,
+                                        'template_id' => $data['email_template'] ?? null,
+                                    ]);
+                                }
+                            }
+                        } else {
+                            // Recipient string was non-empty but no valid emails parsed.
+                            // Email isn't sent and (per design) the mirror doesn't fire either.
+                            \Illuminate\Support\Facades\Log::warning('Implementer email-template send: no valid recipients parsed', [
+                                'lead_id'         => $record->lead_id,
+                                'template_id'     => $data['email_template'] ?? null,
+                                'recipient_input' => $recipientStr,
+                            ]);
                         }
                     }
                 } catch (\Exception $e) {
@@ -1888,195 +1953,41 @@ class ImplementerActions
     public static function sendEmail(array $emailData): void
     {
         try {
-            // ✅ ENHANCED: Log the received email data at the start
-            Log::info('sendEmail method called', [
-                'email_data_keys' => array_keys($emailData),
-                'has_project_plan_attachments' => !empty($emailData['project_plan_attachments']),
-                'project_plan_attachments_count' => count($emailData['project_plan_attachments'] ?? []),
-                'project_plan_attachments_data' => $emailData['project_plan_attachments'] ?? null,
-                'recipients_count' => count($emailData['recipients'] ?? []),
-                'subject' => $emailData['subject'] ?? 'No subject'
+            $masterTicketId = $emailData['master_ticket_id'] ?? null;
+            $portalBase = str_replace('http://', 'https://', config('app.url'));
+            $portalUrl  = $portalBase . '/customer/dashboard?tab=impThread'
+                . ($masterTicketId ? '&ticket=' . $masterTicketId : '');
+
+            $mailable = new \App\Mail\ImplementerThreadNotificationMail(
+                emailSubject:           $emailData['subject'] ?? 'Customer portal update',
+                portalUrl:              $portalUrl,
+                implementerName:        $emailData['sender_name'] ?? auth()->user()?->name ?? '',
+                implementerDesignation: $emailData['implementer_designation'] ?? 'Implementer',
+                implementerCompany:     $emailData['implementer_company'] ?? 'TimeTec Cloud Sdn Bhd',
+                implementerPhone:       $emailData['implementer_phone'] ?? '',
+                implementerEmail:       $emailData['implementer_email'] ?? '',
+                senderEmail:            $emailData['sender_email'] ?? '',
+                senderName:             $emailData['sender_name'] ?? '',
+            );
+
+            $mailBuilder = \Illuminate\Support\Facades\Mail::to($emailData['recipients'] ?? []);
+
+            if (!empty($emailData['sender_email'])) {
+                $mailBuilder->cc($emailData['sender_email']);
+            }
+
+            $mailBuilder->send($mailable);
+
+            \Illuminate\Support\Facades\Log::info('ImplementerThreadNotificationMail sent', [
+                'subject'          => $emailData['subject'] ?? null,
+                'recipients'       => $emailData['recipients'] ?? [],
+                'master_ticket_id' => $masterTicketId,
             ]);
-
-            // ✅ Handle case where implementer_log_id might be null
-            $implementerLog = null;
-            if (!empty($emailData['implementer_log_id'])) {
-                $implementerLog = ImplementerLogs::find($emailData['implementer_log_id']);
-            }
-
-            // ✅ Try to find software handover using different methods
-            $softwareHandover = null;
-
-            // Method 1: If we have implementer log, use its subject_id
-            if ($implementerLog) {
-                $softwareHandover = SoftwareHandover::find($implementerLog->subject_id);
-            }
-
-            // Method 2: If no implementer log or no software handover found, try using lead_id directly
-            if (!$softwareHandover && !empty($emailData['lead_id'])) {
-                $softwareHandover = SoftwareHandover::where('lead_id', $emailData['lead_id'])
-                    ->latest()
-                    ->first();
-            }
-
-            // ✅ If still no software handover found, log warning but continue with email
-            if (!$softwareHandover) {
-                Log::warning("Software handover not found, sending email without CC", [
-                    'implementer_log_id' => $emailData['implementer_log_id'] ?? null,
-                    'lead_id' => $emailData['lead_id'] ?? null,
-                ]);
-            }
-
-            // Initialize CC recipients array
-            $ccRecipients = [];
-
-            // ✅ Only add implementer and salesperson to CC if we found a software handover
-            if ($softwareHandover) {
-                // Add implementer to CC if available and different from sender
-                if ($softwareHandover->implementer) {
-                    $implementer = User::where('name', $softwareHandover->implementer)->first();
-                    if ($implementer && $implementer->email && $implementer->email !== $emailData['sender_email']) {
-                        $ccRecipients[] = $implementer->email;
-                        Log::info("Added implementer to CC: {$implementer->name} <{$implementer->email}>");
-                    }
-                }
-
-                // Add salesperson to CC if available and different from sender and implementer
-                // if ($softwareHandover->salesperson) {
-                //     $salesperson = User::where('name', $softwareHandover->salesperson)->first();
-                //     if ($salesperson && $salesperson->email &&
-                //         $salesperson->email !== $emailData['sender_email'] &&
-                //         !in_array($salesperson->email, $ccRecipients)) {
-                //         $ccRecipients[] = $salesperson->email;
-                //         Log::info("Added salesperson to CC: {$salesperson->name} <{$salesperson->email}>");
-                //     }
-                // }
-            }
-
-            // ✅ FIXED: Enhanced attachment processing with detailed logging
-            $attachmentCount = 0;
-            $attachmentSummary = [];
-
-            // ✅ DETAILED: Log attachment processing start
-            Log::info('Starting attachment processing', [
-                'has_project_plan_attachments' => !empty($emailData['project_plan_attachments']),
-                'attachment_data' => $emailData['project_plan_attachments'] ?? 'null',
-                'attachment_type' => gettype($emailData['project_plan_attachments'] ?? null),
-                'is_array' => is_array($emailData['project_plan_attachments'] ?? null)
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send notification mail: ' . $e->getMessage(), [
+                'recipients' => $emailData['recipients'] ?? [],
+                'subject'    => $emailData['subject'] ?? null,
             ]);
-
-            // Send the email with CC recipients and attachments
-            Mail::html($emailData['content'], function (Message $message) use ($emailData, $ccRecipients, &$attachmentCount, &$attachmentSummary) {
-                $message->to($emailData['recipients'])
-                    ->subject($emailData['subject'])
-                    ->from($emailData['sender_email'], $emailData['sender_name']);
-
-                // Add CC recipients if we have any
-                if (!empty($ccRecipients)) {
-                    $message->cc($ccRecipients);
-                }
-
-                // BCC the sender as well
-                $message->bcc($emailData['sender_email']);
-
-                // ✅ Attach project plan files if they exist with enhanced logging
-                if (!empty($emailData['project_plan_attachments'])) {
-                    Log::info('Processing project plan attachments inside Mail closure', [
-                        'count' => count($emailData['project_plan_attachments']),
-                        'files' => $emailData['project_plan_attachments']
-                    ]);
-
-                    foreach ($emailData['project_plan_attachments'] as $index => $filePath) {
-                        Log::info("Processing attachment {$index}", [
-                            'filePath' => $filePath,
-                            'file_exists' => file_exists($filePath),
-                            'file_size' => file_exists($filePath) ? filesize($filePath) : 'N/A',
-                            'is_readable' => file_exists($filePath) ? is_readable($filePath) : 'N/A'
-                        ]);
-
-                        if (file_exists($filePath)) {
-                            try {
-                                $mimeType = mime_content_type($filePath);
-                                $fileName = basename($filePath);
-                                $fileSize = filesize($filePath);
-
-                                $message->attach($filePath, [
-                                    'as' => $fileName,
-                                    'mime' => $mimeType
-                                ]);
-
-                                $attachmentCount++;
-                                $attachmentSummary[] = [
-                                    'name' => $fileName,
-                                    'size' => $fileSize,
-                                    'mime' => $mimeType,
-                                    'status' => 'attached'
-                                ];
-
-                                Log::info('Successfully attached file to email', [
-                                    'file' => $fileName,
-                                    'path' => $filePath,
-                                    'mime' => $mimeType,
-                                    'size' => $fileSize . ' bytes',
-                                    'attachment_number' => $attachmentCount
-                                ]);
-                            } catch (\Exception $e) {
-                                Log::error('Failed to attach file to email', [
-                                    'file' => basename($filePath),
-                                    'path' => $filePath,
-                                    'error' => $e->getMessage(),
-                                    'trace' => $e->getTraceAsString()
-                                ]);
-
-                                $attachmentSummary[] = [
-                                    'name' => basename($filePath),
-                                    'path' => $filePath,
-                                    'status' => 'failed',
-                                    'error' => $e->getMessage()
-                                ];
-                            }
-                        } else {
-                            Log::warning('Attachment file not found', [
-                                'path' => $filePath,
-                                'full_path' => $filePath,
-                                'directory_exists' => file_exists(dirname($filePath))
-                            ]);
-
-                            $attachmentSummary[] = [
-                                'name' => basename($filePath),
-                                'path' => $filePath,
-                                'status' => 'file_not_found'
-                            ];
-                        }
-                    }
-                } else {
-                    Log::info('No project_plan_attachments found in email data or array is empty');
-                }
-            });
-
-            // ✅ ENHANCED: Log email sent successfully with detailed attachment info
-            Log::info('Follow-up email sent successfully', [
-                'to' => $emailData['recipients'],
-                'cc' => $ccRecipients,
-                'subject' => $emailData['subject'],
-                'implementer_log_id' => $emailData['implementer_log_id'] ?? null,
-                'lead_id' => $emailData['lead_id'] ?? null,
-                'template' => $emailData['template_name'] ?? 'Unknown',
-                'attachments_sent' => $attachmentCount,
-                'attachments_available' => count($emailData['project_plan_attachments'] ?? []),
-                'attachment_summary' => $attachmentSummary,
-                'successful_attachments' => array_filter($attachmentSummary, fn($att) => $att['status'] === 'attached'),
-                'failed_attachments' => array_filter($attachmentSummary, fn($att) => $att['status'] !== 'attached')
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error in sendEmail method: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'data_keys' => array_keys($emailData),
-                'had_project_plan_attachments' => !empty($emailData['project_plan_attachments']),
-                'attachment_count' => count($emailData['project_plan_attachments'] ?? [])
-            ]);
-            throw $e;
         }
     }
 
