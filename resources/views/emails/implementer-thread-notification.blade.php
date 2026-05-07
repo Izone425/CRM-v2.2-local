@@ -16,7 +16,7 @@
                                 You have a new update in your customer portal. Please log in to view the full message and any attached files.
                             </p>
                             <p style="margin:0 0 32px 0;text-align:center;">
-                                <a href="{{ $portalUrl }}"
+                                <a href="{!! $portalUrl !!}"
                                    style="display:inline-block;padding:12px 28px;background:#3B82F6;color:#FFFFFF;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
                                     View in Customer Portal
                                 </a>

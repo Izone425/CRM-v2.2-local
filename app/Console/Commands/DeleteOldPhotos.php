@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
-class CleanUpOldPhotos extends Command
+class DeleteOldPhotos extends Command
 {
     protected $signature = 'cleanup:old-photos';
     protected $description = 'Delete orphaned photos from storage';
