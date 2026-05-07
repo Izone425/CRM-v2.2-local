@@ -749,52 +749,53 @@ class ProjectPlanTabs
                                 // Track attachment info for logging
                                 $attachedFiles = [];
 
-                                // Send email with attachments
-                                Mail::html($content, function ($message) use ($subject, $validRecipients, $senderEmail, $senderName, $data, &$attachedFiles) {
-                                    $message->from($senderEmail, $senderName)
-                                        ->to($validRecipients)
-                                        ->cc($senderEmail)
-                                        ->subject($subject);
+                                // Pre-resolve master ticket for CTA URL
+                                $existingMaster = \App\Models\ImplementerTicket::where('software_handover_id', $softwareHandover->id)
+                                    ->orderBy('id', 'asc')
+                                    ->first();
+                                $portalBase = str_replace('http://', 'https://', config('app.url'));
+                                $portalUrl = $portalBase . '/customer/dashboard?tab=impThread'
+                                    . ($existingMaster ? '&ticket=' . $existingMaster->id : '');
 
-                                    // Add attachments
-                                    if (!empty($data['email_attachments']) && is_array($data['email_attachments'])) {
-                                        foreach ($data['email_attachments'] as $file) {
-                                            if (is_string($file)) {
-                                                // Try multiple possible file locations
-                                                $possiblePaths = [
-                                                    storage_path('app/public/' . $file),
-                                                    storage_path('app/' . $file),
-                                                    public_path('storage/' . $file),
-                                                    $file,
-                                                ];
+                                $mailable = new \App\Mail\ImplementerThreadNotificationMail(
+                                    emailSubject:           $subject,
+                                    portalUrl:              $portalUrl,
+                                    implementerName:        $senderName,
+                                    implementerDesignation: $data['implementer_designation'] ?? 'Implementer',
+                                    implementerCompany:     $data['implementer_company'] ?? 'TimeTec Cloud Sdn Bhd',
+                                    implementerPhone:       $data['implementer_phone'] ?? '',
+                                    implementerEmail:       $senderEmail,
+                                    senderEmail:            $senderEmail,
+                                    senderName:             $senderName,
+                                );
 
-                                                $fullPath = null;
-                                                foreach ($possiblePaths as $path) {
-                                                    if (file_exists($path)) {
-                                                        $fullPath = $path;
-                                                        break;
-                                                    }
-                                                }
+                                Mail::to($validRecipients)
+                                    ->bcc($senderEmail)
+                                    ->send($mailable);
 
-                                                if ($fullPath && file_exists($fullPath)) {
-                                                    try {
-                                                        $message->attach($fullPath, [
-                                                            'as' => basename($file),
-                                                            'mime' => mime_content_type($fullPath)
-                                                        ]);
+                                $attachedFiles = []; // attachments now live on the thread reply, not the email
 
-                                                        $attachedFiles[] = basename($file);
-                                                    } catch (\Exception $e) {
-                                                        Log::error('Failed to attach file', [
-                                                            'file' => basename($file),
-                                                            'error' => $e->getMessage()
-                                                        ]);
-                                                    }
-                                                }
-                                            }
-                                        }
+                                // === Mirror to customer thread ===
+                                try {
+                                    $template = \App\Models\EmailTemplate::find($data['email_template'] ?? null);
+                                    if ($template) {
+                                        $customer = \App\Models\Customer::where('lead_id', $lead->id)->first();
+                                        \App\Filament\Actions\ImplementerActions::mirrorTemplateEmailToThread(
+                                            $template,
+                                            $softwareHandover,
+                                            $customer,
+                                            auth()->user(),
+                                            $subject,
+                                            $content,
+                                            (array) ($data['email_attachments'] ?? [])
+                                        );
                                     }
-                                });
+                                } catch (\Throwable $e) {
+                                    \Illuminate\Support\Facades\Log::error('Thread mirror failed in sendClosingEmail: ' . $e->getMessage(), [
+                                        'lead_id'     => $lead->id,
+                                        'template_id' => $data['email_template'] ?? null,
+                                    ]);
+                                }
 
                                 // Update ALL software handovers with approved requests to Closed
                                 $allHandovers = SoftwareHandover::where('lead_id', $lead->id)
