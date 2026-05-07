@@ -1972,8 +1972,11 @@ class ImplementerActions
 
             $mailBuilder = \Illuminate\Support\Facades\Mail::to($emailData['recipients'] ?? []);
 
+            if (!empty($emailData['cc_recipients'])) {
+                $mailBuilder->cc($emailData['cc_recipients']);
+            }
             if (!empty($emailData['sender_email'])) {
-                $mailBuilder->cc($emailData['sender_email']);
+                $mailBuilder->bcc($emailData['sender_email']);
             }
 
             $mailBuilder->send($mailable);
