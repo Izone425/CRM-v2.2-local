@@ -316,20 +316,39 @@
             width: 20px;
         }
 
-        /* Badge → small red dot at icon corner when collapsed */
+        /* Badge → floating pill on icon top-right when collapsed (header-bell style) */
         .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
         .sidebar.sidebar-force-collapsed .sidebar-badge {
             position: absolute;
-            top: 6px;
-            right: 12px;
-            min-width: 8px;
-            height: 8px;
-            padding: 0;
-            font-size: 0;
+            top: -5px;
+            right: 4px;
+            min-width: 14px;
+            height: 14px;
+            padding: 0 3px;
+            font-size: 9px;
+            font-weight: 700;
             line-height: 1;
-            border-radius: 50%;
+            border-radius: 7px;
             margin-left: 0;
-            box-shadow: 0 0 0 2px var(--tt-page-bg);
+            background: #EF4444;
+            color: #ffffff;
+            border: 1.5px solid var(--tt-page-bg);
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.22);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar:not(:hover):not(:focus-within) .sidebar-badge[data-count-overflow="true"],
+        .sidebar.sidebar-force-collapsed .sidebar-badge[data-count-overflow="true"] {
+            font-size: 0;
+        }
+        .sidebar:not(:hover):not(:focus-within) .sidebar-badge[data-count-overflow="true"]::after,
+        .sidebar.sidebar-force-collapsed .sidebar-badge[data-count-overflow="true"]::after {
+            content: "9+";
+            font-size: 9px;
+            font-weight: 700;
+            color: #ffffff;
         }
 
         .menu-item {
@@ -447,6 +466,35 @@
         .menu-sub-items .menu-item.active .menu-dot::before {
             opacity: 1;
         }
+
+        /* Sidebar icon hues — soft pastels, per-row variety */
+        .menu-item > .fa, .menu-item > .fas,
+        .menu-group-header > .fa, .menu-group-header > .fas {
+            font-size: 15px;
+            width: 18px;
+            text-align: center;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .menu-sub-items .menu-item > .fa,
+        .menu-sub-items .menu-item > .fas {
+            font-size: 13px;
+            width: 16px;
+        }
+        .icon-blue    { color: #3b82f6; }
+        .icon-teal    { color: #14b8a6; }
+        .icon-cyan    { color: #06b6d4; }
+        .icon-green   { color: #10b981; }
+        .icon-lime    { color: #84cc16; }
+        .icon-amber   { color: #f59e0b; }
+        .icon-orange  { color: #f97316; }
+        .icon-rose    { color: #f43f5e; }
+        .icon-pink    { color: #ec4899; }
+        .icon-purple  { color: #a855f7; }
+        .icon-indigo  { color: #6366f1; }
+        .icon-slate   { color: #64748b; }
+        .menu-item.active > .fa, .menu-item.active > .fas,
+        .menu-group-header.active > .fa, .menu-group-header.active > .fas { color: #fff; }
 
         /* Sidebar notification badge */
         .sidebar-badge {
@@ -594,89 +642,104 @@
     <div class="sidebar">
         <div class="sidebar-menu">
             {{-- Dashboard — top-level item --}}
-            <button onclick="switchTab('dashboard')"
-                    id="dashboard-tab"
-                    class="menu-item"
-                    style="margin-bottom: 12px;">
-                <i class="fas fa-th-large"></i>
+            <a href="?tab=dashboard"
+               data-tab="dashboard"
+               id="dashboard-tab"
+               class="menu-item"
+               style="margin-bottom: 12px; text-decoration: none;">
+                <i class="fas fa-th-large icon-blue"></i>
                 <span>Dashboard</span>
-            </button>
+            </a>
 
             {{-- Implementation — collapsible group --}}
             <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-rocket icon-teal"></i>
                 <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
-                    <span id="implementation-badge" class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                    <span id="implementation-badge" class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
                 @endif
                 <svg id="implementation-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
             <div id="implementation-sub" class="menu-sub-items" style="display: none;">
-                <button onclick="switchTab('calendar')"
-                        id="calendar-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
-                    <span>Meeting Schedule</span>
-                </button>
-                <button onclick="switchTab('softwareHandover')"
-                        id="softwareHandover-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
-                    <span>Software Handover Process</span>
-                </button>
+                <a href="?tab=calendar"
+                   data-tab="calendar"
+                   id="calendar-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-calendar-check icon-cyan" aria-hidden="true"></i>
+                    <span>Implementation Session</span>
+                </a>
+                <a href="?tab=softwareHandover"
+                   data-tab="softwareHandover"
+                   id="softwareHandover-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-handshake icon-green" aria-hidden="true"></i>
+                    <span>Project Details</span>
+                </a>
                 @if($hasProjectPlan)
-                    <button onclick="switchTab('project')"
-                            id="project-tab"
-                            class="menu-item">
-                        <span class="menu-dot" aria-hidden="true"></span>
+                    <a href="?tab=project"
+                       data-tab="project"
+                       id="project-tab"
+                       class="menu-item"
+                       style="text-decoration: none;">
+                        <i class="fas fa-clipboard-list icon-lime" aria-hidden="true"></i>
                         <span>Project Plan</span>
-                    </button>
+                    </a>
                 @endif
-                <button onclick="switchTab('impThread')"
-                        id="impThread-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
+                <a href="?tab=impThread"
+                   data-tab="impThread"
+                   id="impThread-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-comments icon-amber" aria-hidden="true"></i>
                     <span>Implementer Thread</span>
                     @if($impThreadBadgeCount > 0)
-                        <span class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
+                        <span class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
                     @endif
-                </button>
-                <button onclick="switchTab('dataMigration')"
-                        id="dataMigration-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
+                </a>
+                <a href="?tab=dataMigration"
+                   data-tab="dataMigration"
+                   id="dataMigration-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-database icon-orange" aria-hidden="true"></i>
                     <span>Data File</span>
-                </button>
+                </a>
             </div>
 
             {{-- Training — collapsible group --}}
             <button class="menu-group-header" data-group="training" onclick="toggleGroup('training')">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-graduation-cap icon-rose"></i>
                 <span>Training</span>
                 <svg id="training-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
             <div id="training-sub" class="menu-sub-items" style="display: none;">
-                <button onclick="switchTab('webinar')"
-                        id="webinar-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
+                <a href="?tab=webinar"
+                   data-tab="webinar"
+                   id="webinar-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-video icon-pink" aria-hidden="true"></i>
                     <span>Webinar Recording & Training Decks</span>
-                </button>
-                <button onclick="switchTab('reviewSession')"
-                        id="reviewSession-tab"
-                        class="menu-item">
-                    <span class="menu-dot" aria-hidden="true"></span>
+                </a>
+                <a href="?tab=reviewSession"
+                   data-tab="reviewSession"
+                   id="reviewSession-tab"
+                   class="menu-item"
+                   style="text-decoration: none;">
+                    <i class="fas fa-circle-play icon-rose" aria-hidden="true"></i>
                     <span>Review Session Recordings</span>
-                </button>
+                </a>
             </div>
 
             {{-- Support — collapsible group --}}
             <button class="menu-group-header" data-group="support" onclick="toggleGroup('support')">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-life-ring icon-rose"></i>
                 <span>Support</span>
                 <svg id="support-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -684,14 +747,14 @@
             </button>
             <div id="support-sub" class="menu-sub-items" style="display: none;">
                 <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
-                    <span class="menu-dot" aria-hidden="true"></span>
+                    <i class="fas fa-comment-dots icon-amber" aria-hidden="true"></i>
                     <span>Support Thread</span>
                 </a>
             </div>
 
             {{-- Knowledge Base — collapsible group --}}
             <button class="menu-group-header" data-group="knowledgebase" onclick="toggleGroup('knowledgebase')">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-book-open icon-purple"></i>
                 <span>Knowledge Base</span>
                 <svg id="knowledgebase-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -705,7 +768,7 @@
 
             {{-- Commercial — collapsible group --}}
             <button class="menu-group-header" data-group="commercial" onclick="toggleGroup('commercial')">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-file-invoice-dollar icon-green"></i>
                 <span>Commercial</span>
                 <svg id="commercial-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -719,7 +782,7 @@
 
             {{-- Settings — collapsible group (anchored to bottom of sidebar) --}}
             <button class="menu-group-header" data-group="settings" onclick="toggleGroup('settings')" style="margin-top: auto;">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-gear icon-slate"></i>
                 <span>Settings</span>
                 <svg id="settings-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -861,6 +924,11 @@
                 tabContent.classList.add('active');
                 tabButton.classList.add('active');
                 localStorage.setItem('activeTab', tab);
+
+                // Keep URL in sync so users can copy/bookmark/refresh the current tab.
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, '', '?tab=' + encodeURIComponent(tab));
+                }
             }
 
             collapseSidebarAfterClick();
@@ -939,13 +1007,24 @@
 
             switchTab(activeTab);
 
+            // Intercept plain left-clicks on tab links so they switch in-page.
+            // Modified clicks (Ctrl/Cmd/Shift/Alt or middle-click) fall through
+            // to the browser's native "open in new tab/window" handling.
+            document.querySelectorAll('a.menu-item[data-tab]').forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                    e.preventDefault();
+                    switchTab(this.dataset.tab);
+                });
+            });
+
             // Open specific ticket from notification deep link
             if (urlTicket && activeTab === 'impThread') {
                 setTimeout(function() {
                     Livewire.dispatch('openTicketFromNotification', { ticketId: parseInt(urlTicket) });
                 }, 500);
-                // Clean URL params without reload
-                window.history.replaceState({}, '', window.location.pathname);
+                // Strip the consumed ticket param but keep the active tab in URL.
+                window.history.replaceState({}, '', '?tab=' + encodeURIComponent(activeTab));
             }
 
             // Diagnostic — check in browser console
