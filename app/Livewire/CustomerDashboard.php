@@ -3,12 +3,10 @@
 namespace App\Livewire;
 
 use App\Enums\ImplementerTicketStatus;
-use App\Models\Customer;
 use App\Models\CustomerDataMigrationFile;
 use App\Models\ImplementerAppointment;
 use App\Models\ImplementerTicket;
 use App\Models\SoftwareHandover;
-use App\Models\SoftwareHandoverProcessFile;
 use App\Services\ProjectProgressService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +28,12 @@ class CustomerDashboard extends Component
     public array $progressSummary = [];
     public bool $hasProjectPlan = false;
 
+    /** Sparkline of project-progress % at the last 8 weekly endpoints (oldest → newest). */
+    public array $progressSpark = [
+        'points' => [],
+        'labels' => [],
+    ];
+
     public array $tickets = [];
     public int $ticketsTotal = 0;
     public string $ticketsHealthState = 'on_track';
@@ -44,11 +48,47 @@ class CustomerDashboard extends Component
         'percent' => 0,
     ];
 
-    public array $recentActivity = [];
-    public int $unreadNotifications = 0;
-
-    public array $resources = [];
     public array $quickActions = [];
+
+    public int $daysLive = 0;
+
+    public string $defaultMode = 'implementation';
+
+    /** Project codes whose dashboards get demo-filled values for sales/UAT viewing. */
+    private const DEMO_PROJECT_CODES = ['SW_260005'];
+
+    /** Implementation-mode stat strip values */
+    public array $implStats = [
+        'days_to_go_live' => null,   // int days remaining (negative = past)
+        'sessions_held' => 0,
+        'sessions_total' => 0,
+        'modules_active' => 0,
+    ];
+
+    /** Implementer-thread (ImplementerTicket) summary — shown inside Implementation mode */
+    public array $threadStats = [
+        'open_count' => 0,
+        'sla_health_pct' => null,    // null when no resolved tickets yet
+        'avg_resolve_days' => null,  // null when no resolved tickets yet
+        'tickets_30d' => 0,
+    ];
+
+    /** Support thread (separate support_threads table) — shown inside Support mode */
+    public array $supportThreadStats = [
+        'open_count' => 0,
+        'total_count' => 0,
+        'last_activity' => null,        // human-readable e.g. "3 days ago", or null
+        'last_status' => null,          // last thread's status, or null
+    ];
+    public array $supportThreads = [];  // up to 5 recent rows
+
+    /** Support thread counts grouped into 4 status buckets — drives the Support stat strip */
+    public array $supportStatusCounts = [
+        'open' => 0,
+        'in_progress' => 0,
+        'waiting_reply' => 0,
+        'closed' => 0,
+    ];
 
     public function mount(): void
     {
@@ -58,48 +98,6 @@ class CustomerDashboard extends Component
     public function refresh(): void
     {
         $this->loadAll();
-    }
-
-    public function markActivityRead(string $notificationId): void
-    {
-        $customer = Auth::guard('customer')->user();
-        if (! $customer) {
-            return;
-        }
-        $notification = $customer->notifications()->where('id', $notificationId)->first();
-        if ($notification) {
-            $notification->markAsRead();
-        }
-        $this->loadActivity($customer);
-    }
-
-    public function openActivity(string $notificationId)
-    {
-        $customer = Auth::guard('customer')->user();
-        if (! $customer) {
-            return null;
-        }
-        $notification = $customer->notifications()->where('id', $notificationId)->first();
-        if (! $notification) {
-            return null;
-        }
-        $notification->markAsRead();
-        $entityId = $notification->data['entity_id'] ?? null;
-        if ($entityId) {
-            return $this->redirect('/customer/dashboard?tab=impThread&ticket=' . $entityId);
-        }
-        $this->loadActivity($customer);
-        return null;
-    }
-
-    public function markAllActivityRead(): void
-    {
-        $customer = Auth::guard('customer')->user();
-        if (! $customer) {
-            return;
-        }
-        $customer->unreadNotifications->markAsRead();
-        $this->loadActivity($customer);
     }
 
     private function loadAll(): void
@@ -126,9 +124,21 @@ class CustomerDashboard extends Component
         $this->loadActionItems($customer, $leadId);
         $this->loadTickets($leadId);
         $this->loadMigration($leadId);
-        $this->loadActivity($customer);
-        $this->loadResources($leadId);
         $this->loadQuickActions();
+        $this->daysLive = ($this->heroCompanion['type'] ?? null) === 'live_status'
+            ? (int) ($this->heroCompanion['daysLive'] ?? 0)
+            : 0;
+        $this->loadImplStats($leadId, $handover);
+        $this->loadProgressSparkline($leadId);
+        $this->loadThreadStats($leadId);
+        $this->loadSupportThreads($customer);
+        // Default mode: 'support' only when the customer actually has support threads.
+        // Otherwise 'implementation' (where the implementer-thread data lives).
+        $this->defaultMode = $this->supportThreadStats['open_count'] > 0
+            ? 'support'
+            : 'implementation';
+
+        $this->applyDemoOverrides($leadId);
     }
 
     private function computeGreeting(): string
@@ -176,6 +186,11 @@ class CustomerDashboard extends Component
             }
         }
 
+        // First Review checkpoint: mid-progress, before final-review window opens.
+        if ($overall >= 50) {
+            return 'first_review';
+        }
+
         if ($handover->webinar_training) {
             $diff = now()->diffInDays(Carbon::parse($handover->webinar_training), false);
             if (abs($diff) <= 14) {
@@ -198,7 +213,8 @@ class CustomerDashboard extends Component
             'kickoff_done' => 'Kick-off done. Let\'s start moving on data migration.',
             'data_migration' => 'Data migration in progress.',
             'training' => 'Training is up next — make sure your team is ready.',
-            'pre_go_live' => 'Almost there — go-live is around the corner.',
+            'first_review' => 'First review checkpoint — let\'s validate progress so far.',
+            'pre_go_live' => 'Final review — go-live is around the corner.',
             'live' => 'You\'re live. Welcome to the family.',
             'support_only' => 'You\'re live and supported. Reach out anytime.',
             default => '',
@@ -219,61 +235,47 @@ class CustomerDashboard extends Component
             'overallProgress' => $data['overallSummary']['overallProgress'] ?? 0,
             'totalTasks' => $data['overallSummary']['totalTasks'] ?? 0,
             'completedTasks' => $data['overallSummary']['completedTasks'] ?? 0,
-            'modules' => collect($data['overallSummary']['modules'] ?? [])
-                ->take(6)
-                ->map(fn ($m) => [
-                    'name' => $m['module_name'],
-                    'progress' => $m['progress'],
-                    'completed' => $m['completed'],
-                    'total' => $m['total'],
-                ])
-                ->values()
-                ->toArray(),
         ];
     }
 
     private function loadJourneyNodes(?SoftwareHandover $handover): void
     {
         $stages = [
-            ['key' => 'pre_kickoff', 'label' => 'Pre-Kickoff', 'icon' => 'fa-flag'],
-            ['key' => 'kickoff', 'label' => 'Kick-off', 'icon' => 'fa-handshake'],
-            ['key' => 'data_migration', 'label' => 'Data Migration', 'icon' => 'fa-database'],
+            ['key' => 'kickoff', 'label' => 'Kick-Off', 'icon' => 'fa-handshake'],
             ['key' => 'training', 'label' => 'Training', 'icon' => 'fa-chalkboard-user'],
-            ['key' => 'pre_go_live', 'label' => 'Go-Live Prep', 'icon' => 'fa-rocket'],
-            ['key' => 'live', 'label' => 'Live', 'icon' => 'fa-circle-check'],
+            ['key' => 'data_migration', 'label' => 'Data Migration', 'icon' => 'fa-database'],
+            ['key' => 'first_review', 'label' => 'First Review', 'icon' => 'fa-clipboard-check'],
+            ['key' => 'final_review', 'label' => 'Final Review', 'icon' => 'fa-list-check'],
+            ['key' => 'go_live', 'label' => 'Go Live', 'icon' => 'fa-rocket'],
         ];
 
         $deepLinks = [
-            'pre_kickoff' => '?tab=calendar',
             'kickoff' => '?tab=calendar',
-            'data_migration' => '?tab=dataMigration',
             'training' => '?tab=webinar',
-            'pre_go_live' => '?tab=project',
-            'live' => '?tab=impThread',
+            'data_migration' => '?tab=dataMigration',
+            'first_review' => '?tab=project',
+            'final_review' => '?tab=project',
+            'go_live' => '?tab=impThread',
         ];
 
-        $stageOrder = ['pre_kickoff', 'kickoff_done', 'data_migration', 'training', 'pre_go_live', 'live', 'support_only'];
-        $currentIndex = array_search($this->journeyStage, $stageOrder, true);
-        if ($currentIndex === false) {
-            $currentIndex = 0;
-        }
         $nodeIndexForCurrentStage = match ($this->journeyStage) {
-            'pre_kickoff' => 0,
-            'kickoff_done' => 1,
+            'pre_kickoff' => 0,                  // before kickoff — render as "in Kick-Off"
+            'kickoff_done' => 1,                 // kickoff done, training is next
+            'training' => 1,                     // explicitly in training window
             'data_migration' => 2,
-            'training' => 3,
-            'pre_go_live' => 4,
+            'first_review' => 3,
+            'pre_go_live' => 4,                  // legacy state value → display "Final Review"
             'live', 'support_only' => 5,
             default => 0,
         };
 
         $datesByNode = [
-            0 => null,
-            1 => optional($handover?->kick_off_meeting)->format('d M'),
+            0 => optional($handover?->kick_off_meeting)->format('d M'),
+            1 => optional($handover?->webinar_training)->format('d M'),
             2 => null,
-            3 => optional($handover?->webinar_training)->format('d M'),
-            4 => optional($handover?->go_live_date)->format('d M'),
-            5 => optional($handover?->completed_at)->format('d M'),
+            3 => null,
+            4 => null,
+            5 => optional($handover?->go_live_date)->format('d M'),
         ];
 
         $nodes = [];
@@ -411,7 +413,7 @@ class CustomerDashboard extends Component
         }
 
         $this->actionItemsTotal = count($items);
-        $this->actionItems = array_slice($items, 0, 5);
+        $this->actionItems = array_slice($items, 0, 4);
     }
 
     private function loadTickets(?int $leadId): void
@@ -510,112 +512,309 @@ class CustomerDashboard extends Component
         ];
     }
 
-    private function loadActivity($customer): void
+    private function loadImplStats(?int $leadId, ?SoftwareHandover $handover): void
     {
+        $daysToGoLive = null;
+        if ($handover && $handover->go_live_date) {
+            $daysToGoLive = (int) round(now()->startOfDay()->diffInDays(Carbon::parse($handover->go_live_date)->startOfDay(), false));
+        }
+
+        $sessionsHeld = 0;
+        $sessionsTotal = 0;
+        if ($leadId) {
+            $sessionsTotal = ImplementerAppointment::where('lead_id', $leadId)->count();
+            $sessionsHeld = ImplementerAppointment::where('lead_id', $leadId)
+                ->where('status', 'Completed')
+                ->count();
+        }
+
+        $modulesActive = 0;
+        if ($handover) {
+            foreach (['ta', 'tl', 'tc', 'tp'] as $flag) {
+                if ($handover->{$flag}) {
+                    $modulesActive++;
+                }
+            }
+        }
+
+        $this->implStats = [
+            'days_to_go_live' => $daysToGoLive,
+            'sessions_held' => $sessionsHeld,
+            'sessions_total' => $sessionsTotal,
+            'modules_active' => $modulesActive,
+        ];
+    }
+
+    private function loadThreadStats(?int $leadId): void
+    {
+        // Implementer-thread summary (lives under Implementation mode).
+        // Counts and averages from ImplementerTicket records.
+        $this->threadStats = [
+            'open_count' => $this->ticketsTotal,
+            'sla_health_pct' => null,
+            'avg_resolve_days' => null,
+            'tickets_30d' => 0,
+        ];
+
+        if (! $leadId) {
+            return;
+        }
+
+        $resolved = ImplementerTicket::where('lead_id', $leadId)
+            ->whereNotNull('closed_at')
+            ->get(['id', 'created_at', 'closed_at']);
+
+        if ($resolved->count() > 0) {
+            $withinSla = 0;
+            $totalDays = 0.0;
+            foreach ($resolved as $ticket) {
+                if ($ticket->wasResolvedWithinSla()) {
+                    $withinSla++;
+                }
+                $totalDays += Carbon::parse($ticket->created_at)
+                    ->diffInHours(Carbon::parse($ticket->closed_at)) / 24.0;
+            }
+            $this->threadStats['sla_health_pct'] = (int) round(($withinSla / $resolved->count()) * 100);
+            $this->threadStats['avg_resolve_days'] = round($totalDays / $resolved->count(), 1);
+        }
+
+        $this->threadStats['tickets_30d'] = ImplementerTicket::where('lead_id', $leadId)
+            ->where('created_at', '>=', now()->subDays(30))
+            ->count();
+    }
+
+    private function loadSupportThreads($customer): void
+    {
+        // Support Thread = separate post-go-live support system (`support_threads` table).
+        // No Eloquent model exists yet, so query via DB facade.
+        $this->supportThreadStats = [
+            'open_count' => 0,
+            'total_count' => 0,
+            'last_activity' => null,
+            'last_status' => null,
+        ];
+        $this->supportThreads = [];
+        $this->supportStatusCounts = [
+            'open' => 0,
+            'in_progress' => 0,
+            'waiting_reply' => 0,
+            'closed' => 0,
+        ];
+
         if (! $customer) {
             return;
         }
 
-        $this->unreadNotifications = $customer->unreadNotifications()->count();
-
-        $items = $customer->notifications()->latest()->take(6)->get();
-        $rows = [];
-        foreach ($items as $n) {
-            $data = $n->data ?? [];
-            $message = $data['message'] ?? ($data['title'] ?? 'Notification');
-            $entityId = $data['entity_id'] ?? null;
-            $url = $entityId
-                ? ('?tab=impThread&ticket=' . $entityId)
-                : null;
-
-            $rows[] = [
-                'id' => $n->id,
-                'icon' => $this->iconForNotificationType($n->type, $data),
-                'message' => $message,
-                'time' => optional($n->created_at)->diffForHumans(null, true) . ' ago',
-                'url' => $url,
-                'unread' => is_null($n->read_at),
-            ];
-        }
-        $this->recentActivity = $rows;
-    }
-
-    private function iconForNotificationType(?string $type, array $data): string
-    {
-        $action = $data['action'] ?? '';
-        return match ($action) {
-            'replied_by_implementer' => 'fa-reply',
-            'status_changed' => 'fa-shuffle',
-            'closed' => 'fa-circle-check',
-            'merged' => 'fa-code-merge',
-            default => 'fa-bell',
-        };
-    }
-
-    private function loadResources(?int $leadId): void
-    {
-        if (! $leadId) {
-            $this->resources = [];
+        if (! \Illuminate\Support\Facades\Schema::hasTable('support_threads')) {
             return;
         }
 
-        $rows = [];
+        $base = \Illuminate\Support\Facades\DB::table('support_threads')
+            ->where('customer_id', $customer->id);
 
-        $latestHandoverFile = SoftwareHandoverProcessFile::where('lead_id', $leadId)
-            ->orderBy('version', 'desc')
-            ->first();
+        $this->supportThreadStats['total_count'] = (clone $base)->count();
+        $this->supportThreadStats['open_count'] = (clone $base)
+            ->whereNotIn('status', ['closed', 'resolved'])
+            ->count();
 
-        if ($latestHandoverFile) {
-            $rows[] = [
-                'type' => 'handover_file',
-                'icon' => 'fa-file-pdf',
-                'title' => $latestHandoverFile->file_name,
-                'meta' => 'Handover Doc · v' . $latestHandoverFile->version,
-                'updated' => optional($latestHandoverFile->updated_at)->diffForHumans(null, true) . ' ago',
-                'url' => route('customer.software-handover-process.download', ['file' => $latestHandoverFile->id]),
-                'external' => false,
-            ];
+        $rows = (clone $base)
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get(['id', 'thread_number', 'subject', 'status', 'module', 'updated_at']);
+
+        $first = $rows->first();
+        if ($first && $first->updated_at) {
+            $this->supportThreadStats['last_activity'] = Carbon::parse($first->updated_at)->diffForHumans(null, true) . ' ago';
+            $this->supportThreadStats['last_status'] = $first->status;
         }
 
-        $recordings = ImplementerAppointment::where('lead_id', $leadId)
-            ->whereNotNull('session_recording_link')
-            ->where('session_recording_link', '!=', '')
-            ->orderBy('date', 'desc')
-            ->limit(3)
+        $this->supportThreads = $rows->map(fn ($r) => [
+            'id' => $r->id,
+            'number' => $r->thread_number ?: ('SUP-' . $r->id),
+            'subject' => \Illuminate\Support\Str::limit($r->subject ?? 'Untitled thread', 60),
+            'status' => $r->status ?: 'open',
+            'module' => $r->module,
+            'updated' => $r->updated_at ? Carbon::parse($r->updated_at)->diffForHumans(null, true) . ' ago' : null,
+        ])->all();
+
+        // Status bucket counts (Open / In Progress / Waiting Reply / Closed) for the stat strip
+        $openLike       = ['open', 'new', 'unassigned'];
+        $inProgressLike = ['in_progress', 'in-progress', 'inprogress', 'working', 'active'];
+        $waitingLike    = ['pending', 'on_hold', 'on-hold', 'waiting', 'waiting_reply', 'awaiting', 'awaiting_customer', 'awaiting_reply'];
+        $closedLike     = ['closed', 'resolved', 'done', 'fixed'];
+
+        $buckets = ['open' => 0, 'in_progress' => 0, 'waiting_reply' => 0, 'closed' => 0];
+        $statusGroups = (clone $base)
+            ->selectRaw('LOWER(COALESCE(status, "")) as s, COUNT(*) as c')
+            ->groupBy('s')
             ->get();
 
-        foreach ($recordings as $rec) {
-            $rows[] = [
-                'type' => 'recording',
-                'icon' => 'fa-video',
-                'title' => $rec->session ?: 'Session Recording',
-                'meta' => optional(Carbon::parse($rec->date))->format('d M Y'),
-                'updated' => null,
-                'url' => $rec->session_recording_link,
-                'external' => true,
-            ];
+        foreach ($statusGroups as $row) {
+            $s = trim((string) $row->s);
+            $c = (int) $row->c;
+            if (in_array($s, $closedLike, true)) {
+                $buckets['closed'] += $c;
+            } elseif (in_array($s, $waitingLike, true)) {
+                $buckets['waiting_reply'] += $c;
+            } elseif (in_array($s, $inProgressLike, true)) {
+                $buckets['in_progress'] += $c;
+            } else {
+                // Unknown / empty status defaults to "open" so nothing falls off the radar
+                $buckets['open'] += $c;
+            }
         }
 
-        $this->resources = array_slice($rows, 0, 4);
+        $this->supportStatusCounts = $buckets;
     }
 
     private function loadQuickActions(): void
     {
         $base = [
-            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Support Ticket', 'url' => '?tab=impThread'],
-            ['key' => 'book_session', 'icon' => 'fa-calendar-plus', 'label' => 'Book a Session', 'url' => '?tab=calendar'],
-            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Upload Migration File', 'url' => '?tab=dataMigration'],
+            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Implementer Thread', 'url' => '?tab=impThread', 'category' => 'Support', 'color' => '#ef4444'],
+            ['key' => 'book_session', 'icon' => 'fa-calendar-plus', 'label' => 'Book a Session', 'url' => '?tab=calendar', 'category' => 'Calendar', 'color' => '#3b82f6'],
+            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Data File Template', 'url' => '?tab=dataMigration', 'category' => 'Data', 'color' => '#f59e0b'],
         ];
 
         if ($this->hasProjectPlan) {
-            $base[] = ['key' => 'view_project', 'icon' => 'fa-tasks', 'label' => 'View Project Plan', 'url' => '?tab=project'];
+            $base[] = ['key' => 'view_project', 'icon' => 'fa-tasks', 'label' => 'View Project Plan', 'url' => '?tab=project', 'category' => 'Project', 'color' => '#10b981'];
         } else {
-            $base[] = ['key' => 'handover_doc', 'icon' => 'fa-file-export', 'label' => 'Handover Documents', 'url' => '?tab=softwareHandover'];
+            $base[] = ['key' => 'handover_doc', 'icon' => 'fa-file-export', 'label' => 'Handover Documents', 'url' => '?tab=softwareHandover', 'category' => 'Project', 'color' => '#10b981'];
         }
 
-        $base[] = ['key' => 'browse_webinars', 'icon' => 'fa-graduation-cap', 'label' => 'Webinars & Decks', 'url' => '?tab=webinar'];
+        $base[] = ['key' => 'browse_webinars', 'icon' => 'fa-graduation-cap', 'label' => 'Webinars & Decks', 'url' => '?tab=webinar', 'category' => 'Learning', 'color' => '#a855f7'];
 
         $this->quickActions = $base;
+    }
+
+    /**
+     * Build an 8-point sparkline of project progress % at each weekly endpoint
+     * over the last 8 weeks (oldest first → most recent last).
+     *
+     * Caveat: computed against current ProjectPlan rows, not historical snapshots.
+     * Re-dating or re-assigning tasks shifts past points. A `project_progress_snapshots`
+     * table would be the long-term fix; not in scope for this change.
+     */
+    private function loadProgressSparkline(?int $leadId): void
+    {
+        $points = array_fill(0, 8, 0);
+        $labels = [];
+        for ($w = 7; $w >= 0; $w--) {
+            $endOfWeek = now()->subWeeks($w)->endOfWeek();
+            $labels[] = $w === 0 ? 'Now' : $endOfWeek->format('M j');
+        }
+
+        if ($leadId) {
+            $total = \App\Models\ProjectPlan::where('lead_id', $leadId)->count();
+            if ($total > 0) {
+                $windowStart = now()->subWeeks(8)->startOfWeek();
+
+                $baseline = \App\Models\ProjectPlan::where('lead_id', $leadId)
+                    ->where('status', 'completed')
+                    ->whereNotNull('actual_end_date')
+                    ->where('actual_end_date', '<', $windowStart)
+                    ->count();
+
+                $recent = \App\Models\ProjectPlan::where('lead_id', $leadId)
+                    ->where('status', 'completed')
+                    ->whereNotNull('actual_end_date')
+                    ->where('actual_end_date', '>=', $windowStart)
+                    ->orderBy('actual_end_date')
+                    ->pluck('actual_end_date')
+                    ->map(fn($d) => Carbon::parse($d));
+
+                for ($w = 7; $w >= 0; $w--) {
+                    $endOfWeek = now()->subWeeks($w)->endOfWeek();
+                    $completed = $baseline + $recent->filter(fn($d) => $d->lessThanOrEqualTo($endOfWeek))->count();
+                    $points[7 - $w] = (int) round(($completed / $total) * 100);
+                }
+            }
+        }
+
+        $this->progressSpark = ['points' => $points, 'labels' => $labels];
+    }
+
+    /**
+     * SVG path strings for the sparkline. Returns ['line' => '...', 'area' => '...'].
+     * ViewBox is 600x80; Y is mapped from 0–100% with a 4px top/bottom pad.
+     */
+    public function getSparkPathsProperty(): array
+    {
+        $points = $this->progressSpark['points'] ?? [];
+        if (empty($points)) {
+            return ['line' => '', 'area' => ''];
+        }
+        $w = 600;
+        $h = 80;
+        $pad = 4;
+        $n = count($points);
+        $coords = [];
+        foreach ($points as $i => $val) {
+            $x = $n === 1 ? $w / 2 : ($i / ($n - 1)) * $w;
+            $y = $h - ($val / 100) * ($h - $pad * 2) - $pad;
+            $coords[] = [$x, $y];
+        }
+        $line = 'M ' . implode(' L ', array_map(
+            fn($p) => sprintf('%.1f %.1f', $p[0], $p[1]),
+            $coords
+        ));
+        $first = $coords[0];
+        $last = end($coords);
+        $area = $line . sprintf(' L %.1f %.1f L %.1f %.1f Z', $last[0], $h, $first[0], $h);
+        return ['line' => $line, 'area' => $area];
+    }
+
+    /**
+     * If this customer is on a "demo" project (see DEMO_PROJECT_CODES), replace key
+     * dashboard values with believable dummy data so the snapshot card and sparkline
+     * are visible. Real customers are untouched.
+     */
+    private function applyDemoOverrides(?int $leadId): void
+    {
+        if (! $leadId) {
+            return;
+        }
+        $handover = SoftwareHandover::where('lead_id', $leadId)->orderBy('id', 'desc')->first();
+        $code = $handover->project_code ?? null;
+        if (! $code || ! in_array($code, self::DEMO_PROJECT_CODES, true)) {
+            return;
+        }
+
+        // --- Implementation Snapshot card ---
+        // Prorated to match First Review stage (50–69% range; 60% sits mid-First-Review).
+        $this->progressSpark['points'] = [8, 15, 22, 30, 38, 46, 53, 60];
+
+        $this->progressSummary['overallProgress'] = 60;
+        $this->progressSummary['completedTasks']  = 15;
+        $this->progressSummary['totalTasks']      = 25;
+        $this->hasProjectPlan                     = true;
+
+        $this->migrationCounts['percent']   = 100;
+        $this->migrationCounts['completed'] = 5;
+        $this->migrationCounts['total']     = 5;
+        $this->migrationCounts['approved']  = 5;
+
+        // Days to Go-Live and Implementer Threads count are left real.
+
+        // --- Support panel telemetry ---
+        $this->supportThreadStats = [
+            'open_count'    => 2,
+            'total_count'   => 15,
+            'last_activity' => '3 days ago',
+            'last_status'   => 'resolved',
+        ];
+        $this->supportStatusCounts = [
+            'open'          => 2,
+            'in_progress'   => 3,
+            'waiting_reply' => 1,
+            'closed'        => 9,
+        ];
+        // $this->supportThreads (table rows) intentionally left empty — demoing them would
+        // create dead links to non-existent thread records.
+
+        // --- Implementation Journey override ---
+        $this->journeyStage = 'first_review';
+        $this->stageCaption = $this->captionForStage($this->journeyStage);
+        $this->loadJourneyNodes($handover);
     }
 
     public function render()

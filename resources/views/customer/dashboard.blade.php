@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Dashboard - TimeTec CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     @livewireStyles
@@ -21,6 +22,7 @@
             --tt-text-muted: #9ca3af;
             --tt-danger: #ef4444;
             --tt-surface: #ffffff;
+            --tt-page-bg: #F4F8FC;
         }
 
         body {
@@ -28,6 +30,12 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            background-color: var(--tt-page-bg);
+            background-image: url('/img/bg-gra.jpg');
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: 100% auto;
+            background-attachment: fixed;
         }
 
         /* TimeTec Header */
@@ -226,18 +234,102 @@
             z-index: 100;
         }
 
-        /* Sidebar Styles */
+        /* Sidebar Styles — collapsed rail, expand on hover */
         .sidebar {
-            position: absolute;
+            position: fixed;
             left: 0;
             top: 56px;
-            width: 220px;
+            bottom: 0;
+            width: 64px;
             z-index: 50;
+            background-color: var(--tt-page-bg);
+            border-right: 1px solid var(--tt-border);
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: width 0.28s cubic-bezier(.4, 0, .2, 1),
+                        box-shadow 0.28s ease;
+        }
+
+        .sidebar:hover,
+        .sidebar:focus-within {
+            width: 280px;
+            box-shadow: 6px 0 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .sidebar.sidebar-force-collapsed,
+        .sidebar.sidebar-force-collapsed:hover,
+        .sidebar.sidebar-force-collapsed:focus-within {
+            width: 64px;
+            box-shadow: none;
         }
 
         .sidebar-menu {
-            padding: 14px;
+            padding: 14px 8px;
             font-size: 13px;
+            transition: padding 0.28s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .sidebar:hover .sidebar-menu,
+        .sidebar:focus-within .sidebar-menu {
+            padding: 14px;
+        }
+
+        /* Collapsed-state overrides — hide labels, chevrons, submenus; center icons */
+        .sidebar:not(:hover):not(:focus-within) .menu-item,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header,
+        .sidebar.sidebar-force-collapsed .menu-item,
+        .sidebar.sidebar-force-collapsed .menu-group-header {
+            justify-content: center;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .sidebar:not(:hover):not(:focus-within) .menu-item > span:not(.sidebar-badge),
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header > span:not(.sidebar-badge),
+        .sidebar:not(:hover):not(:focus-within) .menu-group-chevron,
+        .sidebar.sidebar-force-collapsed .menu-item > span:not(.sidebar-badge),
+        .sidebar.sidebar-force-collapsed .menu-group-header > span:not(.sidebar-badge),
+        .sidebar.sidebar-force-collapsed .menu-group-chevron {
+            display: none;
+        }
+
+        .sidebar:not(:hover):not(:focus-within) .menu-sub-items,
+        .sidebar.sidebar-force-collapsed .menu-sub-items {
+            display: none !important;
+        }
+
+        .sidebar:not(:hover):not(:focus-within) .menu-item:hover,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header:hover,
+        .sidebar.sidebar-force-collapsed .menu-item:hover,
+        .sidebar.sidebar-force-collapsed .menu-group-header:hover {
+            transform: none;
+        }
+
+        .sidebar:not(:hover):not(:focus-within) .menu-item i,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header i,
+        .sidebar.sidebar-force-collapsed .menu-item i,
+        .sidebar.sidebar-force-collapsed .menu-group-header i {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        /* Badge → small red dot at icon corner when collapsed */
+        .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
+        .sidebar.sidebar-force-collapsed .sidebar-badge {
+            position: absolute;
+            top: 6px;
+            right: 12px;
+            min-width: 8px;
+            height: 8px;
+            padding: 0;
+            font-size: 0;
+            line-height: 1;
+            border-radius: 50%;
+            margin-left: 0;
+            box-shadow: 0 0 0 2px var(--tt-page-bg);
         }
 
         .menu-item {
@@ -255,6 +347,15 @@
             background: transparent;
             width: 100%;
             text-align: left;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .menu-item > span:not(.sidebar-badge):not(.menu-dot) {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .menu-item:hover {
@@ -321,10 +422,30 @@
             padding: 6px 10px;
             font-size: 12px;
             margin-bottom: 2px;
+            white-space: normal;
+            line-height: 1.3;
         }
         .menu-sub-items .menu-item i {
             font-size: 12px;
             width: 16px;
+        }
+        .menu-sub-items .menu-item .menu-dot {
+            width: 16px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .menu-sub-items .menu-item .menu-dot::before {
+            content: "";
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.7;
+        }
+        .menu-sub-items .menu-item.active .menu-dot::before {
+            opacity: 1;
         }
 
         /* Sidebar notification badge */
@@ -355,7 +476,7 @@
 
         /* Main Content with Sidebar */
         .main-wrapper {
-            margin-left: 220px;
+            margin-left: 64px;
             padding: 56px 1.5rem 1.5rem;
             flex: 1;
             min-width: 0;
@@ -371,10 +492,16 @@
             max-width: 1480px;
             margin: 0 auto;
             width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .tab-content {
             padding: 1rem 0;
+            flex: 1;
+            min-height: 0;
         }
 
         .tab-content.active {
@@ -393,7 +520,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen">
     @php
         $customer = Auth::guard('customer')->user();
         $companyName = $customer->company_name ?? 'Not Available';
@@ -425,6 +552,8 @@
                 ->whereIn('status', ['open', 'pending_rnd', 'pending_client'])
                 ->count();
         }
+
+        $hasKickOffBooking = $customer?->hasBookedKickOff() ?? false;
     @endphp
 
     <!-- TimeTec Header -->
@@ -475,7 +604,7 @@
 
             {{-- Implementation — collapsible group --}}
             <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
-                <i class="fas fa-cogs"></i>
+                <i class="fas fa-book"></i>
                 <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
                     <span id="implementation-badge" class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
@@ -488,43 +617,43 @@
                 <button onclick="switchTab('calendar')"
                         id="calendar-tab"
                         class="menu-item">
-                    <i class="fas fa-calendar-alt"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Meeting Schedule</span>
                 </button>
                 <button onclick="switchTab('softwareHandover')"
                         id="softwareHandover-tab"
                         class="menu-item">
-                    <i class="fas fa-file-export"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Software Handover Process</span>
                 </button>
                 @if($hasProjectPlan)
                     <button onclick="switchTab('project')"
                             id="project-tab"
                             class="menu-item">
-                        <i class="fas fa-tasks"></i>
+                        <span class="menu-dot" aria-hidden="true"></span>
                         <span>Project Plan</span>
                     </button>
                 @endif
-                <button onclick="switchTab('dataMigration')"
-                        id="dataMigration-tab"
-                        class="menu-item">
-                    <i class="fas fa-database"></i>
-                    <span>Data Migration Templates</span>
-                </button>
                 <button onclick="switchTab('impThread')"
                         id="impThread-tab"
                         class="menu-item">
-                    <i class="fas fa-comments"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Implementer Thread</span>
                     @if($impThreadBadgeCount > 0)
                         <span class="sidebar-badge">{{ $impThreadBadgeCount }}</span>
                     @endif
                 </button>
+                <button onclick="switchTab('dataMigration')"
+                        id="dataMigration-tab"
+                        class="menu-item">
+                    <span class="menu-dot" aria-hidden="true"></span>
+                    <span>Data File</span>
+                </button>
             </div>
 
             {{-- Training — collapsible group --}}
             <button class="menu-group-header" data-group="training" onclick="toggleGroup('training')">
-                <i class="fas fa-graduation-cap"></i>
+                <i class="fas fa-book"></i>
                 <span>Training</span>
                 <svg id="training-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -534,20 +663,20 @@
                 <button onclick="switchTab('webinar')"
                         id="webinar-tab"
                         class="menu-item">
-                    <i class="fas fa-video"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Webinar Recording & Training Decks</span>
                 </button>
                 <button onclick="switchTab('reviewSession')"
                         id="reviewSession-tab"
                         class="menu-item">
-                    <i class="fas fa-play-circle"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Review Session Recordings</span>
                 </button>
             </div>
 
             {{-- Support — collapsible group --}}
             <button class="menu-group-header" data-group="support" onclick="toggleGroup('support')">
-                <i class="fas fa-headset"></i>
+                <i class="fas fa-book"></i>
                 <span>Support</span>
                 <svg id="support-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -555,20 +684,48 @@
             </button>
             <div id="support-sub" class="menu-sub-items" style="display: none;">
                 <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
-                    <i class="fas fa-life-ring"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Support Thread</span>
                 </a>
             </div>
 
+            {{-- Knowledge Base — collapsible group --}}
+            <button class="menu-group-header" data-group="knowledgebase" onclick="toggleGroup('knowledgebase')">
+                <i class="fas fa-book"></i>
+                <span>Knowledge Base</span>
+                <svg id="knowledgebase-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="knowledgebase-sub" class="menu-sub-items" style="display: none;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                    Coming Soon
+                </div>
+            </div>
+
             {{-- Commercial — collapsible group --}}
             <button class="menu-group-header" data-group="commercial" onclick="toggleGroup('commercial')">
-                <i class="fas fa-file-invoice-dollar"></i>
+                <i class="fas fa-book"></i>
                 <span>Commercial</span>
                 <svg id="commercial-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
             <div id="commercial-sub" class="menu-sub-items" style="display: none;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                    Coming Soon
+                </div>
+            </div>
+
+            {{-- Settings — collapsible group (anchored to bottom of sidebar) --}}
+            <button class="menu-group-header" data-group="settings" onclick="toggleGroup('settings')" style="margin-top: auto;">
+                <i class="fas fa-book"></i>
+                <span>Settings</span>
+                <svg id="settings-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <div id="settings-sub" class="menu-sub-items" style="display: none;">
                 <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
                     Coming Soon
                 </div>
@@ -628,23 +785,13 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="relative overflow-hidden text-white bg-gray-900">
-        <div class="absolute inset-0 opacity-50 bg-gradient-to-r from-indigo-900 to-purple-900"></div>
-        <div class="relative px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="text-center">
-                <p class="text-sm text-gray-400">
-                    © {{ date('Y') }} TimeTec CRM. All rights reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
 
     @livewireScripts
 
     <!-- Enhanced JavaScript -->
     <script>
         const hasProjectPlan = @json($hasProjectPlan);
+        const hasKickOffBooking = @json($hasKickOffBooking);
         const implementationTabs = ['calendar', 'softwareHandover', 'project', 'dataMigration', 'impThread'];
         const trainingTabs = ['webinar', 'reviewSession'];
         const groupMap = {
@@ -715,6 +862,29 @@
                 tabButton.classList.add('active');
                 localStorage.setItem('activeTab', tab);
             }
+
+            collapseSidebarAfterClick();
+        }
+
+        function collapseSidebarAfterClick() {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return;
+
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+
+            sidebar.classList.add('sidebar-force-collapsed');
+
+            let cleared = false;
+            const clear = () => {
+                if (cleared) return;
+                cleared = true;
+                sidebar.classList.remove('sidebar-force-collapsed');
+                sidebar.removeEventListener('mouseleave', clear);
+            };
+            sidebar.addEventListener('mouseleave', clear);
+            setTimeout(clear, 1500);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -723,7 +893,14 @@
             const urlTab = urlParams.get('tab');
             const urlTicket = urlParams.get('ticket');
 
-            let activeTab = urlTab || localStorage.getItem('activeTab') || 'dashboard';
+            let activeTab;
+            if (urlTab) {
+                activeTab = urlTab;
+            } else if (!hasKickOffBooking) {
+                activeTab = 'calendar';
+            } else {
+                activeTab = localStorage.getItem('activeTab') || 'dashboard';
+            }
 
             // If project plan doesn't exist and user tries to access it, fallback to dashboard
             if (activeTab === 'project' && !hasProjectPlan) {
