@@ -222,7 +222,11 @@ class CustomerImplementerThread extends Component
         $attachmentPaths = [];
         if ($this->newAttachments) {
             foreach ($this->newAttachments as $file) {
-                $attachmentPaths[] = $file->store('implementer-tickets', 'public');
+                $attachmentPaths[] = $file->storeAs(
+                    'implementer-tickets',
+                    \App\Support\TicketAttachmentNamer::build($file),
+                    'public'
+                );
             }
         }
 
@@ -284,7 +288,11 @@ class CustomerImplementerThread extends Component
         $attachmentPaths = [];
         if ($this->replyAttachments) {
             foreach ($this->replyAttachments as $file) {
-                $attachmentPaths[] = $file->store('implementer-ticket-replies', 'public');
+                $attachmentPaths[] = $file->storeAs(
+                    'implementer-ticket-replies',
+                    \App\Support\TicketAttachmentNamer::build($file),
+                    'public'
+                );
             }
         }
 
@@ -361,12 +369,26 @@ class CustomerImplementerThread extends Component
         $this->newAttachments = array_values($attachments);
     }
 
+    public function getFollowupCount(): int
+    {
+        if (!$this->selectedTicketId) {
+            return 0;
+        }
+
+        return ImplementerTicketReply::query()
+            ->where('implementer_ticket_id', $this->selectedTicketId)
+            ->where('is_internal_note', false)
+            ->whereRaw('LOWER(thread_label) LIKE ?', ['follow%'])
+            ->count();
+    }
+
     public function render()
     {
         return view('livewire.customer-implementer-thread', [
             'tickets' => $this->getTickets(),
             'statusCounts' => $this->getStatusCounts(),
             'selectedTicket' => $this->getSelectedTicket(),
+            'followupCount' => $this->getFollowupCount(),
         ]);
     }
 }

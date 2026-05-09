@@ -424,6 +424,19 @@
                         </div>
                     </div>
 
+                    {{-- Follow-up alert --}}
+                    @if(($followupCount ?? 0) >= 1)
+                        <div class="cit-detail-followup-alert">
+                            <div class="cit-detail-followup-alert__icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <div class="cit-detail-followup-alert__body">
+                                <div class="cit-detail-followup-alert__title">Follow-ups sent <span class="cit-detail-followup-alert__count">{{ $followupCount }}</span></div>
+                                <div class="cit-detail-followup-alert__sub">Please respond so we can move this ticket forward.</div>
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- SLA Info --}}
                     @if($slaStatus !== 'resolved')
                         <div class="cit-sla-card {{ $slaStatus === 'overdue' ? 'cit-sla-card-overdue' : '' }}">
@@ -488,13 +501,16 @@
                                 <div class="cit-bubble-info">
                                     <span class="cit-bubble-name">{{ $reply->sender_name }}</span>
                                     <span class="cit-bubble-badge {{ $isCustomer ? 'blue' : 'purple' }}">{{ $reply->getSenderTypeLabel() }}</span>
+                                    @if(!empty($reply->thread_label))
+                                        @php
+                                            $displayLabel = preg_match('/^\s*follow[\s\-]?up\b/i', $reply->thread_label)
+                                                ? 'Follow Up'
+                                                : $reply->thread_label;
+                                        @endphp
+                                        <span class="cit-bubble-badge cit-bubble-badge--thread-label" title="{{ $displayLabel }}">{{ $displayLabel }}</span>
+                                    @endif
                                 </div>
                             </div>
-                            @if(!empty($reply->thread_label))
-                                <div style="margin: 0 0 6px 0;">
-                                    <span class="cit-bubble-badge cit-bubble-badge--thread-label">{{ $reply->thread_label }}</span>
-                                </div>
-                            @endif
                             <div class="cit-bubble-body">{!! $reply->message !!}</div>
                             @if($reply->attachments && count($reply->attachments))
                                 <div class="cit-attachment-list">
@@ -1107,6 +1123,31 @@
 .cit-sla-card-date { font-size: 0.8rem; color: #334155; }
 .cit-sla-card-remaining { font-size: 0.72rem; color: #64748B; margin-top: 2px; }
 
+/* ── Follow-up alert ── */
+.cit-detail-followup-alert {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    margin-top: 14px;
+    background: #FEF3C7;
+    border: 1px solid #FDE68A;
+    border-radius: 10px;
+    color: #92400E;
+}
+.cit-detail-followup-alert__icon { flex-shrink: 0; margin-top: 1px; }
+.cit-detail-followup-alert__title { font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+.cit-detail-followup-alert__count {
+    background: #92400E;
+    color: #FEF3C7;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 999px;
+    line-height: 1.5;
+}
+.cit-detail-followup-alert__sub { font-size: 0.72rem; margin-top: 2px; opacity: 0.85; }
+
 /* ── Description ── */
 .cit-description-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 18px 20px; margin-bottom: 0; }
 .cit-section-title { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700; color: #1E293B; margin: 0 0 12px; }
@@ -1217,7 +1258,7 @@
 .cit-bubble-badge { font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
 .cit-bubble-badge.blue { background: #DBEAFE; color: #1E40AF; }
 .cit-bubble-badge.purple { background: #EDE9FE; color: #5B21B6; }
-.cit-bubble-badge.cit-bubble-badge--thread-label { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
+.cit-bubble-badge.cit-bubble-badge--thread-label { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cit-bubble-body { font-size: 13.5px; color: #334155; line-height: 1.65; word-wrap: break-word; }
 .cit-bubble-body p { margin: 0 0 6px; }
 .cit-bubble-time { font-size: 10px; color: #94A3B8; display: block; margin-top: 6px; font-weight: 500; }
