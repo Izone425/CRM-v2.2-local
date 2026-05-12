@@ -756,7 +756,7 @@
                    class="menu-item"
                    style="text-decoration: none;">
                     <span class="menu-dot" aria-hidden="true"></span>
-                    <span>Implementation Session</span>
+                    <span>Project Session</span>
                 </a>
                 <a href="?tab=softwareHandover"
                    data-tab="softwareHandover"

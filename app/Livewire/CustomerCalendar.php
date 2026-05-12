@@ -490,6 +490,7 @@ class CustomerCalendar extends Component
             return;
         }
 
+        $this->showExistingBookings = false;
         $this->appointmentToCancel = $booking;
         $this->showCancelModal = true;
     }
@@ -747,7 +748,9 @@ class CustomerCalendar extends Component
             return;
         }
 
-        $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        if (empty(trim($this->requiredAttendees))) {
+            $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        }
         $this->showBookingModal = true;
     }
 
@@ -822,7 +825,9 @@ class CustomerCalendar extends Component
         }
 
         // Retrieve required attendees from software handover
-        $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        if (empty(trim($this->requiredAttendees))) {
+            $this->requiredAttendees = $this->getRequiredAttendeesFromHandover();
+        }
 
         $this->showBookingModal = true;
     }

@@ -580,6 +580,14 @@ use Carbon\Carbon;
             transition: background 0.15s ease, color 0.15s ease, transform 0.18s ease;
         }
 
+        .cal-slot-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+            flex: 1;
+        }
+
         .cal-slot-time-range {
             font-size: 14px;
             font-weight: 600;
@@ -590,14 +598,6 @@ use Carbon\Carbon;
             white-space: nowrap;
         }
 
-        .cal-slot-divider {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--cal-text-quiet);
-            line-height: 1;
-            user-select: none;
-        }
-
         .cal-slot-session-label {
             font-size: 11px;
             font-weight: 600;
@@ -605,10 +605,6 @@ use Carbon\Carbon;
             letter-spacing: 0.08em;
             color: var(--cal-text-muted);
             line-height: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: 0;
         }
 
         .cal-slot-arrow {
@@ -647,7 +643,6 @@ use Carbon\Carbon;
         }
         .cal-slot.is-selected .cal-slot-time-range { color: #ffffff; }
         .cal-slot.is-selected .cal-slot-session-label { color: rgba(255, 255, 255, 0.78); }
-        .cal-slot.is-selected .cal-slot-divider { color: rgba(255, 255, 255, 0.55); }
         .cal-slot.is-selected .cal-slot-arrow {
             color: #ffffff;
             transform: translateX(0);
@@ -1732,14 +1727,22 @@ use Carbon\Carbon;
         }
 
         .tutorial-modal {
-            position: fixed;
+            position: absolute;
             inset: 0;
-            z-index: 50;
+            z-index: 5;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 60, 117, 0.55);
+            backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 1rem;
+            animation: tutorialFade 200ms ease-out;
+        }
+
+        @keyframes tutorialFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .tutorial-container {
@@ -1747,9 +1750,11 @@ use Carbon\Carbon;
             border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 700px; /* Reduced from 5xl to smaller size */
-            max-height: auto; /* Reduced from 95vh */
-            margin: 1rem;
+            max-width: 700px;
+            max-height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
             transform: scale(1);
             transition: all 0.3s ease;
@@ -1897,9 +1902,12 @@ use Carbon\Carbon;
         }
 
         .tutorial-body {
-            padding: 1.5rem 2rem; /* Reduced padding */
+            padding: 1.5rem 2rem;
             background: #ffffff;
             text-align: center;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
         .tutorial-emoji {
@@ -2204,12 +2212,14 @@ use Carbon\Carbon;
            scrolls at the page level on ≥900px laptops.
         ────────────────────────────────────────────────────────────── */
         .calendar-container.cal-page-shell {
-            height: calc(100vh - 168px);
+            height: calc(100vh - 112px);
             min-height: 560px;
             display: flex;
             flex-direction: column;
             padding: 1rem 1.25rem 1.1rem;
             border-radius: 16px;
+            position: relative;
+            overflow: hidden;
         }
 
         .cal-header {
@@ -2363,6 +2373,28 @@ use Carbon\Carbon;
             overflow-y: auto;
             padding: 1rem 1.1rem;
             gap: 0.85rem;
+            justify-content: flex-start;
+        }
+
+        .cal-page-shell .cal-book-panel > .cal-panel-empty {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            gap: 0.5rem;
+        }
+
+        .cal-page-shell .cal-book-panel > .cal-panel-empty .cal-panel-empty-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 26px;
+            margin-bottom: 0.5rem;
+        }
+
+        .cal-page-shell .cal-book-panel > .cal-panel-footnote {
+            margin-top: auto;
         }
         .cal-page-shell .cal-confirm-row {
             margin-top: auto;
@@ -2773,10 +2805,6 @@ use Carbon\Carbon;
                             Days outlined in green have open slots. Click one to see time options.
                         </p>
                     </div>
-                    <p class="cal-panel-footnote">
-                        <i class="fas fa-circle-info"></i>
-                        Bookings open for the next 3 weeks only.
-                    </p>
 
                 @else
                     {{-- Date-selected state --}}
@@ -2804,9 +2832,10 @@ use Carbon\Carbon;
                                         <span class="cal-slot-icon">
                                             <i class="far fa-clock"></i>
                                         </span>
-                                        <span class="cal-slot-time-range">{{ $session['formatted_start'] }} – {{ $session['formatted_end'] }}</span>
-                                        <span class="cal-slot-divider" aria-hidden="true">·</span>
-                                        <span class="cal-slot-session-label">{{ $session['session_name'] }}</span>
+                                        <span class="cal-slot-info">
+                                            <span class="cal-slot-time-range">{{ $session['formatted_start'] }} – {{ $session['formatted_end'] }}</span>
+                                            <span class="cal-slot-session-label">{{ $session['session_name'] }}</span>
+                                        </span>
                                         <i class="cal-slot-arrow fas fa-arrow-right"></i>
                                     </button>
                                 @endforeach
@@ -2895,6 +2924,163 @@ use Carbon\Carbon;
             </aside>
 
         </div>
+
+        @if($showTutorial)
+            <div class="tutorial-modal">
+                <div class="tutorial-container">
+                    <!-- Tutorial Header -->
+                    <div class="tutorial-header">
+                        <div class="tutorial-header-pattern"></div>
+
+                        <div class="tutorial-header-content">
+                            <div style="display: flex; align-items: center;">
+                                <div>
+                                    <h3 class="tutorial-title">How to Schedule Your Sessions</h3>
+                                    <div class="tutorial-step-info">
+                                        <span class="tutorial-step-badge">
+                                            Step {{ $currentTutorialStep }} of {{ $totalTutorialSteps }}
+                                        </span>
+                                        <div class="tutorial-progress-dots">
+                                            @for($i = 1; $i <= $totalTutorialSteps; $i++)
+                                                <div class="tutorial-dot {{ $i <= $currentTutorialStep ? 'active' : '' }}"></div>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button wire:click="closeTutorial" class="tutorial-close-btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 1.25rem; height: 1.25rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="tutorial-progress-bar">
+                            <div class="tutorial-progress-bg">
+                                <div class="tutorial-progress-fill" style="width: {{ ($currentTutorialStep / $totalTutorialSteps) * 100 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tutorial Content -->
+                    <div class="tutorial-body">
+                        @if($currentTutorialStep == 1)
+                            <p class="tutorial-step-description">
+                                This is your personal calendar where you can schedule <strong>Kick-Off Meetings</strong> and <strong>Review Sessions</strong> with your implementer.
+                            </p>
+
+                            <div class="tutorial-grid">
+                                <div class="tutorial-card blue">
+                                    <h5 style="font-weight: 700; color: #003c75; margin-bottom: 0.5rem;">Kick-Off <br>Meetings</h5>
+                                </div>
+                                <div class="tutorial-card purple">
+                                    <h5 style="font-weight: 700; color: #005170; margin-bottom: 0.5rem;">Review <br>Sessions</h5>
+                                </div>
+                            </div>
+
+                            <div class="tutorial-tip">
+                                <p style="color: #065f46; font-size: 0.875rem;">
+                                    <strong style="color: #10b981;">Green dates</strong> are available for booking, and your existing meetings appear in <strong style="color: #003c75;">blue</strong>.
+                                </p>
+                            </div>
+
+                        @elseif($currentTutorialStep == 2)
+                            <h4 class="tutorial-step-title">Finding Available Dates</h4>
+                            <p class="tutorial-step-description">
+                                Look for dates highlighted in <span style="padding: 0.25rem 0.75rem; background: #ecfdf5; color: #065f46; border-radius: 20px; font-weight: 600;">green</span>
+                            </p>
+
+                            <!-- Mini Calendar Preview -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem auto; max-width: 600px;">
+                                <div class="tutorial-card green" style="text-align: center; padding: 0.75rem;">
+                                    <div style="font-weight: 700; color: #065f46;">15</div>
+                                    <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">✨ 3 available</div>
+                                </div>
+                                <div style="padding: 0.75rem; background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; text-align: center;">
+                                    <div style="font-weight: 700; color: #b45309;">16</div>
+                                    <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem;">Weekend</div>
+                                </div>
+                                <div class="tutorial-card blue" style="text-align: center; padding: 0.75rem;">
+                                    <div style="font-weight: 700; color: #003c75;">17</div>
+                                    <div style="font-size: 0.75rem; color: #003c75; margin-top: 0.25rem;">📅 Your Meeting</div>
+                                </div>
+                            </div>
+
+                        @elseif($currentTutorialStep == 3)
+                            <h4 class="tutorial-step-title">Select Your Time Slot</h4>
+
+                            <!-- Session Selector Preview -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1.5rem 0;">
+                                <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
+                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 1</div>
+                                    <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">9:30 AM</div>
+                                </div>
+                                <div style="padding: 1rem; border: 1.5px solid #003c75; border-radius: 12px; text-align: center; background: #003c75; transform: scale(1.05); box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35); font-family: 'Poppins', sans-serif;">
+                                    <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">SESSION 2</div>
+                                    <div style="color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; margin-top: 0.25rem;">11:00 AM</div>
+                                    <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255, 255, 255, 0.18); color: white; border-radius: 20px; font-size: 0.625rem; letter-spacing: 0.04em;">Selected</div>
+                                </div>
+                                <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
+                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 3</div>
+                                    <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">2:00 PM</div>
+                                </div>
+                            </div>
+
+                        @elseif($currentTutorialStep == 4)
+                            <h4 class="tutorial-step-title">Add Attendees & Submit</h4>
+
+                            <!-- Form Preview -->
+                            <div style="padding: 1rem; border: 2px solid #10b981; border-radius: 12px; background: #ecfdf5; margin: 1.5rem 0; text-align: left; font-family: 'Poppins', sans-serif;">
+                                <label style="display: block; font-weight: 600; color: #065f46; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                                    Required Attendees <span style="color: #ef4444;">*</span>
+                                </label>
+                                <input type="text"
+                                    style="width: 100%; padding: 0.75rem; border: 2px solid #10b981; border-radius: 8px; background: #f0fdf4; font-size: 0.875rem; font-family: 'Poppins', sans-serif;"
+                                    placeholder="john@example.com;jane@example.com"
+                                    disabled>
+                                <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #065f46;">💡 Separate multiple emails with semicolons (;)</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Tutorial Footer -->
+                    <div class="tutorial-footer">
+                        <div style="display: flex; gap: 0.75rem;">
+                            @if($currentTutorialStep > 1)
+                                <button wire:click="previousTutorialStep" class="tutorial-btn secondary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-left" style="margin-right: 0.5rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                    Previous
+                                </button>
+                            @endif
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button wire:click="skipTutorial" class="tutorial-btn secondary">
+                                Skip Tutorial
+                            </button>
+
+                            @if($currentTutorialStep < $totalTutorialSteps)
+                                <button wire:click="nextTutorialStep" class="tutorial-btn primary">
+                                    Next Step
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-right" style="margin-left: 0.5rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            @else
+                                <button wire:click="completeTutorial" class="tutorial-btn success">
+                                    <span style="margin-right: 0.5rem;">🎉</span>
+                                    Get Started!
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Slide-over drawer for "N scheduled" pill (reuses booking-card markup verbatim) -->
@@ -3315,178 +3501,23 @@ use Carbon\Carbon;
         </div>
     @endif
 
-    <div class="fixed z-40 bottom-6 right-6">
-        <div class="help-button-wrapper">
-            <button wire:click="showTutorialModal"
-                    class="flex items-center justify-center text-white transition-all duration-300 rounded-full shadow-lg w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-xl hover:scale-110 group help-button">
-                <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </button>
+    @unless($showTutorial)
+        <div class="fixed z-40 bottom-6 right-6">
+            <div class="help-button-wrapper">
+                <button wire:click="showTutorialModal"
+                        class="flex items-center justify-center text-white transition-all duration-300 rounded-full shadow-lg w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-xl hover:scale-110 group help-button">
+                    <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </button>
 
-            <!-- Tooltip -->
-            <div class="help-tooltip">
-                View Tutorial
-            </div>
-        </div>
-    </div>
-
-    @if($showTutorial)
-        <div class="tutorial-modal">
-            <div class="tutorial-container">
-                <!-- Tutorial Header -->
-                <div class="tutorial-header">
-                    <div class="tutorial-header-pattern"></div>
-
-                    <div class="tutorial-header-content">
-                        <div style="display: flex; align-items: center;">
-                            <div>
-                                <h3 class="tutorial-title">How to Schedule Your Sessions</h3>
-                                <div class="tutorial-step-info">
-                                    <span class="tutorial-step-badge">
-                                        Step {{ $currentTutorialStep }} of {{ $totalTutorialSteps }}
-                                    </span>
-                                    <div class="tutorial-progress-dots">
-                                        @for($i = 1; $i <= $totalTutorialSteps; $i++)
-                                            <div class="tutorial-dot {{ $i <= $currentTutorialStep ? 'active' : '' }}"></div>
-                                        @endfor
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button wire:click="closeTutorial" class="tutorial-close-btn">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 1.25rem; height: 1.25rem;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Progress Bar -->
-                    <div class="tutorial-progress-bar">
-                        <div class="tutorial-progress-bg">
-                            <div class="tutorial-progress-fill" style="width: {{ ($currentTutorialStep / $totalTutorialSteps) * 100 }}%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tutorial Content -->
-                <div class="tutorial-body">
-                    @if($currentTutorialStep == 1)
-                        <p class="tutorial-step-description">
-                            This is your personal calendar where you can schedule <strong>Kick-Off Meetings</strong> and <strong>Review Sessions</strong> with your implementer.
-                        </p>
-
-                        <div class="tutorial-grid">
-                            <div class="tutorial-card blue">
-                                <h5 style="font-weight: 700; color: #003c75; margin-bottom: 0.5rem;">Kick-Off <br>Meetings</h5>
-                            </div>
-                            <div class="tutorial-card purple">
-                                <h5 style="font-weight: 700; color: #005170; margin-bottom: 0.5rem;">Review <br>Sessions</h5>
-                            </div>
-                        </div>
-
-                        <div class="tutorial-tip">
-                            <p style="color: #065f46; font-size: 0.875rem;">
-                                <strong style="color: #10b981;">Green dates</strong> are available for booking, and your existing meetings appear in <strong style="color: #003c75;">blue</strong>.
-                            </p>
-                        </div>
-
-                    @elseif($currentTutorialStep == 2)
-                        <h4 class="tutorial-step-title">Finding Available Dates</h4>
-                        <p class="tutorial-step-description">
-                            Look for dates highlighted in <span style="padding: 0.25rem 0.75rem; background: #ecfdf5; color: #065f46; border-radius: 20px; font-weight: 600;">green</span>
-                        </p>
-
-                        <!-- Mini Calendar Preview -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem auto; max-width: 600px;">
-                            <div class="tutorial-card green" style="text-align: center; padding: 0.75rem;">
-                                <div style="font-weight: 700; color: #065f46;">15</div>
-                                <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">✨ 3 available</div>
-                            </div>
-                            <div style="padding: 0.75rem; background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; text-align: center;">
-                                <div style="font-weight: 700; color: #b45309;">16</div>
-                                <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem;">Weekend</div>
-                            </div>
-                            <div class="tutorial-card blue" style="text-align: center; padding: 0.75rem;">
-                                <div style="font-weight: 700; color: #003c75;">17</div>
-                                <div style="font-size: 0.75rem; color: #003c75; margin-top: 0.25rem;">📅 Your Meeting</div>
-                            </div>
-                        </div>
-
-                    @elseif($currentTutorialStep == 3)
-                        <h4 class="tutorial-step-title">Select Your Time Slot</h4>
-
-                        <!-- Session Selector Preview -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1.5rem 0;">
-                            <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 1</div>
-                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">9:30 AM</div>
-                            </div>
-                            <div style="padding: 1rem; border: 1.5px solid #003c75; border-radius: 12px; text-align: center; background: #003c75; transform: scale(1.05); box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35); font-family: 'Poppins', sans-serif;">
-                                <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">SESSION 2</div>
-                                <div style="color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; margin-top: 0.25rem;">11:00 AM</div>
-                                <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255, 255, 255, 0.18); color: white; border-radius: 20px; font-size: 0.625rem; letter-spacing: 0.04em;">Selected</div>
-                            </div>
-                            <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 3</div>
-                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">2:00 PM</div>
-                            </div>
-                        </div>
-
-                    @elseif($currentTutorialStep == 4)
-                        <h4 class="tutorial-step-title">Add Attendees & Submit</h4>
-
-                        <!-- Form Preview -->
-                        <div style="padding: 1rem; border: 2px solid #10b981; border-radius: 12px; background: #ecfdf5; margin: 1.5rem 0; text-align: left; font-family: 'Poppins', sans-serif;">
-                            <label style="display: block; font-weight: 600; color: #065f46; margin-bottom: 0.5rem; font-size: 0.875rem;">
-                                Required Attendees <span style="color: #ef4444;">*</span>
-                            </label>
-                            <input type="text"
-                                style="width: 100%; padding: 0.75rem; border: 2px solid #10b981; border-radius: 8px; background: #f0fdf4; font-size: 0.875rem; font-family: 'Poppins', sans-serif;"
-                                placeholder="john@example.com;jane@example.com"
-                                disabled>
-                            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #065f46;">💡 Separate multiple emails with semicolons (;)</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Tutorial Footer -->
-                <div class="tutorial-footer">
-                    <div style="display: flex; gap: 0.75rem;">
-                        @if($currentTutorialStep > 1)
-                            <button wire:click="previousTutorialStep" class="tutorial-btn secondary">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-left" style="margin-right: 0.5rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                </svg>
-                                Previous
-                            </button>
-                        @endif
-                    </div>
-
-                    <div style="display: flex; gap: 0.75rem;">
-                        <button wire:click="skipTutorial" class="tutorial-btn secondary">
-                            Skip Tutorial
-                        </button>
-
-                        @if($currentTutorialStep < $totalTutorialSteps)
-                            <button wire:click="nextTutorialStep" class="tutorial-btn primary">
-                                Next Step
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-right" style="margin-left: 0.5rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
-                        @else
-                            <button wire:click="completeTutorial" class="tutorial-btn success">
-                                <span style="margin-right: 0.5rem;">🎉</span>
-                                Get Started!
-                            </button>
-                        @endif
-                    </div>
+                <!-- Tooltip -->
+                <div class="help-tooltip">
+                    View Tutorial
                 </div>
             </div>
         </div>
-    @endif
+    @endunless
 
     {{-- ──────────────────────────────────────────────────────────────
          Bulk Attendees Drawer (Alpine-only, teleported to <body>)

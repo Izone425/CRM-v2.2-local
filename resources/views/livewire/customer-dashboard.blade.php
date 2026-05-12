@@ -208,8 +208,7 @@
         .cdb-journey-title {
             font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.01em;
             color: var(--cdb-text-secondary);
             margin-bottom: 12px;
         }
@@ -2002,8 +2001,7 @@
             font-size: 14px;
             color: var(--cdb-accent-dark);
             margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.01em;
         }
         .cdb-pt-total {
             margin-left: auto;
@@ -2091,8 +2089,7 @@
             font-size: 14px;
             color: var(--cdb-accent-dark);
             margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.01em;
         }
         .cdb-bm-status {
             margin-left: auto;
@@ -2467,7 +2464,7 @@
         {{-- HERO: Full-width Implementation Journey track --}}
         <div class="cdb-hero-solo">
             <div class="cdb-journey">
-                <div class="cdb-journey-title">Implementation Journey</div>
+                <div class="cdb-journey-title">Implementation Progress</div>
                 <div class="cdb-track">
                     @foreach($journeyNodes as $node)
                         <a href="{{ $node['deepLink'] }}"
