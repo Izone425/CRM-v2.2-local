@@ -198,6 +198,23 @@ class ImplementerTicket extends Model
         return $this->created_at->copy()->addHours($hours);
     }
 
+    public function getFirstReplyDeadline(): ?Carbon
+    {
+        $config = SlaConfiguration::current();
+        if (!$config->first_reply_enabled) {
+            return null;
+        }
+
+        $created = $this->created_at->copy()->setTimezone(config('app.timezone'));
+        $cutoff = $config->first_reply_cutoff_time;
+
+        if ($created->format('H:i') <= $cutoff && $config->isWorkingDay($created)) {
+            return $created->copy()->endOfDay();
+        }
+
+        return $config->addWorkingDays($created, 1)->endOfDay();
+    }
+
     public function isOverdue(): bool
     {
         if ($this->status === ImplementerTicketStatus::CLOSED) {

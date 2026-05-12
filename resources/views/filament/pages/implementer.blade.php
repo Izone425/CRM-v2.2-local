@@ -15,36 +15,40 @@
     /* Group column styling */
     .group-column {
         padding-right: 10px;
-        width: 230px;
+        width: 268px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        align-content: start;
     }
 
     .group-box {
         background-color: white;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 20px 15px;
+        padding: 10px 12px;
         cursor: pointer;
         transition: all 0.2s;
         border-top: 4px solid transparent;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        margin-bottom: 15px;
         width: 100%;
-        text-align: center; /* Changed from center to left */
-        max-height: 82px;
-        max-width: 220px;
+        min-width: 0;
+        text-align: center;
+        min-height: 76px;
     }
 
     .group-box:hover {
         background-color: #f9fafb;
-        transform: translateX(3px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
     }
 
     .group-box.selected {
         background-color: #f9fafb;
-        transform: translateX(5px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.12);
     }
 
     .group-info {
@@ -54,10 +58,12 @@
 
 
     .group-title {
-        font-size: 15px;
+        font-size: 12.5px;
         font-weight: 600;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         text-align: left;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
     }
 
     .group-desc {
@@ -66,8 +72,10 @@
     }
 
     .group-count {
-        font-size: 24px;
-        font-weight: bold;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+        text-align: left;
     }
 
     /* GROUP COLORS */
@@ -284,6 +292,20 @@
     .request-cancelled { border-left: 4px solid #94a3b8; }
     .request-cancelled .stat-count { color: #94a3b8; }
 
+    /* GROUP COLOR — Thread */
+    .group-thread { border-top-color: #0d9488; }
+    .group-thread .group-count { color: #0d9488; }
+
+    /* STAT BOX COLORS — Thread */
+    .thread-all { border-left: 4px solid #14b8a6; }
+    .thread-all .stat-count { color: #14b8a6; }
+    .thread-overdue { border-left: 4px solid #dc2626; }
+    .thread-overdue .stat-count { color: #dc2626; }
+    .thread-today { border-left: 4px solid #f59e0b; }
+    .thread-today .stat-count { color: #f59e0b; }
+    .thread-upcoming { border-left: 4px solid #10b981; }
+    .thread-upcoming .stat-count { color: #10b981; }
+
     .group-no-respond { border-top-color: #e11d48; }
     .group-no-respond .group-count { color: #e11d48; }
 
@@ -338,6 +360,11 @@
     .stat-box.selected.request-approved { background-color: rgba(139, 92, 246, 0.05); border-left-width: 6px; }
     .stat-box.selected.request-rejected { background-color: rgba(239, 68, 68, 0.05); border-left-width: 6px; }
     .stat-box.selected.request-cancelled { background-color: rgba(148, 163, 184, 0.05); border-left-width: 6px; }
+
+    .stat-box.selected.thread-all { background-color: rgba(20, 184, 166, 0.05); border-left-width: 6px; }
+    .stat-box.selected.thread-overdue { background-color: rgba(220, 38, 38, 0.05); border-left-width: 6px; }
+    .stat-box.selected.thread-today { background-color: rgba(245, 158, 11, 0.05); border-left-width: 6px; }
+    .stat-box.selected.thread-upcoming { background-color: rgba(16, 185, 129, 0.05); border-left-width: 6px; }
     /* Animation for tab switching */
     [x-transition] {
         transition: all 0.2s ease-out;
@@ -536,6 +563,13 @@
         ->getImplementerPendingRequests()
         ->count();
 
+    $threadComponent = app(\App\Livewire\ImplementerDashboard\ImplementerThreadPendingAction::class);
+    $threadComponent->selectedUser = $selectedUser ?? session('selectedUser');
+    $threadTotal    = $threadComponent->getAllCount();
+    $threadOverdue  = $threadComponent->getOverdueCount();
+    $threadDueToday = $threadComponent->getDueTodayCount();
+    $threadUpcoming = $threadComponent->getUpcomingCount();
+
     $implementerRequestTotal = $pendingRequestCount;
     $noRespondProjects = $followUpNone + $followUp1 + $followUp2 + $followUp3 + $followUp4;
 
@@ -679,6 +713,16 @@
                     <div class="group-title">Session Request</div>
                 </div>
                 <div class="group-count">{{ $implementerRequestTotal }}</div>
+            </div>
+
+            <!-- NO8 - THREAD -->
+            <div class="group-box group-thread"
+                :class="{'selected': selectedGroup === 'thread'}"
+                @click="setSelectedGroup('thread')">
+                <div class="group-info">
+                    <div class="group-title">Thread</div>
+                </div>
+                <div class="group-count">{{ $threadTotal }}</div>
             </div>
 
             <!-- NO5 - PROJECT FOLLOW UP -->
@@ -918,6 +962,46 @@
                         <div class="stat-label">Cancelled</div>
                     </div>
                     <div class="stat-count">{{ $cancelledRequestCount }}</div>
+                </div>
+            </div>
+
+            <!-- THREAD Sub-tabs -->
+            <div class="category-container" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"
+                 x-show="selectedGroup === 'thread'" x-transition>
+                <div class="stat-box thread-all"
+                    :class="{'selected': selectedStat === 'thread-all'}"
+                    @click="setSelectedStat('thread-all'); $wire.dispatch('thread-filter-changed', { value: 'all' })">
+                    <div class="stat-info">
+                        <div class="stat-label">All</div>
+                    </div>
+                    <div class="stat-count">{{ $threadTotal }}</div>
+                </div>
+
+                <div class="stat-box thread-overdue"
+                    :class="{'selected': selectedStat === 'thread-overdue'}"
+                    @click="setSelectedStat('thread-overdue'); $wire.dispatch('thread-filter-changed', { value: 'overdue' })">
+                    <div class="stat-info">
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                    <div class="stat-count">{{ $threadOverdue }}</div>
+                </div>
+
+                <div class="stat-box thread-today"
+                    :class="{'selected': selectedStat === 'thread-today'}"
+                    @click="setSelectedStat('thread-today'); $wire.dispatch('thread-filter-changed', { value: 'today' })">
+                    <div class="stat-info">
+                        <div class="stat-label">Due Today</div>
+                    </div>
+                    <div class="stat-count">{{ $threadDueToday }}</div>
+                </div>
+
+                <div class="stat-box thread-upcoming"
+                    :class="{'selected': selectedStat === 'thread-upcoming'}"
+                    @click="setSelectedStat('thread-upcoming'); $wire.dispatch('thread-filter-changed', { value: 'upcoming' })">
+                    <div class="stat-info">
+                        <div class="stat-label">Upcoming</div>
+                    </div>
+                    <div class="stat-count">{{ $threadUpcoming }}</div>
                 </div>
             </div>
 
@@ -1214,6 +1298,14 @@
                 <div x-show="selectedStat === 'request-cancelled'" x-transition>
                     <div class="p-4">
                         <livewire:implementer-dashboard.implementer-request-cancelled />
+                    </div>
+                </div>
+
+                <!-- THREAD Tables (single component, filter-driven by sub-stat clicks) -->
+                <div x-show="selectedStat === 'thread-all' || selectedStat === 'thread-overdue'
+                          || selectedStat === 'thread-today' || selectedStat === 'thread-upcoming'" x-transition>
+                    <div class="p-4">
+                        <livewire:implementer-dashboard.implementer-thread-pending-action />
                     </div>
                 </div>
 
