@@ -2135,8 +2135,6 @@
         .cdb-bm-tile-lbl {
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
             color: var(--cdb-text-secondary);
             margin-top: 6px;
             text-align: center;
