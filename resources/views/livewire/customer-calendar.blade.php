@@ -2198,6 +2198,392 @@ use Carbon\Carbon;
                 transform: translateX(50%);
             }
         }
+
+        /* ──────────────────────────────────────────────────────────────
+           One-page layout: pin the page to the viewport so it never
+           scrolls at the page level on ≥900px laptops.
+        ────────────────────────────────────────────────────────────── */
+        .calendar-container.cal-page-shell {
+            height: calc(100vh - 168px);
+            min-height: 560px;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1.25rem 1.1rem;
+            border-radius: 16px;
+        }
+
+        .cal-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 18px;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--cal-border);
+        }
+        .cal-header .cal-title-icon { width: 36px; height: 36px; border-radius: 10px; font-size: 16px; }
+        .cal-header .cal-title-text h2 { font-size: 1.0625rem; line-height: 1.2; }
+        .cal-header .cal-title-text p  { font-size: 0.78rem; line-height: 1.25; margin-top: 2px; }
+
+        .cal-header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .cal-bookings-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--cal-meeting-bg);
+            color: var(--cal-meeting-text);
+            border: 1px solid #cfdcef;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, border-color .15s;
+        }
+        .cal-bookings-pill:hover { background: #e0ecfb; border-color: #b6c8e1; }
+        .cal-bookings-pill .cnt { font-weight: 700; }
+        .cal-bookings-pill .chev { transition: transform .2s; font-size: 10px; }
+        .cal-bookings-pill[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+        .cal-legend-inline {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 10px;
+            font-size: 11.5px;
+            color: var(--cal-text-muted);
+        }
+        .cal-legend-inline .cal-legend-chip {
+            padding: 2px 8px 2px 6px;
+            font-size: 11.5px;
+            gap: 5px;
+            background: var(--cal-surface);
+            font-weight: 500;
+        }
+
+        /* Bottom-anchored legend strip under the calendar grid */
+        .cal-page-shell .cal-legend-foot {
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px 12px;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--cal-border);
+            font-size: 11.5px;
+            color: var(--cal-text-muted);
+        }
+        .cal-page-shell .cal-legend-foot .cal-legend-chip {
+            padding: 2px 8px 2px 6px;
+            font-size: 11.5px;
+            gap: 5px;
+            background: var(--cal-surface);
+            font-weight: 500;
+        }
+
+        /* Make the split fill the remaining shell height and stretch both columns */
+        .cal-page-shell .cal-split {
+            flex: 1;
+            min-height: 0;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 1.25rem;
+            align-items: stretch;
+        }
+        @media (max-width: 1200px) {
+            .cal-page-shell .cal-split {
+                grid-template-columns: minmax(0, 1fr) 304px;
+                gap: 1rem;
+            }
+        }
+        @media (max-width: 960px) {
+            .calendar-container.cal-page-shell { height: auto; min-height: 0; }
+            .cal-page-shell .cal-split { grid-template-columns: 1fr; }
+        }
+
+        .cal-page-shell .cal-left {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* Tighter days header + flex-filling grid */
+        .cal-page-shell .calendar-days-header {
+            padding: 6px 0 8px;
+            grid-template-columns: repeat(7, 1fr);
+            display: grid;
+            gap: 6px;
+        }
+        .cal-page-shell .calendar-days-header .header-day {
+            font-size: 11px;
+            letter-spacing: .04em;
+            color: var(--cal-text-quiet);
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 0 4px;
+        }
+
+        .cal-page-shell .calendar-grid {
+            flex: 1;
+            min-height: 0;
+            grid-auto-rows: 1fr;
+            gap: 5px;
+        }
+
+        .cal-page-shell .calendar-day {
+            min-height: 0;
+            padding: 6px 8px 6px;
+            border-radius: 9px;
+        }
+        .cal-page-shell .calendar-day .day-number { font-size: 13px; }
+        .cal-page-shell .calendar-day .cal-day-icon { font-size: 11px; top: 6px; right: 7px; }
+        .cal-page-shell .calendar-day .available-count,
+        .cal-page-shell .calendar-day .meeting-indicator,
+        .cal-page-shell .calendar-day .cal-full-marker {
+            font-size: 10.5px;
+            padding: 1px 6px;
+        }
+
+        /* Right rail: stretch to full split height, scroll internally if overflowed */
+        .cal-page-shell .cal-book-panel {
+            position: relative;
+            top: 0;
+            height: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            padding: 1rem 1.1rem;
+            gap: 0.85rem;
+        }
+        .cal-page-shell .cal-confirm-row {
+            margin-top: auto;
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .cal-page-shell .cal-confirm-row .cal-panel-footnote { margin-top: 0; }
+
+        /* Slide-over drawer for the "N scheduled" pill */
+        .cal-bookings-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .35);
+            z-index: 80;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+        .cal-bookings-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .cal-bookings-drawer {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: min(440px, 92vw);
+            background: var(--cal-surface, #ffffff);
+            z-index: 90;
+            transform: translateX(100%);
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -16px 0 32px -16px rgba(16,24,40,.18);
+        }
+        .cal-bookings-drawer.open { transform: translateX(0); }
+        .cal-bookings-drawer-head {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .cal-bookings-drawer-head h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        .cal-bookings-drawer-head h4 .count {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #6b7280;
+            margin-left: 4px;
+        }
+        .cal-bookings-drawer-close {
+            background: transparent;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .cal-bookings-drawer-close:hover { color: #111827; border-color: #d1d5db; }
+        .cal-bookings-drawer-body {
+            padding: 16px 20px 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .cal-bookings-drawer-body .booking-card { margin: 0; }
+
+        /* Collapse the in-page existing-bookings markup if it ever renders inside the shell */
+        .cal-page-shell .existing-bookings { display: none; }
+
+        /* ──────────────────────────────────────────────────────────────
+           Refined booking-card for slide-over drawer (~360 px interior)
+           Scoped so the legacy .booking-card rule (line 1188) is untouched.
+        ────────────────────────────────────────────────────────────── */
+        .cal-bookings-drawer-body .booking-card {
+            margin: 0;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 13px 14px 12px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .035);
+            transition: box-shadow .18s ease, transform .18s ease, border-color .18s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .cal-bookings-drawer-body .booking-card:hover {
+            box-shadow: 0 8px 20px -10px rgba(15, 23, 42, .14);
+            transform: translateY(-1px);
+        }
+        .cal-bookings-drawer-body .booking-card--done       { border-left-color: #10b981; }
+        .cal-bookings-drawer-body .booking-card--upcoming   { border-left-color: #003c75; }
+        .cal-bookings-drawer-body .booking-card--locked     { border-left-color: #94a3b8; }
+        .cal-bookings-drawer-body .booking-card--cancelled  { border-left-color: #dc2626; opacity: .85; }
+
+        .cal-bookings-drawer-body .bk-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .cal-bookings-drawer-body .bk-date {
+            margin: 0;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.3;
+            letter-spacing: -0.005em;
+        }
+        .cal-bookings-drawer-body .bk-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 600;
+            line-height: 1;
+            white-space: nowrap;
+            flex-shrink: 0;
+            letter-spacing: 0.01em;
+        }
+        .cal-bookings-drawer-body .bk-pill i { font-size: 9px; }
+        .cal-bookings-drawer-body .bk-pill--done      { background: #ecfdf5; color: #047857; }
+        .cal-bookings-drawer-body .bk-pill--upcoming  { background: #eff6ff; color: #003c75; }
+        .cal-bookings-drawer-body .bk-pill--locked    { background: #f1f5f9; color: #475569; }
+        .cal-bookings-drawer-body .bk-pill--cancelled { background: #fef2f2; color: #b91c1c; }
+
+        .cal-bookings-drawer-body .bk-time {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 0;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #111827;
+            line-height: 1.35;
+        }
+        .cal-bookings-drawer-body .bk-time .bk-clock { color: #94a3b8; font-size: 11.5px; }
+        .cal-bookings-drawer-body .bk-time .bk-sep   { color: #cbd5e1; font-weight: 400; }
+        .cal-bookings-drawer-body .bk-time .bk-session {
+            color: #475569;
+            font-weight: 500;
+            font-size: 12.5px;
+        }
+
+        .cal-bookings-drawer-body .bk-type {
+            margin: 0;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .cal-bookings-drawer-body .bk-actions {
+            margin-top: 4px;
+            padding-top: 9px;
+            border-top: 1px dashed #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .cal-bookings-drawer-body .bk-cancel-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            background: transparent;
+            color: #dc2626;
+            font-family: 'Poppins', sans-serif;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+        .cal-bookings-drawer-body .bk-cancel-btn:hover {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+        .cal-bookings-drawer-body .bk-cancel-btn i { font-size: 11px; }
+        .cal-bookings-drawer-body .bk-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-style: italic;
+            color: #94a3b8;
+        }
+        .cal-bookings-drawer-body .bk-note i { font-size: 9px; color: #cbd5e1; }
+
+        /* Staggered entrance when the drawer opens */
+        @keyframes bk-card-in {
+            from { opacity: 0; transform: translateX(10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .cal-bookings-drawer.open .booking-card {
+            animation: bk-card-in .32s ease both;
+        }
+        .cal-bookings-drawer.open .booking-card:nth-child(2) { animation-delay: 60ms; }
+        .cal-bookings-drawer.open .booking-card:nth-child(3) { animation-delay: 120ms; }
+        .cal-bookings-drawer.open .booking-card:nth-child(4) { animation-delay: 180ms; }
+        .cal-bookings-drawer.open .booking-card:nth-child(n+5) { animation-delay: 220ms; }
     </style>
 
     @php
@@ -2227,22 +2613,34 @@ use Carbon\Carbon;
         </div>
     @endif --}}
 
-    <div class="calendar-container">
-        <!-- Header Section -->
-        <div class="calendar-header-section">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <!-- Title Section -->
-                <div class="cal-title-wrap">
-                    <div class="cal-title-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="cal-title-text">
-                        <h2>{{ $this->getSessionTitle() }}</h2>
-                        <p>Pick a date on the left — available time slots appear on the right.</p>
-                    </div>
+    <div class="calendar-container cal-page-shell">
+        <!-- Compact header: title + scheduled pill + month nav + inline legend -->
+        <div class="cal-header">
+            <div class="cal-title-wrap">
+                <div class="cal-title-icon">
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
+                <div class="cal-title-text">
+                    <h2>{{ $this->getSessionTitle() }}</h2>
+                    <p>Pick a date — available time slots appear on the right.</p>
+                </div>
+            </div>
 
-                <!-- Month Navigation -->
+            <div class="cal-header-right">
+                @if($hasExistingBooking)
+                    <button type="button"
+                            class="cal-bookings-pill"
+                            wire:click="toggleExistingBookings"
+                            aria-expanded="{{ $showExistingBookings ? 'true' : 'false' }}"
+                            aria-controls="cal-bookings-drawer"
+                            title="View your scheduled meetings">
+                        <i class="fas fa-calendar-check"></i>
+                        <span><span class="cnt">{{ count($existingBookings) }}</span>
+                            scheduled</span>
+                        <i class="fas fa-chevron-down chev"></i>
+                    </button>
+                @endif
+
                 <div class="cal-month-nav">
                     <button wire:click="previousMonth" class="nav-button" aria-label="Previous month">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2256,99 +2654,15 @@ use Carbon\Carbon;
                         </svg>
                     </button>
                 </div>
+
             </div>
         </div>
-
-        <!-- Existing Bookings (kept above the split so both columns have full vertical space) -->
-        @if($hasExistingBooking)
-            <div class="existing-bookings" style="margin-bottom: 1.25rem;">
-                <div class="bookings-header" wire:click="toggleExistingBookings">
-                    <div class="flex items-center justify-between w-full">
-                        <h4 class="text-lg font-semibold text-gray-800">
-                            Your Scheduled Meetings
-                            @if(count($existingBookings) > 1)
-                                <span class="ml-2 text-sm font-normal text-gray-600">({{ count($existingBookings) }} meetings)</span>
-                            @endif
-                        </h4>
-                        <div class="flex items-center">
-                            <span class="mr-2 text-sm text-gray-600">
-                                {{ $showExistingBookings ? 'Hide' : 'Show' }}
-                            </span>
-                            <svg class="collapse-icon {{ $showExistingBookings ? 'rotated' : '' }}"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bookings-list {{ $showExistingBookings ? 'expanded' : 'collapsed' }}">
-                    @foreach($existingBookings as $booking)
-                        <div class="booking-card">
-                            <div class="flex items-center gap-4">
-                                <div class="flex-1">
-                                    <h5 class="font-semibold text-gray-800">{{ $booking['date'] }}</h5>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm text-gray-600">{{ $booking['time'] }}&nbsp;({{ $booking['session'] }})</p>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="text-sm text-gray-600">
-                                        {{ $booking['type'] }}
-                                    </div>
-                                </div>
-                                <div class="flex flex-col items-end justify-center">
-                                    @php
-                                        $appointmentDate = Carbon::parse($booking['raw_date'])->format('Y-m-d');
-                                        $appointmentDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $appointmentDate . ' ' . $booking['start_time']);
-                                        $now = Carbon::now();
-                                        $canCancel = ($booking['status'] === 'New') &&
-                                                    ($appointmentDateTime->isFuture() || ($appointmentDateTime->isToday() && $appointmentDateTime->gt($now)));
-                                    @endphp
-
-                                    @if($canCancel)
-                                        <button wire:click="openCancelModal({{ $booking['id'] }})" class="cancel-button">
-                                            ❌ Cancel
-                                        </button>
-                                    @elseif($booking['status'] === 'Done')
-                                        <div class="px-3 py-2 text-xs font-semibold text-green-700 bg-green-100 rounded-lg">
-                                            ✅ Completed
-                                        </div>
-                                    @else
-                                        <button class="cancel-button" disabled>
-                                            🔒 Cannot Cancel
-                                        </button>
-                                        <div class="cancel-reason">
-                                            @if($appointmentDateTime->isPast())
-                                                Session already passed
-                                            @else
-                                                Session started/ongoing
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
         <!-- ─── Split Canvas ─────────────────────────────────────────── -->
         <div class="cal-split">
 
-            <!-- LEFT: Calendar Grid + Legend chip row -->
+            <!-- LEFT: Calendar grid (legend moved into header) -->
             <div class="cal-left">
-
-                <!-- Compact legend chip row -->
-                <div class="cal-legend-row">
-                    <span class="cal-legend-chip"><span class="cal-legend-dot avail"></span>Available</span>
-                    <span class="cal-legend-chip"><span class="cal-legend-dot meet"></span>Your Meeting</span>
-                    <span class="cal-legend-chip"><span class="cal-legend-dot wknd"></span>Weekend</span>
-                    <span class="cal-legend-chip"><span class="cal-legend-dot hol"></span>Holiday</span>
-                    <span class="cal-legend-chip"><span class="cal-legend-dot full"></span>Unavailable</span>
-                </div>
 
                 <!-- Calendar Days Header -->
                 <div class="calendar-days-header">
@@ -2421,6 +2735,15 @@ use Carbon\Carbon;
                             @endif
                         </div>
                     @endforeach
+                </div>
+
+                {{-- Bottom-anchored legend; flex-shrink:0 keeps the grid sized via flex:1 above --}}
+                <div class="cal-legend-foot" aria-label="Calendar key">
+                    <span class="cal-legend-chip"><span class="cal-legend-dot avail"></span>Available</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot meet"></span>Your meeting</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot wknd"></span>Weekend</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot hol"></span>Holiday</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot full"></span>Full</span>
                 </div>
             </div>
 
@@ -2525,38 +2848,40 @@ use Carbon\Carbon;
                             </p>
                         </div>
 
-                        @if($sessionValidationError)
-                            <div class="cal-panel-error">{{ $sessionValidationError }}</div>
-                        @endif
+                        <div class="cal-confirm-row">
+                            @if($sessionValidationError)
+                                <div class="cal-panel-error">{{ $sessionValidationError }}</div>
+                            @endif
 
-                        <button type="button"
-                                class="cal-continue-btn"
-                                wire:click="submitBooking"
-                                wire:loading.attr="disabled"
-                                wire:target="submitBooking"
-                                @if(!$selectedSession || empty(trim($requiredAttendees))) disabled @endif>
-                            <span wire:loading.remove wire:target="submitBooking" class="cal-submit-loading">
-                                @if(!$selectedSession)
-                                    Select a time slot
-                                @elseif(empty(trim($requiredAttendees)))
-                                    Add attendees first
-                                @else
-                                    <i class="fas fa-paper-plane"></i>
-                                    Confirm booking
-                                @endif
-                            </span>
-                            <span wire:loading wire:target="submitBooking" class="cal-submit-loading">
-                                <svg class="cal-spinner" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="42 28"/>
-                                </svg>
-                                Submitting…
-                            </span>
-                        </button>
+                            <button type="button"
+                                    class="cal-continue-btn"
+                                    wire:click="submitBooking"
+                                    wire:loading.attr="disabled"
+                                    wire:target="submitBooking"
+                                    @if(!$selectedSession || empty(trim($requiredAttendees))) disabled @endif>
+                                <span wire:loading.remove wire:target="submitBooking" class="cal-submit-loading">
+                                    @if(!$selectedSession)
+                                        Select a time slot
+                                    @elseif(empty(trim($requiredAttendees)))
+                                        Add attendees first
+                                    @else
+                                        <i class="fas fa-paper-plane"></i>
+                                        Confirm booking
+                                    @endif
+                                </span>
+                                <span wire:loading wire:target="submitBooking" class="cal-submit-loading">
+                                    <svg class="cal-spinner" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="42 28"/>
+                                    </svg>
+                                    Submitting…
+                                </span>
+                            </button>
 
-                        <p class="cal-panel-footnote">
-                            <i class="fas fa-envelope"></i>
-                            A Microsoft Teams invite will be emailed to all attendees after booking.
-                        </p>
+                            <p class="cal-panel-footnote">
+                                <i class="fas fa-envelope"></i>
+                                A Microsoft Teams invite will be emailed to all attendees after booking.
+                            </p>
+                        </div>
                     @else
                         <div class="cal-panel-empty" style="padding:1rem 0.5rem;">
                             <div class="cal-panel-empty-icon" style="background:#fef2f2;color:#b91c1c;">
@@ -2571,6 +2896,88 @@ use Carbon\Carbon;
 
         </div>
     </div>
+
+    <!-- Slide-over drawer for "N scheduled" pill (reuses booking-card markup verbatim) -->
+    @if($hasExistingBooking)
+        <div class="cal-bookings-drawer-backdrop {{ $showExistingBookings ? 'open' : '' }}"
+             wire:click="toggleExistingBookings"
+             aria-hidden="true"></div>
+        <aside id="cal-bookings-drawer"
+               class="cal-bookings-drawer {{ $showExistingBookings ? 'open' : '' }}"
+               role="dialog"
+               aria-label="Your scheduled meetings"
+               aria-hidden="{{ $showExistingBookings ? 'false' : 'true' }}">
+            <div class="cal-bookings-drawer-head">
+                <h4>
+                    Your Scheduled Meetings
+                    <span class="count">({{ count($existingBookings) }})</span>
+                </h4>
+                <button type="button"
+                        class="cal-bookings-drawer-close"
+                        wire:click="toggleExistingBookings"
+                        aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cal-bookings-drawer-body">
+                @foreach($existingBookings as $booking)
+                    @php
+                        $appointmentDate = Carbon::parse($booking['raw_date'])->format('Y-m-d');
+                        $appointmentDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $appointmentDate . ' ' . $booking['start_time']);
+                        $now = Carbon::now();
+                        $canCancel = ($booking['status'] === 'New') &&
+                                     ($appointmentDateTime->isFuture() || ($appointmentDateTime->isToday() && $appointmentDateTime->gt($now)));
+
+                        if ($booking['status'] === 'Done') {
+                            $statusKey = 'done'; $statusLabel = 'Completed'; $statusIcon = 'fa-circle-check';
+                        } elseif ($booking['status'] === 'Cancelled') {
+                            $statusKey = 'cancelled'; $statusLabel = 'Cancelled'; $statusIcon = 'fa-circle-xmark';
+                        } elseif ($canCancel) {
+                            $statusKey = 'upcoming'; $statusLabel = 'Scheduled'; $statusIcon = 'fa-calendar-check';
+                        } else {
+                            $statusKey = 'locked'; $statusLabel = 'Locked'; $statusIcon = 'fa-lock';
+                        }
+
+                        $lockedReason = $appointmentDateTime->isPast() ? 'Session already passed' : 'Session has started';
+                    @endphp
+                    <div class="booking-card booking-card--{{ $statusKey }}">
+                        <div class="bk-head">
+                            <p class="bk-date">{{ $booking['date'] }}</p>
+                            <span class="bk-pill bk-pill--{{ $statusKey }}">
+                                <i class="fas {{ $statusIcon }}"></i>{{ $statusLabel }}
+                            </span>
+                        </div>
+
+                        <p class="bk-time">
+                            <i class="far fa-clock bk-clock"></i>
+                            <span>{{ $booking['time'] }}</span>
+                            <span class="bk-sep">·</span>
+                            <span class="bk-session">{{ $booking['session'] }}</span>
+                        </p>
+
+                        <p class="bk-type">{{ $booking['type'] }}</p>
+
+                        @if($canCancel)
+                            <div class="bk-actions">
+                                <button type="button"
+                                        class="bk-cancel-btn"
+                                        wire:click="openCancelModal({{ $booking['id'] }})">
+                                    <i class="fas fa-times-circle"></i> Cancel meeting
+                                </button>
+                            </div>
+                        @elseif($statusKey === 'locked')
+                            <div class="bk-actions">
+                                <span class="bk-note">
+                                    <i class="fas fa-circle-info"></i>
+                                    {{ $lockedReason }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </aside>
+    @endif
 
     <!-- Cancel Modal -->
     @if($showCancelModal && $appointmentToCancel)

@@ -293,7 +293,6 @@
             text-align: center;
             color: var(--cdb-text-secondary);
             line-height: 1.3;
-            text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .cdb-track-node-current .cdb-track-label,
@@ -305,16 +304,6 @@
             color: var(--cdb-text-muted);
             margin-top: 2px;
             min-height: 11px;
-        }
-        .cdb-track-current-caption {
-            margin-top: 14px;
-            padding: 8px 12px;
-            background: var(--cdb-info-bg);
-            border-left: 3px solid var(--cdb-primary);
-            border-radius: 5px;
-            font-size: 12px;
-            color: var(--cdb-accent-dark);
-            font-weight: 500;
         }
 
         /* Hero Companion */
@@ -2390,18 +2379,6 @@
                         </a>
                     @endforeach
                 </div>
-                @php
-                    $currentNode = collect($journeyNodes)->firstWhere('status', 'current');
-                @endphp
-                @if($currentNode)
-                    <div class="cdb-track-current-caption">
-                        <i class="fas fa-location-arrow" style="margin-right: 6px;"></i>
-                        Currently in <strong>{{ $currentNode['label'] }}</strong>
-                        @if($hasProjectPlan && $progressPct > 0)
-                            — {{ $progressPct }}% complete overall
-                        @endif
-                    </div>
-                @endif
             </div>
         </div>
 
@@ -2503,7 +2480,7 @@
                         <div class="cdb-bm-axis-ticks">
                             @foreach($journeyNodes as $node)
                                 <span class="cdb-bm-axis-tick {{ ($node['status'] ?? '') === 'current' ? 'is-current' : '' }}">
-                                    <span class="cdb-bm-axis-name">{{ strtoupper($node['label']) }}</span>
+                                    <span class="cdb-bm-axis-name">{{ $node['label'] }}</span>
                                     <span class="cdb-bm-axis-date">{{ $node['date'] ?? '' }}</span>
                                 </span>
                             @endforeach

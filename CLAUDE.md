@@ -55,10 +55,10 @@ Required env vars (see `.env.example`):
 - Cursor-aware insertion in `contenteditable`: save `Range` via `saveSelection()` on `@mouseup/@keyup/@blur`, restore before `insertText` — clicking outside (e.g., placeholder buttons) loses cursor position
 - `wire:ignore` wraps Alpine-managed DOM to prevent Livewire re-render conflicts
 - Livewire events (`$this->dispatch()`) communicate from PHP to Alpine; sync data at submission boundaries only
-- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template), `shp-` (Software Handover Process admin), `cshp-` (Software Handover Process customer)
+- CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template), `shp-` (Software Handover Process admin), `cshp-` (Software Handover Process customer), `cdb-` (Customer Dashboard home view)
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
 - Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false` and must be manually registered in `AdminPanelProvider->pages([])` (auto-discovery is disabled)
-- Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching
+- Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching; non-working groups (Training, Support, Knowledge Base, Commercial, Settings) render a single `<div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">Coming Soon</div>` placeholder under their header — match this convention rather than inventing a new disabled style
 - Lead view tabs follow pattern: `class TabName { public static function getSchema(): array }` returning Filament form components
 - Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
 - When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
@@ -101,6 +101,7 @@ Required env vars (see `.env.example`):
 - `QUEUE_CONNECTION=database` in dev — `ShouldQueue` notifications/mailables won't process without `php artisan queue:work`; use `notifyNow()` or remove `ShouldQueue` for synchronous local testing
 - Laravel 10 Symfony Mailer ignores `stream.ssl` config in `mail.php` — to disable SSL verification (local dev), set `setStreamOptions()` directly on the `SocketStream` via `Mail::mailer()->getSymfonyTransport()->getStream()` before sending
 - Config changes require restarting `php artisan serve` — `config:clear` alone doesn't reload configs in the running process
+- Legacy `crm_customer` VIEW (consumed by the customer-portal `Customer` model) selects un-aggregated columns from `login_profile`; `config/database.php` mysql connection sets an explicit `modes` array that omits `ONLY_FULL_GROUP_BY` so the VIEW resolves. Don't re-add `ONLY_FULL_GROUP_BY` to that connection without first refactoring the VIEW
 
 ## Data Migration System
 - **V1 (nested subsections):** `ImplementerDataFile.php` — 5 sections with sub-items, storage at `templates/data-migration-v1/`
@@ -125,6 +126,8 @@ Required env vars (see `.env.example`):
 - **Email templates:** Database-driven via `EmailTemplate` model (replaces hardcoded `$emailTemplates` array); `getEmailTemplatesProperty()` computed property; `applyEmailTemplate($templateId)` and `applyReplyTemplate($templateId)` load by ID
 - **HR email notifications:** `ImplementerTicketHrNotification` Mailable — sends to all HR contacts (primary `company_details.email` + secondary `additional_prospect_pic` JSON with status=Available) on ticket create, reply, status change, merge; dispatched from `sendHrEmailNotification()` in dashboard; email has truncated description preview + "View in Customer Portal" button linking to `/customer/dashboard?tab=impThread&ticket={id}`
 - **Customer in-app notifications from admin:** `createTicket()`, `submitReply()`, and `submitMergeTicket()` call `$customer->notifyNow(new ImplementerTicketNotification(...))` to populate the notification bell; actions: `replied_by_implementer`, `status_changed`, `closed`, `merged`
+- **Pending-action panel (admin):** `app/Livewire/ImplementerDashboard/ImplementerThreadPendingAction.php` + `resources/views/livewire/implementer_dashboard/implementer-thread-pending-action.blade.php` — surfaces tickets awaiting an implementer reply; rendered inside `resources/views/filament/pages/implementer.blade.php`
+- **Attachment filename helper:** `app/Support/TicketAttachmentNamer.php` — centralized generator for ticket attachment filenames (covered by `tests/Unit/TicketAttachmentNamerTest.php`). Use this for any new code that writes ticket attachments instead of building names ad hoc
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)
 
 ## Email Template System
@@ -137,6 +140,17 @@ Required env vars (see `.env.example`):
 - **Duplicate template:** `duplicateTemplate($id)` opens create modal with "(Copy)" suffix, same subject/body/category
 - **Access:** Roles 1 (Lead Owner) and 3 (Manager) can manage templates via `canAccess()` check
 - **CSS prefix:** `emt-`
+
+## Customer Dashboard (Home View)
+- **Livewire component:** `app/Livewire/CustomerDashboard.php` — renders the customer-portal home (default `?tab=home`)
+- **View:** `resources/views/livewire/customer-dashboard.blade.php` — single-viewport layout (`height: calc(100vh - 112px); overflow-y: auto; overflow-x: hidden`); the `112px` accounts for `.main-wrapper` (56+24=80) + `.tab-content` (16+16=32) padding, do not change without re-measuring
+- **Sections:** Greeting strip, Quick Actions card (soft-card style, two-line row descriptions), Implementation Snapshot card (4 tinted tile bars + status pill + spark chart), 6-stage ALL-CAPS Implementation Journey
+- **Theme:** Navy `#0050B5` via CSS vars `--cdb-coral`, `--cdb-coral-bg`, `--cdb-coral-soft` — variable names retained from the prior coral palette; if rebranding again, also update any direct hex (`#f43f5e`) and `rgba(251, 113, 133, …)` references used by pulse animations
+- **Spark chart:** `getSparkPathsProperty()` builds a smooth path via Catmull-Rom → cubic Bezier (tension factor 6: `B1 = P_i + (P_{i+1} - P_{i-1}) / 6`, `B2 = P_{i+1} - (P_{i+2} - P_i) / 6`). The SVG uses `preserveAspectRatio="none"` which stretches `<circle>` into ellipses — dots are rendered as HTML `<span>` overlays positioned by percentage to stay round
+- **Status pill:** `getSnapshotStatusProperty()` — stage weights `[5, 20, 35, 60, 80, 100]`; on-plan within ±5%, behind ≤ −5%, ahead ≥ +5%
+- **Demo data:** `DEMO_PROJECT_CODES` constant (default `['SW_260005']`); `applyDemoOverrides()` populates `progressSummary`, `migrationCounts`, `journeyStage`, `dtgl`, `ticketsTotal`, and journey dates for demo customers without writing to the DB
+- **Journey state helper:** `Customer::hasBookedKickOff()` checks `ImplementerAppointment` for `type='KICK OFF MEETING SESSION'` with status in `['New','Done','Completed']` — drives whether the "First Review" stage shows as active
+- **CSS prefix:** `cdb-`
 
 ## Software Handover Process
 - **Admin tab:** `SoftwareHandoverProcessTabs.php` → `software-handover-process.blade.php` — Alpine.js + fetch POST upload, no nested Livewire
