@@ -355,24 +355,29 @@
             background: transparent;
         }
 
-        /* Badge → floating pill on icon top-right when collapsed (header-bell style) */
+        /* Badge → floating BALLOON on icon top-right when collapsed.
+           Sits on the icon tile's NE corner (tile is 36×36 centred at row x:6→42).
+           18×18 with a 2px page-bg ring → reads cleanly against the gray-100
+           tile background of the icon. z-index lifts above the tile. */
         .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
         .sidebar.sidebar-force-collapsed .sidebar-badge {
             position: absolute;
-            top: -5px;
-            right: 4px;
-            min-width: 14px;
-            height: 14px;
-            padding: 0 3px;
-            font-size: 9px;
+            top: 2px;
+            right: 2px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            font-size: 10.5px;
             font-weight: 700;
             line-height: 1;
-            border-radius: 7px;
+            border-radius: 999px;
             margin-left: 0;
             background: #EF4444;
             color: #ffffff;
-            border: 1.5px solid var(--tt-page-bg);
-            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.22);
+            border: 2px solid var(--tt-page-bg);
+            box-shadow: 0 3px 6px rgba(239, 68, 68, 0.35),
+                        0 1px 2px rgba(15, 23, 42, 0.18);
+            z-index: 2;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -388,6 +393,19 @@
             font-size: 9px;
             font-weight: 700;
             color: #ffffff;
+        }
+
+        /* Hide the redundant group-header badge only when the sidebar is
+           VISUALLY EXPANDED (hover/focus, not force-collapsed) AND the group
+           is OPEN (chevron has .open). The collapsed-state balloon rule
+           above stays effective because this selector cannot match the rail.
+           Replaces the previous inline `badge.style.display = 'none'` JS
+           that poisoned the collapsed state. */
+        .sidebar:hover:not(.sidebar-force-collapsed)
+            .menu-group-header:has(.menu-group-chevron.open) .sidebar-badge,
+        .sidebar:focus-within:not(.sidebar-force-collapsed)
+            .menu-group-header:has(.menu-group-chevron.open) .sidebar-badge {
+            display: none;
         }
 
         .menu-item {
@@ -958,16 +976,13 @@
         function toggleGroup(group) {
             const sub = document.getElementById(group + '-sub');
             const chevron = document.getElementById(group + '-chevron');
-            const badge = document.getElementById(group + '-badge');
             if (sub.style.display === 'none') {
                 sub.style.display = 'block';
                 chevron.classList.add('open');
-                if (badge) badge.style.display = 'none';
                 localStorage.setItem(group + 'Open', 'true');
             } else {
                 sub.style.display = 'none';
                 chevron.classList.remove('open');
-                if (badge) badge.style.display = '';
                 localStorage.setItem(group + 'Open', 'false');
             }
         }
@@ -1074,10 +1089,8 @@
                 if (shouldOpen) {
                     const sub = document.getElementById(group + '-sub');
                     const chevron = document.getElementById(group + '-chevron');
-                    const badge = document.getElementById(group + '-badge');
                     if (sub) sub.style.display = 'block';
                     if (chevron) chevron.classList.add('open');
-                    if (badge) badge.style.display = 'none';
                 }
             });
 
@@ -1085,10 +1098,8 @@
             if (!localStorage.getItem('implementationOpen')) {
                 const sub = document.getElementById('implementation-sub');
                 const chevron = document.getElementById('implementation-chevron');
-                const badge = document.getElementById('implementation-badge');
                 if (sub) sub.style.display = 'block';
                 if (chevron) chevron.classList.add('open');
-                if (badge) badge.style.display = 'none';
             }
 
             switchTab(activeTab);

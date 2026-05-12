@@ -771,15 +771,40 @@ class CustomerDashboard extends Component
             $coords[] = [$x, $y];
         }
 
+        // ── Soft "smooth wave" interpolation between milestones.
+        //    Y follows a 50/50 blend of linear and sinusoidal easing:
+        //        e(t) = 0.5·t + 0.5·½(1 − cos πt)
+        //    Anchors stay exact (e(0)=0, e(1)=1) and the curve keeps
+        //    a baseline slope at every milestone (e'(0)=e'(1)=0.5),
+        //    so the visible plateau-shoulders of pure sinusoidal melt
+        //    into gentle bends. Monotonic: e'(t) ≥ 0.5 on [0,1].
+        $STEPS = 12;
+
+        $wavyCoords = [];
+        for ($i = 0; $i < $n - 1; $i++) {
+            [$x1, $y1] = $coords[$i];
+            [$x2, $y2] = $coords[$i + 1];
+            $wavyCoords[] = [$x1, $y1];
+            for ($s = 1; $s < $STEPS; $s++) {
+                $t     = $s / $STEPS;
+                $eased = 0.5 * $t + 0.25 * (1 - cos(M_PI * $t));
+                $x     = $x1 + ($x2 - $x1) * $t;
+                $y     = $y1 + ($y2 - $y1) * $eased;
+                $wavyCoords[] = [$x, $y];
+            }
+        }
+        $wavyCoords[] = $coords[$n - 1];
+        $m = count($wavyCoords);
+
         // Catmull-Rom → cubic Bezier (tension = 6, canonical).
         // Endpoints duplicate the boundary so the curve starts/ends with zero tangent.
         $tension = 6;
-        $line    = sprintf('M %.1f %.1f', $coords[0][0], $coords[0][1]);
-        for ($i = 0; $i < $n - 1; $i++) {
-            $p0 = $coords[max(0, $i - 1)];
-            $p1 = $coords[$i];
-            $p2 = $coords[$i + 1];
-            $p3 = $coords[min($n - 1, $i + 2)];
+        $line    = sprintf('M %.1f %.1f', $wavyCoords[0][0], $wavyCoords[0][1]);
+        for ($i = 0; $i < $m - 1; $i++) {
+            $p0 = $wavyCoords[max(0, $i - 1)];
+            $p1 = $wavyCoords[$i];
+            $p2 = $wavyCoords[$i + 1];
+            $p3 = $wavyCoords[min($m - 1, $i + 2)];
             $cp1x = $p1[0] + ($p2[0] - $p0[0]) / $tension;
             $cp1y = $p1[1] + ($p2[1] - $p0[1]) / $tension;
             $cp2x = $p2[0] - ($p3[0] - $p1[0]) / $tension;

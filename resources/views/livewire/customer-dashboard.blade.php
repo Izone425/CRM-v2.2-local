@@ -2274,6 +2274,112 @@
                 padding: 12px 14px;
             }
         }
+
+        /* ──────────────────────────────────────────────────────────────
+           Implementation Snapshot — orchestrated entrance animation.
+           CSS-only, one-time reveal on first paint. Times in seconds.
+        ────────────────────────────────────────────────────────────── */
+
+        /* 1. Grid — fade in first as a subtle stage curtain */
+        .cdb-bm-grid {
+            opacity: 0;
+            animation: cdb-bm-grid-fade 0.6s ease-out 0s forwards;
+        }
+        @keyframes cdb-bm-grid-fade {
+            to { opacity: 1; }
+        }
+
+        /* 2. Line — draws left → right via stroke-dashoffset */
+        .cdb-bm-line {
+            stroke-dasharray: 3000;
+            stroke-dashoffset: 3000;
+            animation: cdb-bm-line-draw 2.0s ease-out 0.15s forwards;
+        }
+        @keyframes cdb-bm-line-draw {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* 3. Area — fades in once the line is mostly drawn */
+        .cdb-bm-area {
+            opacity: 0;
+            animation: cdb-bm-area-fade 0.7s ease-out 1.40s forwards;
+        }
+        @keyframes cdb-bm-area-fade {
+            to { opacity: 1; }
+        }
+
+        /* 4. Dots — pop in sequentially with a soft overshoot.
+              Every keyframe keeps translate(-50%, -50%) to preserve centering. */
+        .cdb-bm-dots > .cdb-bm-dot {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.3);
+            animation: cdb-bm-dot-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes cdb-bm-dot-pop {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+            60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(1) { animation-delay: 0.25s; }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(2) { animation-delay: 0.55s; }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(3) { animation-delay: 0.90s; }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(4) { animation-delay: 1.20s; }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(5) { animation-delay: 1.50s; }
+        .cdb-bm-dots > .cdb-bm-dot:nth-child(6) { animation-delay: 2.20s; }
+
+        /* 5. Current-dot ambient pulse — starts after the entrance settles.
+              ::after layer so the dot's own styling (size, ring, shadow) is intact. */
+        .cdb-bm-dot.is-current::after {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2px solid #3b82f6;
+            opacity: 0;
+            pointer-events: none;
+            animation: cdb-bm-current-pulse 2.2s ease-out 2.5s infinite;
+        }
+        @keyframes cdb-bm-current-pulse {
+            0%   { transform: scale(0.8); opacity: 0.55; }
+            80%  { opacity: 0; }
+            100% { transform: scale(2.0); opacity: 0; }
+        }
+
+        /* 6. X-axis ticks — stagger up alongside their dots */
+        .cdb-bm-axis-tick {
+            opacity: 0;
+            transform: translateY(4px);
+            animation: cdb-bm-axis-rise 0.45s ease-out forwards;
+        }
+        @keyframes cdb-bm-axis-rise {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(1) { animation-delay: 0.45s; }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(2) { animation-delay: 0.65s; }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(3) { animation-delay: 0.85s; }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(4) { animation-delay: 1.05s; }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(5) { animation-delay: 1.25s; }
+        .cdb-bm-axis-ticks .cdb-bm-axis-tick:nth-child(6) { animation-delay: 1.45s; }
+
+        /* 7. Y-axis labels — fade alongside the grid */
+        .cdb-bm-y-axis > span {
+            opacity: 0;
+            animation: cdb-bm-grid-fade 0.6s ease-out 0.10s forwards;
+        }
+
+        /* Reduced-motion: skip everything, present static. */
+        @media (prefers-reduced-motion: reduce) {
+            .cdb-bm-grid,
+            .cdb-bm-line,
+            .cdb-bm-area,
+            .cdb-bm-dots > .cdb-bm-dot,
+            .cdb-bm-axis-tick,
+            .cdb-bm-y-axis > span { animation: none; opacity: 1; }
+            .cdb-bm-line { stroke-dasharray: none; stroke-dashoffset: 0; }
+            .cdb-bm-dots > .cdb-bm-dot { transform: translate(-50%, -50%) scale(1); }
+            .cdb-bm-dot.is-current::after { animation: none; opacity: 0; }
+            .cdb-bm-axis-tick { transform: none; }
+        }
     </style>
 
     {{-- Greeting strip with Mode Toggle --}}
@@ -2453,15 +2559,17 @@
                                         <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
                                     </linearGradient>
                                 </defs>
-                                {{-- Subtle quartile grid --}}
-                                <line x1="0" y1="50"  x2="600" y2="50"  stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                                <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                                {{-- Major grid @ 0% / 50% / 100% --}}
-                                <line x1="0" y1="0"   x2="600" y2="0"   stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                                <line x1="0" y1="100" x2="600" y2="100" stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                                <line x1="0" y1="200" x2="600" y2="200" stroke="#cbd5e1" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                                <path d="{{ $this->sparkPaths['area'] }}" fill="url(#cdbBmFill)"/>
-                                <path d="{{ $this->sparkPaths['line'] }}" fill="none" stroke="#3b82f6"
+                                <g class="cdb-bm-grid">
+                                    {{-- Subtle quartile grid --}}
+                                    <line x1="0" y1="50"  x2="600" y2="50"  stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                    <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                    {{-- Major grid @ 0% / 50% / 100% --}}
+                                    <line x1="0" y1="0"   x2="600" y2="0"   stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                    <line x1="0" y1="100" x2="600" y2="100" stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                    <line x1="0" y1="200" x2="600" y2="200" stroke="#cbd5e1" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                </g>
+                                <path class="cdb-bm-area" d="{{ $this->sparkPaths['area'] }}" fill="url(#cdbBmFill)"/>
+                                <path class="cdb-bm-line" d="{{ $this->sparkPaths['line'] }}" fill="none" stroke="#3b82f6"
                                       stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
                                       vector-effect="non-scaling-stroke"/>
                             </svg>

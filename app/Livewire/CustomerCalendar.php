@@ -38,7 +38,7 @@ class CustomerCalendar extends Component
     public $showCancelModal = false;
     public $appointmentToCancel = null;
     public $canScheduleMeeting = false;
-    public $showExistingBookings = true;
+    public $showExistingBookings = false;
 
     public $showMeetingDetailsModal = false;
     public $selectedMeetingDetails = null;
@@ -61,7 +61,7 @@ class CustomerCalendar extends Component
         // ✅ Check scheduling permission using refreshed customer data
         $this->canScheduleMeeting = $this->determineSchedulingPermission($customer);
 
-        $this->showExistingBookings = true;
+        $this->showExistingBookings = false;
 
         // Preload the customer's saved attendee list if one exists so that
         // subsequent bookings (e.g. review sessions) can reuse it without
