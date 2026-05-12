@@ -15,55 +15,67 @@
     /* Group column styling */
     .group-column {
         padding-right: 10px;
-        width: 268px;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        width: 330px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         align-content: start;
     }
 
     .group-box {
         background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 10px 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        border-top: 4px solid transparent;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
         width: 100%;
-        min-width: 0;
-        text-align: center;
-        min-height: 76px;
+        flex: 1 1 0;
+        min-height: 56px;
+        max-height: 96px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-top: none;
+        border-left: 4px solid transparent;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
     }
 
     .group-box:hover {
         background-color: #f9fafb;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        transform: translateX(3px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
     .group-box.selected {
         background-color: #f9fafb;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+        transform: translateX(5px);
+        border-left-width: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
     }
 
     .group-info {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
     }
 
+    .group-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
 
     .group-title {
-        font-size: 12.5px;
+        font-size: 13.5px;
         font-weight: 600;
-        margin-bottom: 4px;
-        text-align: left;
         line-height: 1.2;
-        overflow-wrap: anywhere;
+        color: #1f2937;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .group-desc {
@@ -72,36 +84,57 @@
     }
 
     .group-count {
-        font-size: 20px;
+        font-size: 13px;
         font-weight: 700;
         line-height: 1;
-        text-align: left;
+        min-width: 32px;
+        height: 24px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        text-align: center;
+    }
+
+    .group-count.is-zero {
+        color: #6b7280 !important;
+        background-color: #f3f4f6 !important;
     }
 
     /* GROUP COLORS */
-    .group-project-status { border-top-color: #2563eb; }
-    .group-project-status .group-count { color: #2563eb; }
+    .group-project-status { border-left-color: #2563eb; }
+    .group-project-status .group-count { color: #2563eb; background-color: rgba(37, 99, 235, 0.10); }
+    .group-project-status.selected { background-color: rgba(37, 99, 235, 0.05); }
 
-    .group-license { border-top-color: #8b5cf6; }
-    .group-license .group-count { color: #8b5cf6; }
+    .group-license { border-left-color: #8b5cf6; }
+    .group-license .group-count { color: #8b5cf6; background-color: rgba(139, 92, 246, 0.10); }
+    .group-license.selected { background-color: rgba(139, 92, 246, 0.05); }
 
-    .group-migration { border-top-color: #10b981; }
-    .group-migration .group-count { color: #10b981; }
+    .group-migration { border-left-color: #10b981; }
+    .group-migration .group-count { color: #10b981; background-color: rgba(16, 185, 129, 0.10); }
+    .group-migration.selected { background-color: rgba(16, 185, 129, 0.05); }
 
-    .group-follow-up { border-top-color: #f59e0b; }
-    .group-follow-up .group-count { color: #f59e0b; }
+    .group-follow-up { border-left-color: #f59e0b; }
+    .group-follow-up .group-count { color: #f59e0b; background-color: rgba(245, 158, 11, 0.10); }
+    .group-follow-up.selected { background-color: rgba(245, 158, 11, 0.05); }
 
-    .group-ticketing { border-top-color: #ec4899; }
-    .group-ticketing .group-count { color: #ec4899; }
+    .group-ticketing { border-left-color: #ec4899; }
+    .group-ticketing .group-count { color: #ec4899; background-color: rgba(236, 72, 153, 0.10); }
+    .group-ticketing.selected { background-color: rgba(236, 72, 153, 0.05); }
 
-    .group-new-request { border-top-color: #06b6d4; }
-    .group-new-request .group-count { color: #06b6d4; }
+    .group-new-request { border-left-color: #06b6d4; }
+    .group-new-request .group-count { color: #06b6d4; background-color: rgba(6, 182, 212, 0.10); }
+    .group-new-request.selected { background-color: rgba(6, 182, 212, 0.05); }
 
-    .group-implementer-request { border-top-color: #6366f1; }
-    .group-implementer-request .group-count { color: #6366f1; }
+    .group-implementer-request { border-left-color: #6366f1; }
+    .group-implementer-request .group-count { color: #6366f1; background-color: rgba(99, 102, 241, 0.10); }
+    .group-implementer-request.selected { background-color: rgba(99, 102, 241, 0.05); }
 
-    .group-project-closing { border-top-color: #ef4444; }
-    .group-project-closing .group-count { color: #ef4444; }
+    .group-project-closing { border-left-color: #ef4444; }
+    .group-project-closing .group-count { color: #ef4444; background-color: rgba(239, 68, 68, 0.10); }
+    .group-project-closing.selected { background-color: rgba(239, 68, 68, 0.05); }
 
     /* Category column styling */
     .category-column {
@@ -293,8 +326,9 @@
     .request-cancelled .stat-count { color: #94a3b8; }
 
     /* GROUP COLOR — Thread */
-    .group-thread { border-top-color: #0d9488; }
-    .group-thread .group-count { color: #0d9488; }
+    .group-thread { border-left-color: #0d9488; }
+    .group-thread .group-count { color: #0d9488; background-color: rgba(13, 148, 136, 0.10); }
+    .group-thread.selected { background-color: rgba(13, 148, 136, 0.05); }
 
     /* STAT BOX COLORS — Thread */
     .thread-all { border-left: 4px solid #14b8a6; }
@@ -306,8 +340,9 @@
     .thread-upcoming { border-left: 4px solid #10b981; }
     .thread-upcoming .stat-count { color: #10b981; }
 
-    .group-no-respond { border-top-color: #e11d48; }
-    .group-no-respond .group-count { color: #e11d48; }
+    .group-no-respond { border-left-color: #e11d48; }
+    .group-no-respond .group-count { color: #e11d48; background-color: rgba(225, 29, 72, 0.10); }
+    .group-no-respond.selected { background-color: rgba(225, 29, 72, 0.05); }
 
     /* Follow up count status colors */
     .follow-up-none { border-left: 4px solid #64748b; }
@@ -379,17 +414,12 @@
 
         .group-column {
             width: 100%;
-        }
-
-        .group-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            border-right: none;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
         }
+
+        .group-box { min-height: 60px; }
 
         .category-container {
             grid-template-columns: repeat(3, 1fr);
@@ -402,7 +432,7 @@
     }
 
     @media (max-width: 768px) {
-        .group-container,
+        .group-column,
         .category-container {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -419,7 +449,7 @@
     }
 
     @media (max-width: 640px) {
-        .group-container,
+        .group-column,
         .category-container {
             grid-template-columns: 1fr;
         }
@@ -640,9 +670,10 @@
                 :class="{'selected': selectedGroup === 'project-status'}"
                 @click="setSelectedGroup('project-status')">
                 <div class="group-info">
+                    <x-heroicon-o-chart-bar class="group-icon" style="color: #2563eb;" />
                     <div class="group-title">Project Status</div>
                 </div>
-                <div class="group-count">{{ $projectStatusTotal }}</div>
+                <div class="group-count {{ $projectStatusTotal == 0 ? 'is-zero' : '' }}">{{ $projectStatusTotal }}</div>
             </div>
 
             <!-- NO7 - DEMO SESSION -->
@@ -660,9 +691,10 @@
                 :class="{'selected': selectedGroup === 'license'}"
                 @click="setSelectedGroup('license')">
                 <div class="group-info">
+                    <x-heroicon-o-clipboard-document-list class="group-icon" style="color: #8b5cf6;" />
                     <div class="group-title">Project Task</div>
                 </div>
-                <div class="group-count">{{ $licenseTotal }}</div>
+                <div class="group-count {{ $licenseTotal == 0 ? 'is-zero' : '' }}">{{ $licenseTotal }}</div>
             </div>
 
             <!-- NO3 - TICKET REMINDER -->
@@ -670,9 +702,10 @@
                 :class="{'selected': selectedGroup === 'ticket-reminder'}"
                 @click="setSelectedGroup('ticket-reminder')">
                 <div class="group-info">
+                    <x-heroicon-o-ticket class="group-icon" style="color: #ec4899;" />
                     <div class="group-title">Ticket Reminder</div>
                 </div>
-                <div class="group-count">{{ $ticketReminderTotal }}</div>
+                <div class="group-count {{ $ticketReminderTotal == 0 ? 'is-zero' : '' }}">{{ $ticketReminderTotal }}</div>
             </div>
 
             <!-- NO4 - SESSION REMINDER -->
@@ -680,9 +713,10 @@
                 :class="{'selected': selectedGroup === 'session-reminder'}"
                 @click="setSelectedGroup('session-reminder')">
                 <div class="group-info">
+                    <x-heroicon-o-calendar-days class="group-icon" style="color: #10b981;" />
                     <div class="group-title">Session Reminder</div>
                 </div>
-                <div class="group-count">{{ $sessionReminderTotal }}</div>
+                <div class="group-count {{ $sessionReminderTotal == 0 ? 'is-zero' : '' }}">{{ $sessionReminderTotal }}</div>
             </div>
 
             <!-- NO5 - PROJECT FOLLOW UP -->
@@ -690,9 +724,10 @@
                 :class="{'selected': selectedGroup === 'follow-up'}"
                 @click="setSelectedGroup('follow-up')">
                 <div class="group-info">
+                    <x-heroicon-o-bell-alert class="group-icon" style="color: #f59e0b;" />
                     <div class="group-title">Follow Up Reminder</div>
                 </div>
-                <div class="group-count">{{ $followUpTotal }}</div>
+                <div class="group-count {{ $followUpTotal == 0 ? 'is-zero' : '' }}">{{ $followUpTotal }}</div>
             </div>
 
             <!-- NO6 - PROJECT CLOSING -->
@@ -700,9 +735,10 @@
                 :class="{'selected': selectedGroup === 'project-closing'}"
                 @click="setSelectedGroup('project-closing')">
                 <div class="group-info">
+                    <x-heroicon-o-check-circle class="group-icon" style="color: #ef4444;" />
                     <div class="group-title">Project Closing</div>
                 </div>
-                <div class="group-count">{{ $projectClosingTotal }}</div>
+                <div class="group-count {{ $projectClosingTotal == 0 ? 'is-zero' : '' }}">{{ $projectClosingTotal }}</div>
             </div>
 
             <!-- NO7 - IMPLEMENTER REQUEST -->
@@ -710,9 +746,10 @@
                 :class="{'selected': selectedGroup === 'implementer-request'}"
                 @click="setSelectedGroup('implementer-request')">
                 <div class="group-info">
+                    <x-heroicon-o-inbox-arrow-down class="group-icon" style="color: #6366f1;" />
                     <div class="group-title">Session Request</div>
                 </div>
-                <div class="group-count">{{ $implementerRequestTotal }}</div>
+                <div class="group-count {{ $implementerRequestTotal == 0 ? 'is-zero' : '' }}">{{ $implementerRequestTotal }}</div>
             </div>
 
             <!-- NO8 - THREAD -->
@@ -720,9 +757,10 @@
                 :class="{'selected': selectedGroup === 'thread'}"
                 @click="setSelectedGroup('thread')">
                 <div class="group-info">
+                    <x-heroicon-o-chat-bubble-left-right class="group-icon" style="color: #0d9488;" />
                     <div class="group-title">Thread</div>
                 </div>
-                <div class="group-count">{{ $threadTotal }}</div>
+                <div class="group-count {{ $threadTotal == 0 ? 'is-zero' : '' }}">{{ $threadTotal }}</div>
             </div>
 
             <!-- NO5 - PROJECT FOLLOW UP -->

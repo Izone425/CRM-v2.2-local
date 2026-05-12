@@ -27,10 +27,15 @@
 <div>
     <style>
         .dmt-container {
-            max-width: 1000px;
+            max-width: 100%;
+            height: calc(100vh - 112px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
         }
         .dmt-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 700;
             margin: 0 0 2px;
             letter-spacing: -0.01em;
@@ -42,36 +47,84 @@
         .dmt-subtitle {
             font-size: 0.76rem;
             color: #64748b;
-            margin: 0 0 14px;
+            margin: 0 0 4px;
         }
         .dmt-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-rows: auto 1fr;
+            gap: 14px;
+            flex: 1;
+            min-height: 0;
+        }
+        @media (max-width: 1100px) {
+            .dmt-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-rows: auto auto auto;
+            }
         }
         @media (max-width: 600px) {
             .dmt-grid {
                 grid-template-columns: 1fr;
+                grid-template-rows: none;
             }
         }
         .dmt-card {
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 18px;
+            padding: 14px 16px;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
         }
         .dmt-card:hover {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
             border-color: #cbd5e1;
         }
+        .dmt-card-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        .dmt-card--payroll {
+            grid-column: 1 / -1;
+        }
+        .dmt-card--payroll .dmt-card-body {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            overflow-y: auto;
+        }
+        @media (max-width: 1100px) {
+            .dmt-card--payroll .dmt-card-body {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 600px) {
+            .dmt-card--payroll .dmt-card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+        .dmt-card--payroll .dmt-sub-item {
+            padding: 10px 12px;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+        .dmt-card--payroll .dmt-sub-item:last-child {
+            padding-bottom: 10px;
+        }
         .dmt-card-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #f1f5f9;
+            flex-shrink: 0;
         }
         .dmt-card-icon {
             width: 36px;
@@ -89,7 +142,7 @@
             color: #1e293b;
         }
         .dmt-sub-item {
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #f1f5f9;
         }
         .dmt-sub-item:last-child {
@@ -291,6 +344,7 @@
             font-size: 13px;
             font-weight: 500;
             margin-bottom: 16px;
+            flex-shrink: 0;
         }
         .dmt-flash-success {
             background: #dcfce7;
@@ -478,7 +532,7 @@
 
         <div class="dmt-grid">
             @foreach($sections as $sectionKey => $section)
-                <div class="dmt-card">
+                <div class="dmt-card {{ $sectionKey === 'payroll' ? 'dmt-card--payroll' : '' }}">
                     <div class="dmt-card-header">
                         <div class="dmt-card-icon" style="background: {{ $section['color'] }}15; color: {{ $section['color'] }};">
                             <i class="{{ $section['icon'] }}"></i>
@@ -486,6 +540,7 @@
                         <div class="dmt-card-name">{{ $section['label'] }}</div>
                     </div>
 
+                    <div class="dmt-card-body">
                     @foreach($section['items'] as $itemKey => $item)
                         @php
                             $fileKey = $sectionKey . '|' . $itemKey;
@@ -587,6 +642,7 @@
                             @endif
                         </div>
                     @endforeach
+                    </div>
                 </div>
             @endforeach
         </div>
