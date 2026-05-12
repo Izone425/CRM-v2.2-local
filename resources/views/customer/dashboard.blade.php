@@ -317,6 +317,44 @@
             height: 36px;
         }
 
+        /* Always-on gray-100 tile around each rail icon when sidebar is collapsed.
+           Hover paints the tile with the item's identity tint; active adds a tinted
+           background + a 1.5px inset ring in the icon color. */
+        .sidebar:not(:hover):not(:focus-within) .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-icon {
+            width: 36px;
+            height: 36px;
+            padding: 8px;
+            box-sizing: border-box;
+            background: #f3f4f6;
+            border-radius: 10px;
+            transition: background .18s ease, box-shadow .18s ease,
+                        transform .18s ease, stroke-width .18s ease;
+        }
+        .sidebar:not(:hover):not(:focus-within) .menu-item:hover > .menu-icon,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header:hover > .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-item:hover > .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-group-header:hover > .menu-icon {
+            background: var(--icon-tint, #f3f4f6);
+            transform: translateY(-1px);
+        }
+        .sidebar:not(:hover):not(:focus-within) .menu-item.active > .menu-icon,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header.active > .menu-icon,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header.has-active > .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-item.active > .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-group-header.active > .menu-icon,
+        .sidebar.sidebar-force-collapsed .menu-group-header.has-active > .menu-icon {
+            background: var(--icon-tint-strong, #f3f4f6);
+            box-shadow: 0 0 0 1.5px var(--icon-color) inset;
+        }
+        /* Strip the row-level hover background so only the tile carries hover affordance */
+        .sidebar:not(:hover):not(:focus-within) .menu-item:hover,
+        .sidebar:not(:hover):not(:focus-within) .menu-group-header:hover,
+        .sidebar.sidebar-force-collapsed .menu-item:hover,
+        .sidebar.sidebar-force-collapsed .menu-group-header:hover {
+            background: transparent;
+        }
+
         /* Badge → floating pill on icon top-right when collapsed (header-bell style) */
         .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
         .sidebar.sidebar-force-collapsed .sidebar-badge {
@@ -485,13 +523,37 @@
         .icon-green   { color: #059669; --tile-bg: #d1fae5; }
         .icon-lime    { color: #65a30d; --tile-bg: #ecfccb; }
         .icon-amber   { color: #d97706; --tile-bg: #fef3c7; }
+        .icon-yellow  { color: #eab308; --tile-bg: #fef9c3; }
         .icon-orange  { color: #ea580c; --tile-bg: #ffedd5; }
         .icon-rose    { color: #e11d48; --tile-bg: #ffe4e6; }
         .icon-pink    { color: #db2777; --tile-bg: #fce7f3; }
         .icon-purple  { color: #9333ea; --tile-bg: #f3e8ff; }
         .icon-indigo  { color: #4f46e5; --tile-bg: #e0e7ff; }
         .icon-slate   { color: #475569; --tile-bg: #e2e8f0; }
-        /* Active state — sidebar SVG icon recolors to the indigo accent */
+
+        /* ──────────────────────────────────────────────────────────────
+           Sidebar-scoped palette: spec hex values + tint vars driving
+           the hover/active tile background and ring. Scoped under
+           `.sidebar` so any other ".icon-*" usages elsewhere in the
+           app keep their existing colors.
+        ────────────────────────────────────────────────────────────── */
+        .sidebar .menu-icon.icon-cyan   { --icon-color: #06b6d4; --icon-tint: rgba(6, 182, 212, .10);  --icon-tint-strong: rgba(6, 182, 212, .16);  color: var(--icon-color); }
+        .sidebar .menu-icon.icon-teal   { --icon-color: #14b8a6; --icon-tint: rgba(20, 184, 166, .10); --icon-tint-strong: rgba(20, 184, 166, .16); color: var(--icon-color); }
+        .sidebar .menu-icon.icon-green  { --icon-color: #22c55e; --icon-tint: rgba(34, 197, 94, .10);  --icon-tint-strong: rgba(34, 197, 94, .16);  color: var(--icon-color); }
+        .sidebar .menu-icon.icon-lime   { --icon-color: #84cc16; --icon-tint: rgba(132, 204, 22, .10); --icon-tint-strong: rgba(132, 204, 22, .16); color: var(--icon-color); }
+        .sidebar .menu-icon.icon-yellow { --icon-color: #eab308; --icon-tint: rgba(234, 179, 8, .10);  --icon-tint-strong: rgba(234, 179, 8, .16);  color: var(--icon-color); }
+        .sidebar .menu-icon.icon-orange { --icon-color: #f97316; --icon-tint: rgba(249, 115, 22, .10); --icon-tint-strong: rgba(249, 115, 22, .16); color: var(--icon-color); }
+        .sidebar .menu-icon.icon-slate  { --icon-color: #64748b; --icon-tint: rgba(100, 116, 139, .10);--icon-tint-strong: rgba(100, 116, 139, .16);color: var(--icon-color); }
+
+        /* Active state — keep each item's identity color (sidebar only) */
+        .sidebar .menu-item.active > .menu-icon,
+        .sidebar .menu-group-header.active > .menu-icon,
+        .sidebar .menu-group-header.has-active > .menu-icon {
+            color: var(--icon-color);
+            stroke-width: 2;
+        }
+
+        /* Global active fallback (used elsewhere if any) */
         .menu-item.active > .menu-icon,
         .menu-group-header.active > .menu-icon,
         .menu-group-header.has-active > .menu-icon {
@@ -649,13 +711,18 @@
                id="dashboard-tab"
                class="menu-item"
                style="margin-bottom: 12px; text-decoration: none;">
-                <x-heroicon-o-squares-2x2 class="menu-icon icon-blue" aria-hidden="true" />
+                <x-heroicon-o-squares-2x2 class="menu-icon icon-cyan" aria-hidden="true" />
                 <span>Dashboard</span>
             </a>
 
             {{-- Implementation — collapsible group --}}
             <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
-                <x-heroicon-o-rocket-launch class="menu-icon icon-teal" aria-hidden="true" />
+                <svg class="menu-icon icon-teal" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>
+                </svg>
                 <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
                     <span id="implementation-badge" class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
@@ -714,7 +781,14 @@
 
             {{-- Training — collapsible group --}}
             <button class="menu-group-header" data-group="training" onclick="toggleGroup('training')">
-                <x-heroicon-o-academic-cap class="menu-icon icon-rose" aria-hidden="true" />
+                <svg class="menu-icon icon-green" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+                    <path d="M22 10v6"/>
+                    <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+                </svg>
                 <span>Training</span>
                 <svg id="training-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -728,7 +802,13 @@
 
             {{-- Support — collapsible group --}}
             <button class="menu-group-header" data-group="support" onclick="toggleGroup('support')">
-                <x-heroicon-o-lifebuoy class="menu-icon icon-rose" aria-hidden="true" />
+                <svg class="menu-icon icon-lime" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z"/>
+                    <path d="M21 16v2a4 4 0 0 1-4 4h-5"/>
+                </svg>
                 <span>Support</span>
                 <svg id="support-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -742,7 +822,13 @@
 
             {{-- Knowledge Base — collapsible group --}}
             <button class="menu-group-header" data-group="knowledgebase" onclick="toggleGroup('knowledgebase')">
-                <x-heroicon-o-book-open class="menu-icon icon-purple" aria-hidden="true" />
+                <svg class="menu-icon icon-yellow" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 2v8l3-3 3 3V2"/>
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>
+                </svg>
                 <span>Knowledge Base</span>
                 <svg id="knowledgebase-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -756,7 +842,13 @@
 
             {{-- Commercial — collapsible group --}}
             <button class="menu-group-header" data-group="commercial" onclick="toggleGroup('commercial')">
-                <x-heroicon-o-banknotes class="menu-icon icon-green" aria-hidden="true" />
+                <svg class="menu-icon icon-orange" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" x2="12" y1="2" y2="22"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
                 <span>Commercial</span>
                 <svg id="commercial-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -770,7 +862,13 @@
 
             {{-- Settings — collapsible group (anchored to bottom of sidebar) --}}
             <button class="menu-group-header" data-group="settings" onclick="toggleGroup('settings')" style="margin-top: auto;">
-                <x-heroicon-o-cog-6-tooth class="menu-icon icon-slate" aria-hidden="true" />
+                <svg class="menu-icon icon-slate" aria-hidden="true"
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.75"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
                 <span>Settings</span>
                 <svg id="settings-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
