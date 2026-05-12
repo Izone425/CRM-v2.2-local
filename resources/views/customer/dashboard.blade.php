@@ -312,8 +312,9 @@
         .sidebar:not(:hover):not(:focus-within) .menu-group-header i,
         .sidebar.sidebar-force-collapsed .menu-item i,
         .sidebar.sidebar-force-collapsed .menu-group-header i {
-            font-size: 16px;
-            width: 20px;
+            font-size: 14px;
+            width: 36px;
+            height: 36px;
         }
 
         /* Badge → floating pill on icon top-right when collapsed (header-bell style) */
@@ -384,15 +385,15 @@
         }
 
         .menu-item.active {
+            background: rgba(102, 126, 234, 0.08);
+            color: #4338ca;
+            box-shadow: none;
+        }
+        /* Sub-item active state keeps the original gradient pill */
+        .menu-sub-items .menu-item.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 3px 10px rgba(102, 126, 234, 0.28);
-        }
-
-        .menu-item i {
-            font-size: 14px;
-            width: 18px;
-            text-align: center;
         }
 
         /* Collapsible menu group */
@@ -419,11 +420,6 @@
         .menu-group-header.has-active {
             color: #667eea;
         }
-        .menu-group-header i {
-            font-size: 14px;
-            width: 18px;
-            text-align: center;
-        }
         .menu-group-chevron {
             width: 12px;
             height: 12px;
@@ -444,10 +440,6 @@
             white-space: normal;
             line-height: 1.3;
         }
-        .menu-sub-items .menu-item i {
-            font-size: 12px;
-            width: 16px;
-        }
         .menu-sub-items .menu-item .menu-dot {
             width: 16px;
             display: inline-flex;
@@ -457,44 +449,54 @@
         }
         .menu-sub-items .menu-item .menu-dot::before {
             content: "";
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: currentColor;
-            opacity: 0.7;
+            opacity: 0.5;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .menu-sub-items .menu-item:hover .menu-dot::before {
+            opacity: 0.85;
+            transform: scale(1.1);
         }
         .menu-sub-items .menu-item.active .menu-dot::before {
             opacity: 1;
+            transform: scale(1.2);
         }
 
-        /* Sidebar icon hues — soft pastels, per-row variety */
-        .menu-item > .fa, .menu-item > .fas,
-        .menu-group-header > .fa, .menu-group-header > .fas {
-            font-size: 15px;
-            width: 18px;
-            text-align: center;
-            transition: color 0.2s ease;
+        /* Main nav — hollow stroke icon, no tile */
+        .menu-item > .menu-icon,
+        .menu-group-header > .menu-icon {
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
+            stroke-width: 1.5;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
-        .menu-sub-items .menu-item > .fa,
-        .menu-sub-items .menu-item > .fas {
-            font-size: 13px;
-            width: 16px;
+        .menu-item:hover > .menu-icon,
+        .menu-group-header:hover > .menu-icon {
+            transform: translateX(-1px);
         }
-        .icon-blue    { color: #3b82f6; }
-        .icon-teal    { color: #14b8a6; }
-        .icon-cyan    { color: #06b6d4; }
-        .icon-green   { color: #10b981; }
-        .icon-lime    { color: #84cc16; }
-        .icon-amber   { color: #f59e0b; }
-        .icon-orange  { color: #f97316; }
-        .icon-rose    { color: #f43f5e; }
-        .icon-pink    { color: #ec4899; }
-        .icon-purple  { color: #a855f7; }
-        .icon-indigo  { color: #6366f1; }
-        .icon-slate   { color: #64748b; }
-        .menu-item.active > .fa, .menu-item.active > .fas,
-        .menu-group-header.active > .fa, .menu-group-header.active > .fas { color: #fff; }
+        /* Per-hue colors (kept for both sidebar SVGs and other usages elsewhere) */
+        .icon-blue    { color: #3b82f6; --tile-bg: #dbeafe; }
+        .icon-teal    { color: #0d9488; --tile-bg: #ccfbf1; }
+        .icon-cyan    { color: #06b6d4; --tile-bg: #cffafe; }
+        .icon-green   { color: #059669; --tile-bg: #d1fae5; }
+        .icon-lime    { color: #65a30d; --tile-bg: #ecfccb; }
+        .icon-amber   { color: #d97706; --tile-bg: #fef3c7; }
+        .icon-orange  { color: #ea580c; --tile-bg: #ffedd5; }
+        .icon-rose    { color: #e11d48; --tile-bg: #ffe4e6; }
+        .icon-pink    { color: #db2777; --tile-bg: #fce7f3; }
+        .icon-purple  { color: #9333ea; --tile-bg: #f3e8ff; }
+        .icon-indigo  { color: #4f46e5; --tile-bg: #e0e7ff; }
+        .icon-slate   { color: #475569; --tile-bg: #e2e8f0; }
+        /* Active state — sidebar SVG icon recolors to the indigo accent */
+        .menu-item.active > .menu-icon,
+        .menu-group-header.active > .menu-icon,
+        .menu-group-header.has-active > .menu-icon {
+            color: #4338ca;
+        }
 
         /* Sidebar notification badge */
         .sidebar-badge {
@@ -647,13 +649,13 @@
                id="dashboard-tab"
                class="menu-item"
                style="margin-bottom: 12px; text-decoration: none;">
-                <i class="fas fa-th-large icon-blue"></i>
+                <x-heroicon-o-squares-2x2 class="menu-icon icon-blue" aria-hidden="true" />
                 <span>Dashboard</span>
             </a>
 
             {{-- Implementation — collapsible group --}}
             <button class="menu-group-header" data-group="implementation" onclick="toggleGroup('implementation')">
-                <i class="fas fa-rocket icon-teal"></i>
+                <x-heroicon-o-rocket-launch class="menu-icon icon-teal" aria-hidden="true" />
                 <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
                     <span id="implementation-badge" class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
@@ -668,7 +670,7 @@
                    id="calendar-tab"
                    class="menu-item"
                    style="text-decoration: none;">
-                    <i class="fas fa-calendar-check icon-cyan" aria-hidden="true"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Implementation Session</span>
                 </a>
                 <a href="?tab=softwareHandover"
@@ -676,7 +678,7 @@
                    id="softwareHandover-tab"
                    class="menu-item"
                    style="text-decoration: none;">
-                    <i class="fas fa-handshake icon-green" aria-hidden="true"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Project Details</span>
                 </a>
                 @if($hasProjectPlan)
@@ -685,7 +687,7 @@
                        id="project-tab"
                        class="menu-item"
                        style="text-decoration: none;">
-                        <i class="fas fa-clipboard-list icon-lime" aria-hidden="true"></i>
+                        <span class="menu-dot" aria-hidden="true"></span>
                         <span>Project Plan</span>
                     </a>
                 @endif
@@ -694,7 +696,7 @@
                    id="impThread-tab"
                    class="menu-item"
                    style="text-decoration: none;">
-                    <i class="fas fa-comments icon-amber" aria-hidden="true"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Implementer Thread</span>
                     @if($impThreadBadgeCount > 0)
                         <span class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
@@ -705,56 +707,42 @@
                    id="dataMigration-tab"
                    class="menu-item"
                    style="text-decoration: none;">
-                    <i class="fas fa-database icon-orange" aria-hidden="true"></i>
+                    <span class="menu-dot" aria-hidden="true"></span>
                     <span>Data File</span>
                 </a>
             </div>
 
             {{-- Training — collapsible group --}}
             <button class="menu-group-header" data-group="training" onclick="toggleGroup('training')">
-                <i class="fas fa-graduation-cap icon-rose"></i>
+                <x-heroicon-o-academic-cap class="menu-icon icon-rose" aria-hidden="true" />
                 <span>Training</span>
                 <svg id="training-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
             <div id="training-sub" class="menu-sub-items" style="display: none;">
-                <a href="?tab=webinar"
-                   data-tab="webinar"
-                   id="webinar-tab"
-                   class="menu-item"
-                   style="text-decoration: none;">
-                    <i class="fas fa-video icon-pink" aria-hidden="true"></i>
-                    <span>Webinar Recording & Training Decks</span>
-                </a>
-                <a href="?tab=reviewSession"
-                   data-tab="reviewSession"
-                   id="reviewSession-tab"
-                   class="menu-item"
-                   style="text-decoration: none;">
-                    <i class="fas fa-circle-play icon-rose" aria-hidden="true"></i>
-                    <span>Review Session Recordings</span>
-                </a>
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                    Coming Soon
+                </div>
             </div>
 
             {{-- Support — collapsible group --}}
             <button class="menu-group-header" data-group="support" onclick="toggleGroup('support')">
-                <i class="fas fa-life-ring icon-rose"></i>
+                <x-heroicon-o-lifebuoy class="menu-icon icon-rose" aria-hidden="true" />
                 <span>Support</span>
                 <svg id="support-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
                 </svg>
             </button>
             <div id="support-sub" class="menu-sub-items" style="display: none;">
-                <a href="/customer/implementer-tickets" class="menu-item" style="text-decoration: none;">
-                    <i class="fas fa-comment-dots icon-amber" aria-hidden="true"></i>
-                    <span>Support Thread</span>
-                </a>
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                    Coming Soon
+                </div>
             </div>
 
             {{-- Knowledge Base — collapsible group --}}
             <button class="menu-group-header" data-group="knowledgebase" onclick="toggleGroup('knowledgebase')">
-                <i class="fas fa-book-open icon-purple"></i>
+                <x-heroicon-o-book-open class="menu-icon icon-purple" aria-hidden="true" />
                 <span>Knowledge Base</span>
                 <svg id="knowledgebase-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -768,7 +756,7 @@
 
             {{-- Commercial — collapsible group --}}
             <button class="menu-group-header" data-group="commercial" onclick="toggleGroup('commercial')">
-                <i class="fas fa-file-invoice-dollar icon-green"></i>
+                <x-heroicon-o-banknotes class="menu-icon icon-green" aria-hidden="true" />
                 <span>Commercial</span>
                 <svg id="commercial-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
@@ -782,7 +770,7 @@
 
             {{-- Settings — collapsible group (anchored to bottom of sidebar) --}}
             <button class="menu-group-header" data-group="settings" onclick="toggleGroup('settings')" style="margin-top: auto;">
-                <i class="fas fa-gear icon-slate"></i>
+                <x-heroicon-o-cog-6-tooth class="menu-icon icon-slate" aria-hidden="true" />
                 <span>Settings</span>
                 <svg id="settings-chevron" class="menu-group-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>

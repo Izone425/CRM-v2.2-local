@@ -69,4 +69,17 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(ImplementerTicket::class);
     }
+
+    public function hasBookedKickOff(): bool
+    {
+        if (!$this->lead_id) {
+            return false;
+        }
+
+        return ImplementerAppointment::query()
+            ->where('lead_id', $this->lead_id)
+            ->where('type', 'KICK OFF MEETING SESSION')
+            ->whereIn('status', ['New', 'Done', 'Completed'])
+            ->exists();
+    }
 }

@@ -44,9 +44,10 @@
             --cdb-sky: #00a4e0;
             --cdb-sky-bg: #e0f4fc;
             --cdb-sky-soft: #ecf6fd;
-            --cdb-coral: #fb7185;
-            --cdb-coral-bg: #ffe4e6;
-            --cdb-coral-soft: #fff1f2;
+            /* "coral" name retained for diff-minimization; values now deep navy per design refresh */
+            --cdb-coral: #0050B5;
+            --cdb-coral-bg: #dbeafe;
+            --cdb-coral-soft: #eff6ff;
             --cdb-amber: #f59e0b;
             --cdb-amber-bg: #fef3c7;
             --cdb-amber-soft: #fffbeb;
@@ -97,11 +98,12 @@
         .cdb-refresh-btn {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
             border-radius: 999px;
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 13px;
             color: var(--cdb-text-secondary);
             background: transparent;
             border: 1px solid var(--cdb-border);
@@ -112,6 +114,10 @@
             color: var(--cdb-primary);
             border-color: var(--cdb-primary);
             background: var(--cdb-info-bg);
+        }
+        .cdb-refresh-btn[disabled] {
+            opacity: 0.6;
+            cursor: wait;
         }
 
         /* Card primitives */
@@ -287,6 +293,8 @@
             text-align: center;
             color: var(--cdb-text-secondary);
             line-height: 1.3;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
         .cdb-track-node-current .cdb-track-label,
         .cdb-track-node-done .cdb-track-label {
@@ -1268,15 +1276,15 @@
             box-shadow: 0 4px 10px -4px rgba(0, 164, 224, 0.55);
         }
         .cdb-track-node-current .cdb-track-dot {
-            box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.55);
+            box-shadow: 0 0 0 0 rgba(0, 80, 181, 0.55);
             border-color: var(--cdb-coral);
             color: var(--cdb-coral);
             animation: cdb-pulse-ring-coral 2s infinite cubic-bezier(0.66, 0, 0, 1);
         }
         @keyframes cdb-pulse-ring-coral {
-            0% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.55); }
-            70% { box-shadow: 0 0 0 12px rgba(251, 113, 133, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(0, 80, 181, 0.55); }
+            70% { box-shadow: 0 0 0 12px rgba(0, 80, 181, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 80, 181, 0); }
         }
         /* Tinted icon chips on existing card headers */
         .cdb-card-title i {
@@ -1417,7 +1425,7 @@
         }
         .cdb-mode-banner--support {
             --cdb-banner-from: var(--cdb-coral-bg);
-            color: #9f1239;
+            color: #002c66;
             border: 1px solid #fecdd3;
             background: linear-gradient(90deg, #ffffff 0%, var(--cdb-coral-soft) 100%);
         }
@@ -1514,7 +1522,7 @@
             gap: 6px;
             margin-top: 10px;
             padding: 8px 14px;
-            background: linear-gradient(135deg, var(--cdb-coral) 0%, #f43f5e 100%);
+            background: linear-gradient(135deg, var(--cdb-coral) 0%, #003a85 100%);
             color: #fff;
             border-radius: 999px;
             font-size: 11px;
@@ -1539,7 +1547,7 @@
         }
         .cdb-sla-health--good { background: var(--cdb-mint-bg); color: #047857; }
         .cdb-sla-health--ok { background: var(--cdb-amber-bg); color: #b45309; }
-        .cdb-sla-health--bad { background: var(--cdb-coral-bg); color: #9f1239; }
+        .cdb-sla-health--bad { background: var(--cdb-coral-bg); color: #002c66; }
         .cdb-sla-health--unknown { background: #f1f5f9; color: var(--cdb-text-muted); }
 
         /* ====== FRESHDESK-STYLE SNAPSHOT CARDS (Support panel) ====== */
@@ -1917,7 +1925,7 @@
             gap: 6px;
             margin-top: 10px;
             padding: 7px 14px;
-            background: linear-gradient(135deg, var(--cdb-coral) 0%, #f43f5e 100%);
+            background: linear-gradient(135deg, var(--cdb-coral) 0%, #003a85 100%);
             color: #fff;
             border-radius: 999px;
             font-size: 11px;
@@ -1931,15 +1939,47 @@
             box-shadow: 0 10px 22px -8px rgba(244, 63, 94, 0.55);
         }
 
+        /* ---------- Dashboard fits viewport — no body scroll on implementation mode ---------- */
+        .cdb-root {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 112px);
+            min-height: 520px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .cdb-root > .cdb-greeting { flex-shrink: 0; }
+        .cdb-panel[data-panel-mode="implementation"] {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 14px;
+        }
+        .cdb-panel[data-panel-mode="implementation"] .cdb-hero-solo { flex-shrink: 0; }
+
         /* ---------- Snapshot row (Pending-Tasks + Building-Management style) ---------- */
         .cdb-snapshot-row {
             display: grid;
             grid-template-columns: 5fr 7fr;
             gap: 14px;
-            margin-bottom: 16px;
+            margin-bottom: 0;
+            flex: 1;
+            min-height: 0;
+            align-items: stretch;
+        }
+        .cdb-snapshot-row > .cdb-pt-card,
+        .cdb-snapshot-row > .cdb-bm-card {
+            height: 100%;
+            min-height: 0;
         }
         @media (max-width: 1023px) {
-            .cdb-snapshot-row { grid-template-columns: 1fr; }
+            .cdb-root { height: auto; overflow: visible; }
+            .cdb-snapshot-row {
+                grid-template-columns: 1fr;
+                flex: none;
+                min-height: 0;
+            }
         }
 
         /* ---------- Pending-Tasks-style "Quick Actions" card ---------- */
@@ -1947,6 +1987,7 @@
             background: white;
             border-radius: 14px;
             border: 1px solid var(--cdb-border);
+            border-top: 2px solid #f59e0b;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -1955,27 +1996,52 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 14px 16px;
-            background: #fff7ed;
-            border-bottom: 1px solid #fde0c4;
+            padding: 16px 18px;
+            background: transparent;
+            border-bottom: none;
         }
         .cdb-pt-icon {
             width: 32px; height: 32px;
             border-radius: 9px;
-            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            background: #fef3c7;
             display: inline-flex; align-items: center; justify-content: center;
-            color: white; font-size: 14px;
-            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.28);
+            color: #d97706; font-size: 14px;
+            box-shadow: none;
         }
-        .cdb-pt-title { font-weight: 600; font-size: 14px; color: var(--cdb-text); margin: 0; }
-        .cdb-pt-total { margin-left: auto; font-size: 12px; color: #ea580c; font-weight: 500; }
-        .cdb-pt-body { padding: 6px 0; max-height: 280px; overflow-y: auto; }
+        .cdb-pt-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--cdb-accent-dark);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .cdb-pt-total {
+            margin-left: auto;
+            padding: 4px 11px;
+            background: #fef3c7;
+            color: #d97706;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .cdb-pt-body {
+            padding: 4px 0;
+            flex: 1;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
         .cdb-pt-row {
             display: grid;
-            grid-template-columns: 100px 1fr auto;
+            grid-template-columns: 84px minmax(0, 1fr) auto;
             align-items: center;
             gap: 14px;
-            padding: 10px 16px;
+            padding: 11px 18px;
             border-left: 4px solid var(--cat-color, #94a3b8);
             text-decoration: none;
             color: var(--cdb-text);
@@ -1983,74 +2049,241 @@
         }
         .cdb-pt-row + .cdb-pt-row { border-top: 1px solid #f1f5f9; }
         .cdb-pt-row:hover { background: #f8fafc; transform: translateX(2px); }
-        .cdb-pt-cat { font-size: 12px; font-weight: 600; color: var(--cat-color, #94a3b8); }
-        .cdb-pt-text { font-size: 13px; color: var(--cdb-text); }
+        .cdb-pt-cat {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cat-color, #94a3b8);
+        }
+        .cdb-pt-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+        .cdb-pt-text { font-size: 14px; font-weight: 600; color: var(--cdb-text); line-height: 1.3; }
+        .cdb-pt-desc {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--cdb-text-secondary);
+            line-height: 1.35;
+        }
         .cdb-pt-chev { color: #cbd5e1; font-size: 12px; }
+
+        @media (max-width: 1023px) {
+            .cdb-pt-row { padding: 10px 14px; }
+        }
 
         /* ---------- Building-Management-style "Implementation Snapshot" card ---------- */
         .cdb-bm-card {
             background: white;
             border-radius: 14px;
             border: 1px solid var(--cdb-border);
+            border-top: 2px solid #6366f1;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
         .cdb-bm-header {
             display: flex; align-items: center; gap: 10px;
-            padding: 14px 16px;
-            background: #eef2ff;
-            border-bottom: 1px solid #c7d2fe;
+            padding: 16px 18px;
+            background: transparent;
+            border-bottom: none;
         }
         .cdb-bm-icon {
             width: 32px; height: 32px;
             border-radius: 9px;
-            background: linear-gradient(135deg, #6366f1, #4338ca);
+            background: #e0e7ff;
             display: inline-flex; align-items: center; justify-content: center;
-            color: white; font-size: 14px;
-            box-shadow: 0 4px 10px rgba(67, 56, 202, 0.28);
+            color: #4f46e5; font-size: 14px;
+            box-shadow: none;
         }
-        .cdb-bm-title { font-weight: 600; font-size: 14px; color: var(--cdb-text); margin: 0; }
-        .cdb-bm-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px 16px 10px; }
+        .cdb-bm-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--cdb-accent-dark);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .cdb-bm-status {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            line-height: 1.4;
+        }
+        .cdb-bm-status--on-plan { background: #dbeafe; color: #1d4ed8; }
+        .cdb-bm-status--behind  { background: #fef3c7; color: #b45309; }
+        .cdb-bm-status--ahead   { background: #d1fae5; color: #047857; }
+        .cdb-bm-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px; }
         .cdb-bm-tile {
+            position: relative;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 14px 6px;
-            border: 1px solid #dbeafe;
+            padding: 20px 8px 14px;
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
             background: white;
             text-decoration: none;
             color: var(--cdb-text);
+            overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .cdb-bm-tile:hover { transform: translateY(-1px); box-shadow: 0 6px 16px -8px rgba(67, 56, 202, 0.25); }
-        .cdb-bm-tile--active { background: #dbeafe; border-color: #93c5fd; }
-        .cdb-bm-num { font-size: 22px; font-weight: 700; color: #1e3a8a; line-height: 1.1; }
-        .cdb-bm-tile--active .cdb-bm-num { color: #1d4ed8; }
-        .cdb-bm-tile-lbl { font-size: 11px; color: var(--cdb-text-secondary); margin-top: 4px; text-align: center; }
-        .cdb-bm-chart { padding: 0 16px 14px; }
-        .cdb-bm-chart-plot { position: relative; padding-left: 28px; }
-        .cdb-bm-chart svg { display: block; width: 100%; height: 80px; }
-        .cdb-bm-y-axis {
+        .cdb-bm-tile-bar {
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 24px;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--tile-bar, #94a3b8);
+        }
+        .cdb-bm-tile--blue  { --tile-bar: #3b82f6; }
+        .cdb-bm-tile--blue  .cdb-bm-num { color: #1e40af; }
+        .cdb-bm-tile--green { --tile-bar: #10b981; }
+        .cdb-bm-tile--green .cdb-bm-num { color: #047857; }
+        .cdb-bm-tile--amber { --tile-bar: #f59e0b; }
+        .cdb-bm-tile--amber .cdb-bm-num { color: #b45309; }
+        .cdb-bm-tile--rose  { --tile-bar: #003a85; }
+        .cdb-bm-tile--rose  .cdb-bm-num { color: #003a85; }
+        .cdb-bm-num { font-size: 28px; font-weight: 700; color: #1e3a8a; line-height: 1.1; }
+        .cdb-bm-tile-lbl {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--cdb-text-secondary);
+            margin-top: 6px;
+            text-align: center;
+        }
+        .cdb-bm-chart {
+            padding: 8px 16px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .cdb-bm-chart-plot {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: stretch;
+            gap: 6px;
+        }
+        .cdb-bm-y-axis {
+            flex: 0 0 28px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            font-size: 9px;
-            line-height: 1;
+            font-size: 10px;
+            font-weight: 500;
             color: #94a3b8;
             text-align: right;
-            padding: 1px 6px 1px 0;
-            box-sizing: border-box;
+            line-height: 1;
+            padding: 0 4px 0 0;
         }
-        .cdb-bm-chart-axis { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 4px; padding-left: 28px; }
+        .cdb-bm-chart-canvas {
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+        .cdb-bm-chart-canvas svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+        .cdb-bm-dots {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .cdb-bm-dot {
+            position: absolute;
+            width: 11px;
+            height: 11px;
+            background: #fff;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .cdb-bm-dot.is-current {
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18), 0 6px 14px -4px rgba(59, 130, 246, 0.45);
+        }
+        .cdb-bm-dot-tip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #fff;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.25);
+        }
+        .cdb-bm-dot:hover .cdb-bm-dot-tip {
+            opacity: 1;
+            visibility: visible;
+        }
+        .cdb-bm-dot--tip-below .cdb-bm-dot-tip {
+            bottom: auto;
+            top: calc(100% + 8px);
+        }
+        .cdb-bm-dots .cdb-bm-dot:first-child .cdb-bm-dot-tip {
+            left: 50%;
+            transform: translateX(0);
+        }
+        .cdb-bm-dots .cdb-bm-dot:last-child .cdb-bm-dot-tip {
+            left: auto;
+            right: 50%;
+            transform: translateX(0);
+        }
+        .cdb-bm-chart-axis {
+            display: flex;
+            align-items: stretch;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .cdb-bm-axis-spacer { flex: 0 0 28px; }
+        .cdb-bm-axis-ticks {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cdb-bm-axis-tick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: #94a3b8;
+            line-height: 1.2;
+        }
+        .cdb-bm-axis-name { font-weight: 700; letter-spacing: 0.06em; }
+        .cdb-bm-axis-date { font-size: 9px; margin-top: 3px; }
+        .cdb-bm-axis-tick.is-current .cdb-bm-axis-name,
+        .cdb-bm-axis-tick.is-current .cdb-bm-axis-date { color: #2563eb; }
 
         @media (max-width: 767px) {
             .cdb-bm-tiles { grid-template-columns: repeat(2, 1fr); }
-            .cdb-pt-row { grid-template-columns: 80px 1fr auto; gap: 10px; }
+            .cdb-pt-row {
+                grid-template-columns: 70px minmax(0, 1fr) auto;
+                gap: 10px;
+                padding: 12px 14px;
+            }
         }
     </style>
 
@@ -2081,25 +2314,14 @@
                     @endif
                 </button>
             </div>
-            @php
-                $stagePillLabel = match($journeyStage) {
-                    'pre_kickoff' => 'Kick-Off',
-                    'kickoff_done', 'training' => 'Training',
-                    'data_migration' => 'Data Migration',
-                    'first_review' => 'First Review',
-                    'pre_go_live' => 'Final Review',
-                    'live', 'support_only' => 'Live',
-                    default => str_replace('_', ' ', $journeyStage),
-                };
-            @endphp
-            <span class="cdb-stage-pill">
-                <i class="fas fa-circle" style="font-size: 6px;"></i>
-                {{ $stagePillLabel }}
-            </span>
-            <button type="button" class="cdb-refresh-btn" wire:click="refresh" wire:loading.attr="disabled">
+            <button type="button"
+                    class="cdb-refresh-btn"
+                    wire:click="refresh"
+                    wire:loading.attr="disabled"
+                    wire:target="refresh"
+                    aria-label="Refresh"
+                    title="Refresh">
                 <i class="fas fa-arrows-rotate" wire:loading.class="fa-spin" wire:target="refresh"></i>
-                <span wire:loading.remove wire:target="refresh">Refresh</span>
-                <span wire:loading wire:target="refresh">Refreshing</span>
             </button>
         </div>
     </div>
@@ -2189,6 +2411,7 @@
                 <header class="cdb-pt-header">
                     <span class="cdb-pt-icon"><i class="fas fa-clipboard-list"></i></span>
                     <h3 class="cdb-pt-title">Quick Actions</h3>
+                    <span class="cdb-pt-total">{{ count($implQuickActions) }} actions</span>
                 </header>
                 <div class="cdb-pt-body">
                     @foreach($implQuickActions as $action)
@@ -2196,7 +2419,12 @@
                            @if(str_starts_with($action['url'], '?tab=')) onclick="event.preventDefault(); switchTab('{{ substr($action['url'], 5) }}');" @endif
                            class="cdb-pt-row" style="--cat-color: {{ $action['color'] }};">
                             <span class="cdb-pt-cat">{{ $action['category'] }}</span>
-                            <span class="cdb-pt-text">{{ $action['label'] }}</span>
+                            <span class="cdb-pt-content">
+                                <span class="cdb-pt-text">{{ $action['label'] }}</span>
+                                @if(!empty($action['description']))
+                                    <span class="cdb-pt-desc">{{ $action['description'] }}</span>
+                                @endif
+                            </span>
                             <i class="fas fa-chevron-right cdb-pt-chev"></i>
                         </a>
                     @endforeach
@@ -2207,21 +2435,28 @@
                 <header class="cdb-bm-header">
                     <span class="cdb-bm-icon"><i class="fas fa-chart-bar"></i></span>
                     <h3 class="cdb-bm-title">Implementation Snapshot</h3>
+                    <span class="cdb-bm-status cdb-bm-status--{{ $this->snapshotStatus['tone'] }}">
+                        {{ $this->snapshotStatus['label'] }}
+                    </span>
                 </header>
                 <div class="cdb-bm-tiles">
-                    <a href="?tab=calendar" onclick="event.preventDefault(); switchTab('calendar');" class="cdb-bm-tile">
+                    <a href="?tab=calendar" onclick="event.preventDefault(); switchTab('calendar');" class="cdb-bm-tile cdb-bm-tile--blue">
+                        <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $dtgl !== null ? abs($dtgl) : '—' }}</span>
                         <span class="cdb-bm-tile-lbl">{{ $dtgl !== null && $dtgl < 0 ? 'Days Live' : 'Days to Go-Live' }}</span>
                     </a>
-                    <a href="?tab=project" onclick="event.preventDefault(); switchTab('project');" class="cdb-bm-tile">
+                    <a href="?tab=project" onclick="event.preventDefault(); switchTab('project');" class="cdb-bm-tile cdb-bm-tile--green">
+                        <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $progressPct }}%</span>
                         <span class="cdb-bm-tile-lbl">Project Progress</span>
                     </a>
-                    <a href="?tab=dataMigration" onclick="event.preventDefault(); switchTab('dataMigration');" class="cdb-bm-tile">
+                    <a href="?tab=dataMigration" onclick="event.preventDefault(); switchTab('dataMigration');" class="cdb-bm-tile cdb-bm-tile--amber">
+                        <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $migrationPct }}%</span>
                         <span class="cdb-bm-tile-lbl">Migration Progress</span>
                     </a>
-                    <a href="?tab=impThread" onclick="event.preventDefault(); switchTab('impThread');" class="cdb-bm-tile cdb-bm-tile--active">
+                    <a href="?tab=impThread" onclick="event.preventDefault(); switchTab('impThread');" class="cdb-bm-tile cdb-bm-tile--rose">
+                        <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $ticketsTotal }}</span>
                         <span class="cdb-bm-tile-lbl">Implementer Threads</span>
                     </a>
@@ -2233,30 +2468,46 @@
                             <span>50</span>
                             <span>0</span>
                         </div>
-                        <svg viewBox="0 0 600 80" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="cdbBmFill" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.32"/>
-                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-                                </linearGradient>
-                            </defs>
-                            <g stroke="#e2e8f0" fill="none" vector-effect="non-scaling-stroke">
-                                <line x1="0" y1="4"  x2="600" y2="4"  stroke-width="1"/>
-                                <line x1="0" y1="22" x2="600" y2="22" stroke-width="1"/>
-                                <line x1="0" y1="40" x2="600" y2="40" stroke-width="1"/>
-                                <line x1="0" y1="58" x2="600" y2="58" stroke-width="1"/>
-                            </g>
-                            <line x1="0" y1="76" x2="600" y2="76" stroke="#cbd5e1" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                            <path d="{{ $this->sparkPaths['area'] }}" fill="url(#cdbBmFill)"/>
-                            <path d="{{ $this->sparkPaths['line'] }}" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-                        </svg>
+                        <div class="cdb-bm-chart-canvas">
+                            <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="cdbBmFill" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%"   stop-color="#3b82f6" stop-opacity="0.22"/>
+                                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+                                    </linearGradient>
+                                </defs>
+                                {{-- Subtle quartile grid --}}
+                                <line x1="0" y1="50"  x2="600" y2="50"  stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                {{-- Major grid @ 0% / 50% / 100% --}}
+                                <line x1="0" y1="0"   x2="600" y2="0"   stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                <line x1="0" y1="100" x2="600" y2="100" stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                <line x1="0" y1="200" x2="600" y2="200" stroke="#cbd5e1" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                                <path d="{{ $this->sparkPaths['area'] }}" fill="url(#cdbBmFill)"/>
+                                <path d="{{ $this->sparkPaths['line'] }}" fill="none" stroke="#3b82f6"
+                                      stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+                                      vector-effect="non-scaling-stroke"/>
+                            </svg>
+                            <div class="cdb-bm-dots">
+                                @foreach($this->sparkPaths['dots'] as $dot)
+                                    <span class="cdb-bm-dot{{ $dot['isCurrent'] ? ' is-current' : '' }}{{ ($dot['tipBelow'] ?? false) ? ' cdb-bm-dot--tip-below' : '' }}"
+                                          style="left: {{ $dot['x'] }}%; top: {{ $dot['y'] }}%;">
+                                        <span class="cdb-bm-dot-tip">{{ $dot['value'] }}%</span>
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     <div class="cdb-bm-chart-axis">
-                        @foreach($progressSpark['labels'] as $i => $lbl)
-                            @if($i === 0 || $i === 3 || $i === 7)
-                                <span>{{ $lbl }}</span>
-                            @endif
-                        @endforeach
+                        <div class="cdb-bm-axis-spacer"></div>
+                        <div class="cdb-bm-axis-ticks">
+                            @foreach($journeyNodes as $node)
+                                <span class="cdb-bm-axis-tick {{ ($node['status'] ?? '') === 'current' ? 'is-current' : '' }}">
+                                    <span class="cdb-bm-axis-name">{{ strtoupper($node['label']) }}</span>
+                                    <span class="cdb-bm-axis-date">{{ $node['date'] ?? '' }}</span>
+                                </span>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </section>

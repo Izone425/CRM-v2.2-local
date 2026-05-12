@@ -670,18 +670,18 @@ class CustomerDashboard extends Component
     private function loadQuickActions(): void
     {
         $base = [
-            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Implementer Thread', 'url' => '?tab=impThread', 'category' => 'Support', 'color' => '#ef4444'],
-            ['key' => 'book_session', 'icon' => 'fa-calendar-plus', 'label' => 'Book a Session', 'url' => '?tab=calendar', 'category' => 'Calendar', 'color' => '#3b82f6'],
-            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Data File Template', 'url' => '?tab=dataMigration', 'category' => 'Data', 'color' => '#f59e0b'],
+            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Implementer Thread', 'description' => 'Raise a new ticket for help or issues', 'url' => '?tab=impThread', 'category' => 'Support', 'color' => '#ef4444'],
+            ['key' => 'book_session', 'icon' => 'fa-calendar-plus', 'label' => 'Book a Session', 'description' => 'Schedule a meeting with your implementer', 'url' => '?tab=calendar', 'category' => 'Calendar', 'color' => '#3b82f6'],
+            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Data File Template', 'description' => 'Download or upload migration data', 'url' => '?tab=dataMigration', 'category' => 'Data', 'color' => '#f59e0b'],
         ];
 
         if ($this->hasProjectPlan) {
-            $base[] = ['key' => 'view_project', 'icon' => 'fa-tasks', 'label' => 'View Project Plan', 'url' => '?tab=project', 'category' => 'Project', 'color' => '#10b981'];
+            $base[] = ['key' => 'view_project', 'icon' => 'fa-tasks', 'label' => 'View Project Plan', 'description' => 'Track milestones and deliverables', 'url' => '?tab=project', 'category' => 'Project', 'color' => '#10b981'];
         } else {
-            $base[] = ['key' => 'handover_doc', 'icon' => 'fa-file-export', 'label' => 'Handover Documents', 'url' => '?tab=softwareHandover', 'category' => 'Project', 'color' => '#10b981'];
+            $base[] = ['key' => 'handover_doc', 'icon' => 'fa-file-export', 'label' => 'Handover Documents', 'description' => 'View signed handover files', 'url' => '?tab=softwareHandover', 'category' => 'Project', 'color' => '#10b981'];
         }
 
-        $base[] = ['key' => 'browse_webinars', 'icon' => 'fa-graduation-cap', 'label' => 'Webinars & Decks', 'url' => '?tab=webinar', 'category' => 'Learning', 'color' => '#a855f7'];
+        $base[] = ['key' => 'browse_webinars', 'icon' => 'fa-graduation-cap', 'label' => 'Webinars & Decks', 'description' => 'Recordings, decks, and training', 'url' => '?tab=webinar', 'category' => 'Learning', 'color' => '#a855f7'];
 
         $this->quickActions = $base;
     }
@@ -734,33 +734,102 @@ class CustomerDashboard extends Component
     }
 
     /**
-     * SVG path strings for the sparkline. Returns ['line' => '...', 'area' => '...'].
-     * ViewBox is 600x80; Y is mapped from 0–100% with a 4px top/bottom pad.
+     * Stage-aligned chart: one smooth Bezier curve through 6 journey stage points.
+     * Returns ['line', 'area', 'dots' => [['x','y','isCurrent'], …], 'currentIdx'].
+     * Coords use viewBox 600x200, full range (no internal padding) so HTML dot overlays
+     * positioned with left/top percentages align exactly with the SVG path.
      */
     public function getSparkPathsProperty(): array
     {
-        $points = $this->progressSpark['points'] ?? [];
-        if (empty($points)) {
-            return ['line' => '', 'area' => ''];
+        if (empty($this->journeyNodes)) {
+            return ['line' => '', 'area' => '', 'dots' => [], 'currentIdx' => null];
         }
+
+        $stageWeights = [5, 20, 35, 60, 80, 100];
+        $actualPct    = (int) ($this->progressSummary['overallProgress'] ?? 0);
+        $currentIdx   = null;
+
+        $points = [];
+        foreach ($this->journeyNodes as $i => $node) {
+            if ($node['status'] === 'current') {
+                $currentIdx = $i;
+                $points[] = $actualPct ?: ($stageWeights[$i] ?? 50);
+            } elseif ($node['status'] === 'done') {
+                $points[] = $stageWeights[$i] ?? 100;
+            } else {
+                $points[] = $stageWeights[$i] ?? 50;
+            }
+        }
+
         $w = 600;
-        $h = 80;
-        $pad = 4;
+        $h = 200;
         $n = count($points);
         $coords = [];
         foreach ($points as $i => $val) {
             $x = $n === 1 ? $w / 2 : ($i / ($n - 1)) * $w;
-            $y = $h - ($val / 100) * ($h - $pad * 2) - $pad;
+            $y = $h - ($val / 100) * $h;
             $coords[] = [$x, $y];
         }
-        $line = 'M ' . implode(' L ', array_map(
-            fn($p) => sprintf('%.1f %.1f', $p[0], $p[1]),
-            $coords
-        ));
+
+        // Catmull-Rom → cubic Bezier (tension = 6, canonical).
+        // Endpoints duplicate the boundary so the curve starts/ends with zero tangent.
+        $tension = 6;
+        $line    = sprintf('M %.1f %.1f', $coords[0][0], $coords[0][1]);
+        for ($i = 0; $i < $n - 1; $i++) {
+            $p0 = $coords[max(0, $i - 1)];
+            $p1 = $coords[$i];
+            $p2 = $coords[$i + 1];
+            $p3 = $coords[min($n - 1, $i + 2)];
+            $cp1x = $p1[0] + ($p2[0] - $p0[0]) / $tension;
+            $cp1y = $p1[1] + ($p2[1] - $p0[1]) / $tension;
+            $cp2x = $p2[0] - ($p3[0] - $p1[0]) / $tension;
+            $cp2y = $p2[1] - ($p3[1] - $p1[1]) / $tension;
+            $line .= sprintf(' C %.1f %.1f, %.1f %.1f, %.1f %.1f',
+                $cp1x, $cp1y, $cp2x, $cp2y, $p2[0], $p2[1]);
+        }
+
         $first = $coords[0];
-        $last = end($coords);
-        $area = $line . sprintf(' L %.1f %.1f L %.1f %.1f Z', $last[0], $h, $first[0], $h);
-        return ['line' => $line, 'area' => $area];
+        $last  = end($coords);
+        $area  = $line . sprintf(' L %.1f %.1f L %.1f %.1f Z', $last[0], $h, $first[0], $h);
+
+        // Per-stage dots as percentages for HTML overlay positioning.
+        $dots = [];
+        foreach ($coords as $i => $c) {
+            $yPct = ($c[1] / $h) * 100;
+            $dots[] = [
+                'x'         => ($c[0] / $w) * 100,
+                'y'         => $yPct,
+                'value'     => $points[$i],
+                'isCurrent' => $i === $currentIdx,
+                'tipBelow'  => $yPct < 30,
+            ];
+        }
+
+        return [
+            'line'       => $line,
+            'area'       => $area,
+            'dots'       => $dots,
+            'currentIdx' => $currentIdx,
+        ];
+    }
+
+    /**
+     * Dynamic "on plan / behind / ahead" status pill for the Implementation Snapshot.
+     * Compares actual project progress against the expected % for the current stage.
+     */
+    public function getSnapshotStatusProperty(): array
+    {
+        $actual = (int) ($this->progressSummary['overallProgress'] ?? 0);
+
+        // Expected % at each journey stage (matches stageWeights in getSparkPathsProperty).
+        $stageWeights = [5, 20, 35, 60, 80, 100];
+        $currentIdx   = collect($this->journeyNodes)->search(fn($n) => ($n['status'] ?? '') === 'current');
+        $expected     = is_int($currentIdx) ? ($stageWeights[$currentIdx] ?? 50) : 50;
+
+        $delta = $actual - $expected;
+        if ($delta >= 5)  return ['tone' => 'ahead',   'label' => $actual . '% ahead'];
+        if ($delta <= -5) return ['tone' => 'behind',  'label' => $actual . '% behind'];
+        return ['tone' => 'on-plan', 'label' => $actual . '% on plan'];
     }
 
     /**
@@ -793,7 +862,10 @@ class CustomerDashboard extends Component
         $this->migrationCounts['total']     = 5;
         $this->migrationCounts['approved']  = 5;
 
-        // Days to Go-Live and Implementer Threads count are left real.
+        // Days to Go-Live shows "—" (no remaining countdown for the demo snapshot).
+        $this->implStats['days_to_go_live'] = null;
+        // Implementer Threads tile shows "1" so the rose tile isn't empty.
+        $this->ticketsTotal = 1;
 
         // --- Support panel telemetry ---
         $this->supportThreadStats = [
@@ -815,6 +887,25 @@ class CustomerDashboard extends Component
         $this->journeyStage = 'first_review';
         $this->stageCaption = $this->captionForStage($this->journeyStage);
         $this->loadJourneyNodes($handover);
+
+        // Backfill demo dates on the middle stages (data_migration / first_review / final_review)
+        // which have no DB column. Kick-Off and Go Live come through naturally via the handover
+        // record but we still hardcode them here so the demo is consistent even if the DB
+        // values drift over time.
+        $demoStageDates = [
+            0 => '17 Apr',   // Kick-Off
+            1 => '24 Apr',   // Training
+            2 => '1 May',    // Data Migration
+            3 => '8 May',    // First Review
+            4 => '29 May',   // Final Review
+            5 => '19 Jun',   // Go Live
+        ];
+        foreach ($this->journeyNodes as $i => &$node) {
+            if (isset($demoStageDates[$i])) {
+                $node['date'] = $demoStageDates[$i];
+            }
+        }
+        unset($node);
     }
 
     public function render()
