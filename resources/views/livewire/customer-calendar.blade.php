@@ -527,6 +527,48 @@ use Carbon\Carbon;
             line-height: 1.5;
         }
 
+        .cal-tutorial-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 9px 18px;
+            background: transparent;
+            color: var(--cal-accent-dark);
+            border: 1.25px solid var(--cal-accent-dark);
+            border-radius: 999px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: background 0.18s ease,
+                        color 0.18s ease,
+                        transform 0.18s ease,
+                        box-shadow 0.18s ease;
+        }
+
+        .cal-tutorial-link:hover {
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px -8px rgba(0, 60, 117, 0.45);
+        }
+
+        .cal-tutorial-link:hover .cal-tutorial-link-icon {
+            transform: rotate(8deg);
+        }
+
+        .cal-tutorial-link:focus-visible {
+            outline: 2px solid var(--cal-primary);
+            outline-offset: 3px;
+        }
+
+        .cal-tutorial-link-icon {
+            font-size: 14px;
+            transition: transform 0.18s ease;
+        }
+
         /* One slot per row — horizontal layout */
         .cal-slot-grid {
             display: grid;
@@ -2819,6 +2861,13 @@ use Carbon\Carbon;
                             <i class="fas fa-hand-pointer"></i>
                         </div>
                         <p class="cal-panel-empty-title">Pick an available date</p>
+                        <button type="button"
+                                wire:click="showTutorialModal"
+                                class="cal-tutorial-link"
+                                aria-label="View calendar tutorial">
+                            <i class="fas fa-circle-question cal-tutorial-link-icon"></i>
+                            <span>View Tutorial</span>
+                        </button>
                     </div>
 
                 @else
@@ -3513,24 +3562,6 @@ use Carbon\Carbon;
             </div>
         </div>
     @endif
-
-    @unless($showTutorial)
-        <div class="fixed z-40 bottom-6 right-6">
-            <div class="help-button-wrapper">
-                <button wire:click="showTutorialModal"
-                        class="flex items-center justify-center text-white transition-all duration-300 rounded-full shadow-lg w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-xl hover:scale-110 group help-button">
-                    <svg class="w-6 h-6 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </button>
-
-                <!-- Tooltip -->
-                <div class="help-tooltip">
-                    View Tutorial
-                </div>
-            </div>
-        </div>
-    @endunless
 
     {{-- ──────────────────────────────────────────────────────────────
          Bulk Attendees Drawer (Alpine-only, teleported to <body>)
