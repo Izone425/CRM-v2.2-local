@@ -422,7 +422,7 @@
             padding: 8px 12px;
             margin-bottom: 4px;
             border-radius: 8px;
-            color: #64748b;
+            color: #334155;
             transition: all 0.25s ease;
             cursor: pointer;
             font-weight: 500;
@@ -442,21 +442,21 @@
         }
 
         .menu-item:hover {
-            background: #f1f5f9;
-            color: #667eea;
+            background: #e2e8f0;
+            color: #334155;
             transform: translateX(2px);
         }
 
         .menu-item.active {
-            background: rgba(102, 126, 234, 0.08);
-            color: #4338ca;
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
             box-shadow: none;
         }
-        /* Sub-item active state keeps the original gradient pill */
+        /* Sub-item active state — solid blue pill, matches prototype's "Property" sub-item */
         .menu-sub-items .menu-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3b82f6;
             color: white;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.28);
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.28);
         }
 
         /* Collapsible menu group */
@@ -467,7 +467,7 @@
             padding: 8px 12px;
             margin-bottom: 2px;
             border-radius: 8px;
-            color: #64748b;
+            color: #334155;
             font-weight: 500;
             cursor: pointer;
             border: none;
@@ -477,11 +477,11 @@
             transition: all 0.25s ease;
         }
         .menu-group-header:hover {
-            background: #f1f5f9;
-            color: #667eea;
+            background: #e2e8f0;
+            color: #334155;
         }
         .menu-group-header.has-active {
-            color: #667eea;
+            color: #3b82f6;
         }
         .menu-group-chevron {
             width: 12px;
@@ -582,7 +582,7 @@
         .menu-item.active > .menu-icon,
         .menu-group-header.active > .menu-icon,
         .menu-group-header.has-active > .menu-icon {
-            color: #4338ca;
+            color: #3b82f6;
         }
 
         /* Sidebar notification badge */
@@ -608,7 +608,7 @@
 
         .menu-item.active .sidebar-badge {
             background: white;
-            color: #667eea;
+            color: #3b82f6;
         }
 
         /* Main Content with Sidebar */
