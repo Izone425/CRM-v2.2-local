@@ -1887,10 +1887,20 @@ use Carbon\Carbon;
             color: #ffffff;
         }
 
+        .cal-tut-step-item--upcoming {
+            cursor: pointer;
+        }
+
+        .cal-tut-step-item--upcoming:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
+
         .cal-tut-step-item--active {
             color: #ffffff;
             font-weight: 600;
             background: rgba(255, 255, 255, 0.07);
+            cursor: pointer;
         }
 
         .cal-tut-step-item--active::before {
@@ -3261,26 +3271,22 @@ use Carbon\Carbon;
                                 $state = $n < $currentTutorialStep ? 'done'
                                     : ($n === $currentTutorialStep ? 'active' : 'upcoming');
                             @endphp
-
-                            @if($state === 'done')
-                                <li>
-                                    <button type="button"
-                                            class="cal-tut-step-item cal-tut-step-item--done"
-                                            wire:click="goToTutorialStep({{ $n }})"
-                                            aria-label="Go back to step {{ $n }}: {{ $label }}">
-                                        <span class="cal-tut-step-dot"><i class="fas fa-check" aria-hidden="true"></i></span>
-                                        <span class="cal-tut-step-label">{{ $label }}</span>
-                                    </button>
-                                </li>
-                            @else
-                                <li>
-                                    <div class="cal-tut-step-item cal-tut-step-item--{{ $state }}"
-                                         @if($state === 'active') aria-current="step" @endif>
-                                        <span class="cal-tut-step-dot">{{ $n }}</span>
-                                        <span class="cal-tut-step-label">{{ $label }}</span>
-                                    </div>
-                                </li>
-                            @endif
+                            <li>
+                                <button type="button"
+                                        class="cal-tut-step-item cal-tut-step-item--{{ $state }}"
+                                        wire:click="goToTutorialStep({{ $n }})"
+                                        @if($state === 'active') aria-current="step" @endif
+                                        aria-label="Go to step {{ $n }}: {{ $label }}">
+                                    <span class="cal-tut-step-dot">
+                                        @if($state === 'done')
+                                            <i class="fas fa-check" aria-hidden="true"></i>
+                                        @else
+                                            {{ $n }}
+                                        @endif
+                                    </span>
+                                    <span class="cal-tut-step-label">{{ $label }}</span>
+                                </button>
+                            </li>
                         @endforeach
                     </ol>
 
@@ -3389,9 +3395,8 @@ use Carbon\Carbon;
                         @elseif($currentTutorialStep === 4)
                             <h3 class="cal-tut-step-title">Attendees &amp; confirm</h3>
                             <p class="cal-tut-step-copy">
-                                Add attendee emails separated by semicolons. Internal
-                                <strong>@@timeteccloud.com</strong> addresses aren't allowed —
-                                the form will flag invalid rows and disable Save until they're fixed.
+                                Add attendee emails separated by semicolons. Each row is one
+                                attendee — they'll receive a meeting invite once you save.
                             </p>
 
                             <div class="cal-tut-illustration">
@@ -3403,12 +3408,11 @@ use Carbon\Carbon;
                                         </div>
                                     </div>
 
-                                    <div class="cal-tut-mock-row cal-tut-mock-row--invalid">
+                                    <div class="cal-tut-mock-row">
                                         <div class="cal-tut-mock-input">
-                                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-                                            <span>foo@timeteccloud.com</span>
+                                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                                            <span>mark@client.com</span>
                                         </div>
-                                        <p class="cal-tut-mock-error">Internal @@timeteccloud.com addresses are not allowed.</p>
                                     </div>
 
                                     <div class="cal-tut-mock-foot">

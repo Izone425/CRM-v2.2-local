@@ -107,9 +107,6 @@ class CustomerCalendar extends Component
         if ($step < 1 || $step > $this->totalTutorialSteps) {
             return;
         }
-        if ($step > $this->currentTutorialStep) {
-            return;
-        }
         $this->currentTutorialStep = $step;
         $this->updateTutorialProgress();
     }
