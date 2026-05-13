@@ -1769,505 +1769,746 @@ use Carbon\Carbon;
             transform: scale(1.1);
         }
 
-        .help-button {
-            animation: helpButtonPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes helpButtonPulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-            }
-            50% {
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-            }
-        }
-
-        .tutorial-step-indicator {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .tutorial-step-indicator.active {
-            transform: scale(1.2);
-        }
-
-        .tutorial-modal {
-            position: absolute;
+        /* ──────────────────────────────────────────────────────────────
+           Calendar Tutorial Wizard (cal-tut-*)
+           Bi-panel modal that inherits the calendar's own design tokens.
+           Navy rail (step navigator) + white panel (step body). All
+           illustrations mirror real calendar idioms (day cells, slot
+           rows, attendee drawer) so the wizard teaches by showing.
+        ────────────────────────────────────────────────────────────── */
+        .cal-tut-backdrop {
+            position: fixed;
             inset: 0;
-            z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 60, 117, 0.55);
-            backdrop-filter: blur(6px);
-            border-radius: 16px;
-            padding: 1rem;
-            animation: tutorialFade 200ms ease-out;
+            z-index: 60;
+            background: rgba(15, 23, 42, 0.48);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            animation: cal-tut-fade-in 180ms ease-out;
         }
 
-        @keyframes tutorialFade {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .cal-tut-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 61;
+            width: min(92vw, 880px);
+            max-height: min(90vh, 640px);
+            display: grid;
+            grid-template-columns: 38% 62%;
+            background: var(--cal-surface);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04),
+                        0 28px 64px -24px rgba(15, 23, 42, 0.45);
+            animation: cal-tut-scale-in 240ms cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Poppins', sans-serif;
         }
 
-        .tutorial-container {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            width: 100%;
-            max-width: 700px;
-            max-height: 100%;
-            margin: 0;
+        .cal-tut-rail {
+            position: relative;
+            padding: 28px 26px;
             display: flex;
             flex-direction: column;
+            color: #ffffff;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(0, 164, 224, 0.28), transparent 55%),
+                linear-gradient(180deg, #003c75 0%, #002951 100%);
             overflow: hidden;
-            transform: scale(1);
-            transition: all 0.3s ease;
         }
 
-        .tutorial-header {
-            position: relative;
-            padding: 2rem 2rem 1.5rem 2rem; /* Reduced padding */
-            color: white;
-            background: linear-gradient(135deg, #003c75 0%, #1a6dd4 55%, #00a4e0 100%);
-        }
-
-        .tutorial-header-pattern {
-            position: absolute;
-            inset: 0;
-            opacity: 0.1;
-        }
-
-        .tutorial-header-pattern::before {
+        .cal-tut-rail::after {
             content: '';
             position: absolute;
-            top: 0;
+            inset: auto -40px -60px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 164, 224, 0.18), transparent 65%);
+            pointer-events: none;
+        }
+
+        .cal-tut-rail-eyebrow {
+            position: relative;
+            margin: 0 0 10px;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.62);
+        }
+
+        .cal-tut-rail-title {
+            position: relative;
+            margin: 0 0 28px;
+            font-size: 1.375rem;
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+        }
+
+        .cal-tut-steps {
+            position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .cal-tut-step-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px 10px 14px;
+            border-radius: 10px;
+            border: 0;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.55);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            cursor: default;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .cal-tut-step-item--done {
+            color: rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+        }
+
+        .cal-tut-step-item--done:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
+
+        .cal-tut-step-item--active {
+            color: #ffffff;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .cal-tut-step-item--active::before {
+            content: '';
+            position: absolute;
             left: 0;
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            background: linear-gradient(to right, white, transparent);
-            transform: translate(-80px, -80px);
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            border-radius: 2px;
+            background: var(--cal-primary);
         }
 
-        .tutorial-header-pattern::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(to right, white, transparent);
-            transform: translate(60px, 60px);
+        .cal-tut-step-item:focus-visible {
+            outline: 2px solid var(--cal-primary);
+            outline-offset: 2px;
         }
 
-        .tutorial-header-content {
+        .cal-tut-step-dot {
+            flex: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            background: transparent;
+            border: 1.25px solid rgba(255, 255, 255, 0.32);
+            transition: transform 0.24s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        }
+
+        .cal-tut-step-item--done .cal-tut-step-dot {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: var(--cal-accent-dark);
+        }
+
+        .cal-tut-step-item--active .cal-tut-step-dot {
+            background: var(--cal-primary);
+            border-color: var(--cal-primary);
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 164, 224, 0.22);
+            animation: cal-tut-dot-pop 240ms ease-out;
+        }
+
+        .cal-tut-rail-hint {
             position: relative;
+            margin: 18px 0 0;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 12px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.65);
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
+            gap: 8px;
         }
 
-        .tutorial-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            margin-right: 1rem;
+        .cal-tut-rail-hint i {
+            margin-top: 2px;
+            color: var(--cal-primary);
         }
 
-        .tutorial-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem; /* Reduced from 3xl */
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.01em;
-        }
-
-        .tutorial-step-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-        }
-
-        .tutorial-step-badge {
-            font-family: 'Poppins', sans-serif;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .tutorial-progress-dots {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .tutorial-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.35);
-        }
-
-        .tutorial-dot.active {
-            background: white;
-        }
-
-        .tutorial-close-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            color: white;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .tutorial-close-btn:hover {
-            background: rgba(255, 255, 255, 0.28);
-            transform: scale(1.06);
-        }
-
-        .tutorial-progress-bar {
+        .cal-tut-panel {
             position: relative;
-            margin-top: 1rem;
-        }
-
-        .tutorial-progress-bg {
-            width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.22);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .tutorial-progress-fill {
-            height: 5px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-            transition: all 0.7s ease-out;
-        }
-
-        .tutorial-body {
-            padding: 1.5rem 2rem;
-            background: #ffffff;
-            text-align: center;
-            overflow-y: auto;
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 26px 32px 18px;
+            background: var(--cal-surface);
             min-height: 0;
         }
 
-        .tutorial-emoji {
-            font-size: 2rem; /* Reduced from 8xl */
+        .cal-tut-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 0;
+            background: rgba(15, 23, 42, 0.06);
+            color: var(--cal-text);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
         }
 
-        .tutorial-emoji.bounce {
-            animation: bounce 2s infinite;
+        .cal-tut-close:hover {
+            background: rgba(15, 23, 42, 0.1);
+            color: var(--cal-accent-dark);
+            transform: rotate(90deg);
         }
 
-        .tutorial-step-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.25rem; /* Reduced from 3xl */
+        .cal-tut-close:focus-visible {
+            outline: 2px solid var(--cal-primary);
+            outline-offset: 2px;
+        }
+
+        .cal-tut-step-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            padding: 4px 11px;
+            background: var(--cal-hover-bg);
+            color: var(--cal-accent-dark);
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .cal-tut-step {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+            animation: cal-tut-step-in 280ms ease-out;
+        }
+
+        .cal-tut-step-title {
+            margin: 12px 0 0;
+            font-size: 1.125rem;
             font-weight: 700;
-            margin-bottom: 1rem;
-            color: #003c75;
+            color: var(--cal-text);
             letter-spacing: -0.01em;
+            line-height: 1.3;
         }
 
-        .tutorial-step-description {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 400;
-            font-size: 1rem; /* Reduced from xl */
-            color: #4b5563;
-            line-height: 1.6;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-            margin-bottom: 1rem;
+        .cal-tut-step-copy {
+            margin: 0;
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--cal-text-muted);
         }
 
-        .tutorial-grid {
+        .cal-tut-step-copy strong {
+            color: var(--cal-text);
+            font-weight: 600;
+        }
+
+        .cal-tut-illustration {
+            margin-top: 4px;
+        }
+
+        /* Step 1 — Kick-Off / Review outline tiles + legend strip */
+        .cal-tut-tiles {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 0.5rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
-        .tutorial-card {
-            padding: 0.5rem 1rem 0.5rem 1rem;;
-            border: 2px solid;
-            border-radius: 16px;
-            transition: all 0.3s ease;
+        .cal-tut-tile {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 14px;
+            border: 1.25px solid var(--cal-border);
+            border-radius: 12px;
+            background: var(--cal-surface);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
 
-        .tutorial-card:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        .cal-tut-tile--kickoff {
+            border-color: rgba(0, 60, 117, 0.35);
         }
 
-        .tutorial-card.blue {
-            background: #eff6ff;
-            border-color: #003c75;
+        .cal-tut-tile--review {
+            border-color: rgba(0, 164, 224, 0.4);
         }
 
-        .tutorial-card.purple {
-            background: #ecfeff;
-            border-color: #00a4e0;
+        .cal-tut-tile-icon {
+            flex: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
         }
 
-        .tutorial-card.green {
-            background: #ecfdf5;
-            border-color: #10b981;
+        .cal-tut-tile--kickoff .cal-tut-tile-icon {
+            background: rgba(0, 60, 117, 0.1);
+            color: var(--cal-accent-dark);
         }
 
-        .tutorial-tip {
-            padding: 1rem;
-            margin-top: 1rem;
-            border-left: 4px solid #10b981;
-            border-radius: 8px;
-            background: #ecfdf5;
+        .cal-tut-tile--review .cal-tut-tile-icon {
+            background: rgba(0, 164, 224, 0.12);
+            color: var(--cal-primary);
         }
 
-        .tutorial-footer {
+        .cal-tut-tile-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .cal-tut-tile-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cal-text);
+            line-height: 1.25;
+        }
+
+        .cal-tut-tile-hint {
+            font-size: 11.5px;
+            color: var(--cal-text-muted);
+            line-height: 1.4;
+        }
+
+        .cal-tut-legend {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            padding: 10px 12px;
+            background: var(--cal-surface-soft);
+            border-radius: 10px;
+            border: 1px solid var(--cal-border);
+        }
+
+        .cal-tut-legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--cal-text-muted);
+        }
+
+        .cal-tut-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .cal-tut-legend-dot--avail { background: #10b981; }
+        .cal-tut-legend-dot--meet  { background: var(--cal-accent-dark); }
+        .cal-tut-legend-dot--off   { background: #d1d5db; }
+
+        /* Step 2 — Mini calendar grid */
+        .cal-tut-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .cal-tut-mini-cell {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 14px 8px;
+            border: 1px solid var(--cal-border);
+            border-radius: 10px;
+            background: var(--cal-surface);
+            min-height: 78px;
+        }
+
+        .cal-tut-mini-cell--bookable {
+            background: var(--cal-available-bg);
+            border: 1.5px solid var(--cal-available-border);
+        }
+
+        .cal-tut-mini-cell--weekend {
+            background: var(--cal-weekend-bg);
+            border: 1px solid #fde68a;
+        }
+
+        .cal-tut-mini-cell--meeting {
+            background: var(--cal-meeting-bg);
+            border: 1px solid var(--cal-meeting-border);
+        }
+
+        .cal-tut-mini-day {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--cal-text);
+            line-height: 1;
+        }
+
+        .cal-tut-mini-cell--bookable .cal-tut-mini-day { color: var(--cal-available-text); }
+        .cal-tut-mini-cell--weekend  .cal-tut-mini-day { color: var(--cal-weekend-text); }
+        .cal-tut-mini-cell--meeting  .cal-tut-mini-day { color: var(--cal-meeting-text); }
+
+        .cal-tut-mini-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .cal-tut-mini-tag--open {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--cal-available-text);
+        }
+
+        .cal-tut-mini-tag--weekend {
+            background: rgba(180, 83, 9, 0.12);
+            color: var(--cal-weekend-text);
+        }
+
+        .cal-tut-mini-tag--meeting {
+            background: rgba(0, 60, 117, 0.1);
+            color: var(--cal-meeting-text);
+        }
+
+        /* Step 3 — Slot rows */
+        .cal-tut-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cal-tut-slot-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1rem 2rem; /* Reduced padding */
-            border-top: 1px solid #e5e7eb;
-            background: #ffffff;
+            padding: 12px 14px;
+            border: 1.25px solid var(--cal-border);
+            border-radius: 12px;
+            background: var(--cal-surface);
+            font-size: 13px;
+            color: var(--cal-text);
         }
 
-        .tutorial-btn {
+        .cal-tut-slot-row--selected {
+            background: var(--cal-accent-dark);
+            border-color: var(--cal-accent-dark);
+            color: #ffffff;
+            box-shadow: 0 8px 22px -10px rgba(0, 60, 117, 0.55);
+        }
+
+        .cal-tut-slot-label {
+            font-weight: 600;
+        }
+
+        .cal-tut-slot-time {
+            font-size: 12px;
+            color: var(--cal-text-muted);
+        }
+
+        .cal-tut-slot-row--selected .cal-tut-slot-time {
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .cal-tut-slot-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
+
+        /* Step 4 — Mock attendee drawer (also teaches the new validation) */
+        .cal-tut-mock-drawer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
+            border: 1px solid var(--cal-border);
+            border-radius: 12px;
+            background: var(--cal-surface-soft);
+        }
+
+        .cal-tut-mock-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .cal-tut-mock-input {
             display: flex;
             align-items: center;
-            font-family: 'Poppins', sans-serif;
-            padding: 0.75rem 1.5rem;
-            border: 2px solid;
-            border-radius: 12px;
+            gap: 10px;
+            padding: 9px 12px;
+            border: 1.25px solid var(--cal-border);
+            border-radius: 10px;
+            background: var(--cal-surface);
+            font-size: 13px;
+            color: var(--cal-text);
+        }
+
+        .cal-tut-mock-input i {
+            color: var(--cal-text-quiet);
+            font-size: 12px;
+        }
+
+        .cal-tut-mock-row--invalid .cal-tut-mock-input {
+            border-color: #b91c1c;
+            background: #fff7f7;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+        }
+
+        .cal-tut-mock-row--invalid .cal-tut-mock-input i {
+            color: #b91c1c;
+        }
+
+        .cal-tut-mock-error {
+            margin: 2px 4px 0;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--cal-holiday-text);
+            line-height: 1.4;
+        }
+
+        .cal-tut-mock-foot {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+
+        .cal-tut-mock-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        .cal-tut-foot {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--cal-border);
+        }
+
+        .cal-tut-back {
+            margin-right: auto;
+        }
+
+        .cal-tut-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 0;
+            background: transparent;
+            color: var(--cal-text-muted);
+            font-family: inherit;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            font-size: 0.875rem;
+            transition: color 0.18s ease, background 0.18s ease;
         }
 
-        .tutorial-btn.secondary {
-            color: #6b7280;
-            background: white;
-            border-color: #d1d5db;
+        .cal-tut-link:hover {
+            color: var(--cal-accent-dark);
+            background: var(--cal-hover-bg);
         }
 
-        .tutorial-btn.secondary:hover {
-            background: #f0f7ff;
-            color: #003c75;
-            border-color: #003c75;
-            box-shadow: 0 4px 6px -1px rgba(0, 60, 117, 0.1);
+        .cal-tut-link:focus-visible {
+            outline: 2px solid var(--cal-primary);
+            outline-offset: 2px;
         }
 
-        .tutorial-btn.primary {
-            color: white;
-            background: #003c75;
-            border-color: transparent;
-            box-shadow: 0 4px 15px rgba(0, 60, 117, 0.25);
+        .cal-tut-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 999px;
+            border: 0;
+            background: var(--cal-accent-dark);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
         }
 
-        .tutorial-btn.primary:hover {
-            background: #1a6dd4;
-            box-shadow: 0 8px 20px -6px rgba(0, 60, 117, 0.35);
+        .cal-tut-btn-primary:hover {
+            background: var(--cal-accent-mid);
             transform: translateY(-1px);
+            box-shadow: 0 6px 16px -8px rgba(0, 60, 117, 0.45);
         }
 
-        .tutorial-btn.success {
-            color: white;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-color: transparent;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        }
-
-        .tutorial-btn.success:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .tutorial-btn svg {
-            width: 1rem;
-            height: 1rem;
-            transition: transform 0.2s ease;
-        }
-
-        .tutorial-btn:hover svg.arrow-right {
+        .cal-tut-btn-primary:hover i.fa-arrow-right {
             transform: translateX(2px);
         }
 
-        .tutorial-btn:hover svg.arrow-left {
-            transform: translateX(-2px);
+        .cal-tut-btn-primary:focus-visible {
+            outline: 2px solid var(--cal-primary);
+            outline-offset: 3px;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .tutorial-container {
-                max-width: 95%;
-                margin: 0.5rem;
-            }
-
-            .tutorial-header {
-                padding: 1.5rem 1rem 1rem 1rem;
-            }
-
-            .tutorial-body {
-                padding: 1rem;
-            }
-
-            .tutorial-footer {
-                padding: 1rem;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .tutorial-emoji {
-                font-size: 3rem;
-            }
-
-            .tutorial-step-title {
-                font-size: 1.25rem;
-            }
-
-            .tutorial-step-description {
-                font-size: 0.875rem;
-            }
+        .cal-tut-btn-primary i {
+            font-size: 12px;
+            transition: transform 0.18s ease;
         }
 
-        @keyframes bounce {
-            0%, 20%, 53%, 80%, 100% {
-                transform: translate3d(0,0,0);
-            }
-            40%, 43% {
-                transform: translate3d(0,-10px,0);
-            }
-            70% {
-                transform: translate3d(0,-5px,0);
-            }
-            90% {
-                transform: translate3d(0,-2px,0);
-            }
+        @keyframes cal-tut-fade-in {
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
-        .help-button-wrapper {
-            position: relative;
-            display: inline-block;
+        @keyframes cal-tut-scale-in {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+            to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
-        .help-tooltip {
-            position: absolute;
-            bottom: 120%;
-            right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-            z-index: 60;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-            /* Auto-show animation every 10 seconds */
-            animation: tooltipAutoShow 5s infinite;
+        @keyframes cal-tut-step-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .help-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            right: 1rem;
-            border: 6px solid transparent;
-            border-top-color: rgba(0, 0, 0, 0.9);
+        @keyframes cal-tut-dot-pop {
+            0%   { transform: scale(1); }
+            55%  { transform: scale(1.18); }
+            100% { transform: scale(1); }
         }
 
-        /* Manual hover still works */
-        .help-button-wrapper:hover .help-tooltip {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            animation: none; /* Pause auto-animation on hover */
-        }
-
-        /* Auto-show animation keyframes */
-        @keyframes tooltipAutoShow {
-            0%, 85% {
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(10px);
+        /* Mobile: collapse rail into a horizontal pip strip on top */
+        @media (max-width: 720px) {
+            .cal-tut-modal {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                max-height: 92vh;
+                width: 94vw;
             }
-            90%, 95% {
-                opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
+
+            .cal-tut-rail {
+                padding: 18px 20px 14px;
             }
-            100% {
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(10px);
+
+            .cal-tut-rail-title {
+                margin-bottom: 14px;
+                font-size: 1.125rem;
+            }
+
+            .cal-tut-steps {
+                flex-direction: row;
+                gap: 6px;
+                overflow-x: auto;
+                flex: none;
+            }
+
+            .cal-tut-step-item {
+                flex: none;
+                padding: 6px 10px;
+                font-size: 12px;
+                gap: 8px;
+            }
+
+            .cal-tut-step-item--active::before {
+                top: auto;
+                bottom: -6px;
+                left: 14px;
+                right: auto;
+                width: 16px;
+                height: 2px;
+            }
+
+            .cal-tut-rail-hint {
+                display: none;
+            }
+
+            .cal-tut-panel {
+                padding: 22px 22px 14px;
+            }
+
+            .cal-tut-foot {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .cal-tut-back {
+                margin-right: 0;
             }
         }
 
-        /* Enhanced help button pulse when tooltip shows */
-        .help-button {
-            animation: helpButtonPulse 10s infinite;
-        }
-
-        @keyframes helpButtonPulse {
-            0%, 85% {
-                box-shadow: 0 0 0 0 rgba(0, 60, 117, 0.4);
-            }
-            90%, 95% {
-                box-shadow: 0 0 0 10px rgba(0, 60, 117, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(0, 60, 117, 0.4);
-            }
-        }
-
-        /* Pause animations when tutorial modal is open */
-        .tutorial-modal ~ .help-button-wrapper .help-tooltip,
-        .tutorial-modal ~ .help-button-wrapper .help-button {
-            animation-play-state: paused;
-        }
-
-        @media (max-width: 640px) {
-            .help-tooltip {
-                bottom: 110%;
-                right: -50px;
-                left: -50px;
-                text-align: center;
-                white-space: normal;
+        @media (prefers-reduced-motion: reduce) {
+            .cal-tut-backdrop,
+            .cal-tut-modal,
+            .cal-tut-step,
+            .cal-tut-step-item--active .cal-tut-step-dot {
+                animation: none;
             }
 
-            .help-tooltip::after {
-                right: 50%;
-                transform: translateX(50%);
+            .cal-tut-btn-primary:hover,
+            .cal-tut-btn-primary:hover i.fa-arrow-right,
+            .cal-tut-close:hover {
+                transform: none;
             }
         }
 
@@ -2988,159 +3229,224 @@ use Carbon\Carbon;
         </div>
 
         @if($showTutorial)
-            <div class="tutorial-modal">
-                <div class="tutorial-container">
-                    <!-- Tutorial Header -->
-                    <div class="tutorial-header">
-                        <div class="tutorial-header-pattern"></div>
+            @php
+                $tutorialSteps = [
+                    1 => 'Calendar overview',
+                    2 => 'Finding open dates',
+                    3 => 'Picking a time slot',
+                    4 => 'Attendees & confirm',
+                ];
+            @endphp
 
-                        <div class="tutorial-header-content">
-                            <div style="display: flex; align-items: center;">
-                                <div>
-                                    <h3 class="tutorial-title">How to Schedule Your Sessions</h3>
-                                    <div class="tutorial-step-info">
-                                        <span class="tutorial-step-badge">
-                                            Step {{ $currentTutorialStep }} of {{ $totalTutorialSteps }}
-                                        </span>
-                                        <div class="tutorial-progress-dots">
-                                            @for($i = 1; $i <= $totalTutorialSteps; $i++)
-                                                <div class="tutorial-dot {{ $i <= $currentTutorialStep ? 'active' : '' }}"></div>
-                                            @endfor
+            <div class="cal-tut-backdrop"
+                 role="presentation"
+                 wire:click="closeTutorial"
+                 wire:key="cal-tut-backdrop"></div>
+
+            <div class="cal-tut-modal"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="cal-tut-rail-title"
+                 wire:key="cal-tut-modal"
+                 x-data="{}"
+                 @keydown.escape.window="$wire.closeTutorial()">
+
+                <aside class="cal-tut-rail">
+                    <p class="cal-tut-rail-eyebrow">Booking guide</p>
+                    <h2 class="cal-tut-rail-title" id="cal-tut-rail-title">Schedule Your Sessions</h2>
+
+                    <ol class="cal-tut-steps">
+                        @foreach($tutorialSteps as $n => $label)
+                            @php
+                                $state = $n < $currentTutorialStep ? 'done'
+                                    : ($n === $currentTutorialStep ? 'active' : 'upcoming');
+                            @endphp
+
+                            @if($state === 'done')
+                                <li>
+                                    <button type="button"
+                                            class="cal-tut-step-item cal-tut-step-item--done"
+                                            wire:click="goToTutorialStep({{ $n }})"
+                                            aria-label="Go back to step {{ $n }}: {{ $label }}">
+                                        <span class="cal-tut-step-dot"><i class="fas fa-check" aria-hidden="true"></i></span>
+                                        <span class="cal-tut-step-label">{{ $label }}</span>
+                                    </button>
+                                </li>
+                            @else
+                                <li>
+                                    <div class="cal-tut-step-item cal-tut-step-item--{{ $state }}"
+                                         @if($state === 'active') aria-current="step" @endif>
+                                        <span class="cal-tut-step-dot">{{ $n }}</span>
+                                        <span class="cal-tut-step-label">{{ $label }}</span>
+                                    </div>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ol>
+
+                    <p class="cal-tut-rail-hint">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>Revisit this guide anytime via the View Tutorial pill on the calendar.</span>
+                    </p>
+                </aside>
+
+                <section class="cal-tut-panel">
+                    <button type="button"
+                            class="cal-tut-close"
+                            wire:click="closeTutorial"
+                            aria-label="Close tutorial">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
+
+                    <span class="cal-tut-step-eyebrow">
+                        <span class="sr-only">Tutorial </span>Step {{ $currentTutorialStep }} of {{ $totalTutorialSteps }}
+                    </span>
+
+                    <div class="cal-tut-step" wire:key="cal-tut-step-{{ $currentTutorialStep }}">
+                        @if($currentTutorialStep === 1)
+                            <h3 class="cal-tut-step-title">Calendar overview</h3>
+                            <p class="cal-tut-step-copy">
+                                This is your personal calendar where you can schedule
+                                <strong>Kick-Off Meetings</strong> and <strong>Review Sessions</strong>
+                                with your implementer.
+                            </p>
+
+                            <div class="cal-tut-illustration">
+                                <div class="cal-tut-tiles">
+                                    <div class="cal-tut-tile cal-tut-tile--kickoff">
+                                        <span class="cal-tut-tile-icon"><i class="fas fa-rocket" aria-hidden="true"></i></span>
+                                        <div class="cal-tut-tile-body">
+                                            <span class="cal-tut-tile-title">Kick-Off Meetings</span>
+                                            <span class="cal-tut-tile-hint">Project initiation session.</span>
                                         </div>
+                                    </div>
+                                    <div class="cal-tut-tile cal-tut-tile--review">
+                                        <span class="cal-tut-tile-icon"><i class="fas fa-rotate" aria-hidden="true"></i></span>
+                                        <div class="cal-tut-tile-body">
+                                            <span class="cal-tut-tile-title">Review Sessions</span>
+                                            <span class="cal-tut-tile-hint">Recurring progress checkpoints.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cal-tut-legend">
+                                    <span class="cal-tut-legend-chip"><span class="cal-tut-legend-dot cal-tut-legend-dot--avail"></span>Available</span>
+                                    <span class="cal-tut-legend-chip"><span class="cal-tut-legend-dot cal-tut-legend-dot--meet"></span>Your meeting</span>
+                                    <span class="cal-tut-legend-chip"><span class="cal-tut-legend-dot cal-tut-legend-dot--off"></span>Not available</span>
+                                </div>
+                            </div>
+
+                        @elseif($currentTutorialStep === 2)
+                            <h3 class="cal-tut-step-title">Finding open dates</h3>
+                            <p class="cal-tut-step-copy">
+                                Days highlighted in green have open sessions. Weekends and
+                                public holidays are blocked, and your existing meetings sit
+                                in blue.
+                            </p>
+
+                            <div class="cal-tut-illustration">
+                                <div class="cal-tut-mini-grid">
+                                    <div class="cal-tut-mini-cell cal-tut-mini-cell--bookable">
+                                        <span class="cal-tut-mini-day">15</span>
+                                        <span class="cal-tut-mini-tag cal-tut-mini-tag--open">3 Open</span>
+                                    </div>
+                                    <div class="cal-tut-mini-cell cal-tut-mini-cell--weekend">
+                                        <span class="cal-tut-mini-day">16</span>
+                                        <span class="cal-tut-mini-tag cal-tut-mini-tag--weekend">Weekend</span>
+                                    </div>
+                                    <div class="cal-tut-mini-cell cal-tut-mini-cell--meeting">
+                                        <span class="cal-tut-mini-day">17</span>
+                                        <span class="cal-tut-mini-tag cal-tut-mini-tag--meeting">Your meeting</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <button wire:click="closeTutorial" class="tutorial-close-btn">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 1.25rem; height: 1.25rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        <div class="tutorial-progress-bar">
-                            <div class="tutorial-progress-bg">
-                                <div class="tutorial-progress-fill" style="width: {{ ($currentTutorialStep / $totalTutorialSteps) * 100 }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tutorial Content -->
-                    <div class="tutorial-body">
-                        @if($currentTutorialStep == 1)
-                            <p class="tutorial-step-description">
-                                This is your personal calendar where you can schedule <strong>Kick-Off Meetings</strong> and <strong>Review Sessions</strong> with your implementer.
+                        @elseif($currentTutorialStep === 3)
+                            <h3 class="cal-tut-step-title">Picking a time slot</h3>
+                            <p class="cal-tut-step-copy">
+                                After choosing a date, pick one of the available time slots.
+                                Your selection is highlighted in navy before confirmation.
                             </p>
 
-                            <div class="tutorial-grid">
-                                <div class="tutorial-card blue">
-                                    <h5 style="font-weight: 700; color: #003c75; margin-bottom: 0.5rem;">Kick-Off <br>Meetings</h5>
-                                </div>
-                                <div class="tutorial-card purple">
-                                    <h5 style="font-weight: 700; color: #005170; margin-bottom: 0.5rem;">Review <br>Sessions</h5>
+                            <div class="cal-tut-illustration">
+                                <div class="cal-tut-slots">
+                                    <div class="cal-tut-slot-row">
+                                        <span class="cal-tut-slot-label">Session 1</span>
+                                        <span class="cal-tut-slot-time">9:30 — 10:30 AM</span>
+                                    </div>
+                                    <div class="cal-tut-slot-row cal-tut-slot-row--selected">
+                                        <span class="cal-tut-slot-label">Session 2</span>
+                                        <span class="cal-tut-slot-time">11:00 AM — 12:00 PM</span>
+                                        <span class="cal-tut-slot-pill">Selected</span>
+                                    </div>
+                                    <div class="cal-tut-slot-row">
+                                        <span class="cal-tut-slot-label">Session 3</span>
+                                        <span class="cal-tut-slot-time">2:00 — 3:00 PM</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="tutorial-tip">
-                                <p style="color: #065f46; font-size: 0.875rem;">
-                                    <strong style="color: #10b981;">Green dates</strong> are available for booking, and your existing meetings appear in <strong style="color: #003c75;">blue</strong>.
-                                </p>
-                            </div>
-
-                        @elseif($currentTutorialStep == 2)
-                            <h4 class="tutorial-step-title">Finding Available Dates</h4>
-                            <p class="tutorial-step-description">
-                                Look for dates highlighted in <span style="padding: 0.25rem 0.75rem; background: #ecfdf5; color: #065f46; border-radius: 20px; font-weight: 600;">green</span>
+                        @elseif($currentTutorialStep === 4)
+                            <h3 class="cal-tut-step-title">Attendees &amp; confirm</h3>
+                            <p class="cal-tut-step-copy">
+                                Add attendee emails separated by semicolons. Internal
+                                <strong>@@timeteccloud.com</strong> addresses aren't allowed —
+                                the form will flag invalid rows and disable Save until they're fixed.
                             </p>
 
-                            <!-- Mini Calendar Preview -->
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem auto; max-width: 600px;">
-                                <div class="tutorial-card green" style="text-align: center; padding: 0.75rem;">
-                                    <div style="font-weight: 700; color: #065f46;">15</div>
-                                    <div style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">✨ 3 available</div>
-                                </div>
-                                <div style="padding: 0.75rem; background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; text-align: center;">
-                                    <div style="font-weight: 700; color: #b45309;">16</div>
-                                    <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem;">Weekend</div>
-                                </div>
-                                <div class="tutorial-card blue" style="text-align: center; padding: 0.75rem;">
-                                    <div style="font-weight: 700; color: #003c75;">17</div>
-                                    <div style="font-size: 0.75rem; color: #003c75; margin-top: 0.25rem;">📅 Your Meeting</div>
-                                </div>
-                            </div>
+                            <div class="cal-tut-illustration">
+                                <div class="cal-tut-mock-drawer">
+                                    <div class="cal-tut-mock-row">
+                                        <div class="cal-tut-mock-input">
+                                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                                            <span>jane@client.com</span>
+                                        </div>
+                                    </div>
 
-                        @elseif($currentTutorialStep == 3)
-                            <h4 class="tutorial-step-title">Select Your Time Slot</h4>
+                                    <div class="cal-tut-mock-row cal-tut-mock-row--invalid">
+                                        <div class="cal-tut-mock-input">
+                                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                                            <span>foo@timeteccloud.com</span>
+                                        </div>
+                                        <p class="cal-tut-mock-error">Internal @@timeteccloud.com addresses are not allowed.</p>
+                                    </div>
 
-                            <!-- Session Selector Preview -->
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1.5rem 0;">
-                                <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">Session 1</div>
-                                    <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">9:30 AM</div>
+                                    <div class="cal-tut-mock-foot">
+                                        <span class="cal-tut-mock-save" aria-hidden="true">
+                                            <i class="fas fa-check"></i> Save attendees
+                                        </span>
+                                    </div>
                                 </div>
-                                <div style="padding: 1rem; border: 1.5px solid #003c75; border-radius: 12px; text-align: center; background: #003c75; transform: scale(1.05); box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35); font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">Session 2</div>
-                                    <div style="color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; margin-top: 0.25rem;">11:00 AM</div>
-                                    <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255, 255, 255, 0.18); color: white; border-radius: 20px; font-size: 0.625rem; letter-spacing: 0.04em;">Selected</div>
-                                </div>
-                                <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">Session 3</div>
-                                    <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">2:00 PM</div>
-                                </div>
-                            </div>
-
-                        @elseif($currentTutorialStep == 4)
-                            <h4 class="tutorial-step-title">Add Attendees & Submit</h4>
-
-                            <!-- Form Preview -->
-                            <div style="padding: 1rem; border: 2px solid #10b981; border-radius: 12px; background: #ecfdf5; margin: 1.5rem 0; text-align: left; font-family: 'Poppins', sans-serif;">
-                                <label style="display: block; font-weight: 600; color: #065f46; margin-bottom: 0.5rem; font-size: 0.875rem;">
-                                    Required Attendees <span style="color: #ef4444;">*</span>
-                                </label>
-                                <input type="text"
-                                    style="width: 100%; padding: 0.75rem; border: 2px solid #10b981; border-radius: 8px; background: #f0fdf4; font-size: 0.875rem; font-family: 'Poppins', sans-serif;"
-                                    placeholder="john@example.com;jane@example.com"
-                                    disabled>
-                                <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #065f46;">💡 Separate multiple emails with semicolons (;)</p>
                             </div>
                         @endif
                     </div>
 
-                    <!-- Tutorial Footer -->
-                    <div class="tutorial-footer">
-                        <div style="display: flex; gap: 0.75rem;">
-                            @if($currentTutorialStep > 1)
-                                <button wire:click="previousTutorialStep" class="tutorial-btn secondary">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-left" style="margin-right: 0.5rem;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                    Previous
-                                </button>
-                            @endif
-                        </div>
+                    <footer class="cal-tut-foot">
+                        @if($currentTutorialStep > 1)
+                            <button type="button"
+                                    class="cal-tut-link cal-tut-back"
+                                    wire:click="previousTutorialStep">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                Back
+                            </button>
+                        @endif
 
-                        <div style="display: flex; gap: 0.75rem;">
-                            <button wire:click="skipTutorial" class="tutorial-btn secondary">
+                        @if($currentTutorialStep < $totalTutorialSteps)
+                            <button type="button"
+                                    class="cal-tut-link"
+                                    wire:click="skipTutorial">
                                 Skip Tutorial
                             </button>
+                        @endif
 
-                            @if($currentTutorialStep < $totalTutorialSteps)
-                                <button wire:click="nextTutorialStep" class="tutorial-btn primary">
-                                    Next Step
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="arrow-right" style="margin-left: 0.5rem;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                            @else
-                                <button wire:click="completeTutorial" class="tutorial-btn success">
-                                    <span style="margin-right: 0.5rem;">🎉</span>
-                                    Get Started!
-                                </button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
+                        <button type="button"
+                                class="cal-tut-btn-primary"
+                                wire:click="nextTutorialStep">
+                            {{ $currentTutorialStep === $totalTutorialSteps ? 'Get Started' : 'Next Step' }}
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </button>
+                    </footer>
+                </section>
             </div>
         @endif
     </div>

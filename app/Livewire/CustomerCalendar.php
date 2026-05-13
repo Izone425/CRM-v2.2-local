@@ -102,6 +102,18 @@ class CustomerCalendar extends Component
         }
     }
 
+    public function goToTutorialStep(int $step)
+    {
+        if ($step < 1 || $step > $this->totalTutorialSteps) {
+            return;
+        }
+        if ($step > $this->currentTutorialStep) {
+            return;
+        }
+        $this->currentTutorialStep = $step;
+        $this->updateTutorialProgress();
+    }
+
     public function skipTutorial()
     {
         $this->completeTutorial();
@@ -132,11 +144,10 @@ class CustomerCalendar extends Component
 
         $this->showTutorial = false;
 
-        // Show a success notification
         Notification::make()
-            ->title('Tutorial completed! 🎉')
+            ->title('Tutorial completed')
             ->success()
-            ->body('You can access this tutorial anytime using the help button.')
+            ->body('You can revisit this guide anytime via the View Tutorial pill on the calendar.')
             ->send();
     }
 
