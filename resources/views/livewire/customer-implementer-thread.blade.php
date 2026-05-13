@@ -849,7 +849,7 @@
     <style>
 /* ── Base ── */
 .cit-wrap {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--tt-font-body);
     flex: 1;
     display: flex;
     flex-direction: column;

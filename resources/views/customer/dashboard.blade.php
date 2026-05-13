@@ -8,7 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
     @livewireStyles
 
     <style>
@@ -23,10 +25,11 @@
             --tt-danger: #ef4444;
             --tt-surface: #ffffff;
             --tt-page-bg: #F4F8FC;
+            --tt-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -78,7 +81,7 @@
         }
 
         .tt-brand-title {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 14px;
             font-weight: 600;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -155,7 +158,7 @@
             align-items: center;
             gap: 6px;
             padding: 6px 14px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 12px;
             font-weight: 600;
             color: var(--tt-danger);
@@ -269,7 +272,7 @@
 
         .sidebar-menu {
             padding: 14px 8px;
-            font-size: 13px;
+            font-size: 14px;
             transition: padding 0.28s ease;
             display: flex;
             flex-direction: column;
@@ -495,7 +498,7 @@
         }
         .menu-sub-items .menu-item {
             padding: 6px 10px;
-            font-size: 12px;
+            font-size: 12.25px;
             margin-bottom: 2px;
             white-space: normal;
             line-height: 1.3;
@@ -817,7 +820,7 @@
                 </svg>
             </button>
             <div id="training-sub" class="menu-sub-items" style="display: none;">
-                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">
                     Coming Soon
                 </div>
             </div>
@@ -837,7 +840,7 @@
                 </svg>
             </button>
             <div id="support-sub" class="menu-sub-items" style="display: none;">
-                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">
                     Coming Soon
                 </div>
             </div>
@@ -857,7 +860,7 @@
                 </svg>
             </button>
             <div id="knowledgebase-sub" class="menu-sub-items" style="display: none;">
-                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">
                     Coming Soon
                 </div>
             </div>
@@ -877,7 +880,7 @@
                 </svg>
             </button>
             <div id="commercial-sub" class="menu-sub-items" style="display: none;">
-                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">
                     Coming Soon
                 </div>
             </div>
@@ -897,7 +900,7 @@
                 </svg>
             </button>
             <div id="settings-sub" class="menu-sub-items" style="display: none;">
-                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                <div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">
                     Coming Soon
                 </div>
             </div>

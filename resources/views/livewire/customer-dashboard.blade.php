@@ -57,7 +57,7 @@
             --cdb-lavender: #a78bfa;
             --cdb-lavender-bg: #ede9fe;
             --cdb-lavender-soft: #f5f3ff;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             color: var(--cdb-text);
         }
 
@@ -1313,7 +1313,7 @@
             border-radius: 999px;
             cursor: pointer;
             transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             letter-spacing: 0.01em;
             white-space: nowrap;
         }
@@ -1595,7 +1595,7 @@
             font-weight: 600;
             color: var(--cdb-accent-dark);
             cursor: pointer;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             letter-spacing: 0.02em;
             transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
             white-space: nowrap;
@@ -1650,7 +1650,7 @@
             font-size: 11px;
             color: var(--cdb-text);
             cursor: pointer;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             transition: background 0.12s ease, color 0.12s ease;
         }
         .cdb-range-option:hover { background: var(--cdb-sky-soft); color: var(--cdb-sky); }
@@ -1783,7 +1783,7 @@
             cursor: pointer;
             background: transparent;
             border: none;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             transition: color 0.15s ease, gap 0.15s ease;
             width: 100%;
         }

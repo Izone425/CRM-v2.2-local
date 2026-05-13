@@ -93,7 +93,7 @@ use Carbon\Carbon;
         }
 
         .cal-title-text h2 {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 1.375rem;
             font-weight: 600;
             color: var(--cal-text);
@@ -137,7 +137,7 @@ use Carbon\Carbon;
         }
 
         .cal-month-label {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 0.9375rem;
             font-weight: 600;
             color: var(--cal-accent-dark);
@@ -313,7 +313,7 @@ use Carbon\Carbon;
         }
 
         .day-number {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-weight: 600;
             font-size: 15px;
             color: var(--cal-text);
@@ -367,7 +367,7 @@ use Carbon\Carbon;
             padding: 1px 7px;
             background: var(--cal-accent-dark);
             color: #ffffff;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 9px;
             font-weight: 600;
             border-radius: 999px;
@@ -463,7 +463,7 @@ use Carbon\Carbon;
         }
 
         .cal-panel-date {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 1.125rem;
             font-weight: 700;
             color: var(--cal-accent-dark);
@@ -513,7 +513,7 @@ use Carbon\Carbon;
         }
 
         .cal-panel-empty-title {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 14px;
             font-weight: 600;
             color: var(--cal-text);
@@ -537,7 +537,7 @@ use Carbon\Carbon;
             color: var(--cal-accent-dark);
             border: 1.25px solid var(--cal-accent-dark);
             border-radius: 999px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.01em;
@@ -584,7 +584,7 @@ use Carbon\Carbon;
             border: 1.5px solid var(--cal-border);
             border-radius: 10px;
             background: var(--cal-surface);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             cursor: pointer;
             transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.18s ease;
             text-align: left;
@@ -695,7 +695,7 @@ use Carbon\Carbon;
             color: #ffffff;
             border: none;
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -748,7 +748,7 @@ use Carbon\Carbon;
         }
 
         .cal-field-label {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 10px;
             font-weight: 600;
             color: var(--cal-text-muted);
@@ -769,7 +769,7 @@ use Carbon\Carbon;
             background: var(--cal-hover-bg);
             border: 1px solid var(--cal-border);
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             font-weight: 500;
             color: var(--cal-accent-dark);
@@ -788,7 +788,7 @@ use Carbon\Carbon;
             background: var(--cal-surface);
             border: 1.5px solid var(--cal-border);
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             color: var(--cal-text);
             transition: border-color 0.15s, box-shadow 0.15s;
@@ -915,7 +915,7 @@ use Carbon\Carbon;
             border: 1px solid var(--cal-border);
             border-radius: 999px;
             color: var(--cal-accent-dark);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 10px;
             font-weight: 600;
             cursor: pointer;
@@ -959,7 +959,7 @@ use Carbon\Carbon;
             z-index: 201;
             display: flex;
             flex-direction: column;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
         }
 
         .cal-att-head {
@@ -1084,7 +1084,7 @@ use Carbon\Carbon;
             background: var(--cal-surface);
             border: 1.5px solid var(--cal-border);
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             color: var(--cal-text);
             transition: border-color 0.15s, box-shadow 0.15s;
@@ -1119,7 +1119,7 @@ use Carbon\Carbon;
             font-size: 12px;
             font-weight: 500;
             color: var(--cal-holiday-text);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             line-height: 1.4;
         }
 
@@ -1133,7 +1133,7 @@ use Carbon\Carbon;
             border: 1.5px dashed var(--cal-border-strong);
             border-radius: 10px;
             color: var(--cal-accent-dark);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
@@ -1185,7 +1185,7 @@ use Carbon\Carbon;
             border: 1.5px solid var(--cal-border);
             border-radius: 10px;
             color: var(--cal-text-muted);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -1207,7 +1207,7 @@ use Carbon\Carbon;
             color: #ffffff;
             border: none;
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -1802,7 +1802,7 @@ use Carbon\Carbon;
             box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04),
                         0 28px 64px -24px rgba(15, 23, 42, 0.45);
             animation: cal-tut-scale-in 240ms cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
         }
 
         .cal-tut-rail {
@@ -2557,7 +2557,7 @@ use Carbon\Carbon;
             background: var(--cal-meeting-bg);
             color: var(--cal-meeting-text);
             border: 1px solid #cfdcef;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
@@ -2741,7 +2741,7 @@ use Carbon\Carbon;
             flex-shrink: 0;
         }
         .cal-bookings-drawer-head h4 {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 1rem;
             font-weight: 600;
             color: #111827;
@@ -2796,7 +2796,7 @@ use Carbon\Carbon;
             display: flex;
             flex-direction: column;
             gap: 6px;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
         }
         .cal-bookings-drawer-body .booking-card:hover {
             box-shadow: 0 8px 20px -10px rgba(15, 23, 42, .14);
@@ -2883,7 +2883,7 @@ use Carbon\Carbon;
             border-radius: 7px;
             background: transparent;
             color: #dc2626;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--tt-font-body);
             font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
