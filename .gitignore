@@ -27,3 +27,13 @@ public_html/storage
 public_html/hot
 
 /storage/app/*
+/storage/db-backups/
+
+# Local env backups
+/.env.hrsolution.bak
+/.env.*.bak
+
+# Local Claude harness + skill artifacts
+/.claude/settings.local.json
+/docs/superpowers/plans/
+/docs/superpowers/ultrathink/
