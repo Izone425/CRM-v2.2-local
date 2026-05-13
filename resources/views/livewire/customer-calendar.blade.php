@@ -2698,13 +2698,13 @@ use Carbon\Carbon;
 
                 <!-- Calendar Days Header -->
                 <div class="calendar-days-header">
-                    <div class="header-day">Mon</div>
-                    <div class="header-day">Tue</div>
-                    <div class="header-day">Wed</div>
-                    <div class="header-day">Thu</div>
-                    <div class="header-day">Fri</div>
-                    <div class="header-day">Sat</div>
-                    <div class="header-day">Sun</div>
+                    <div class="header-day">Monday</div>
+                    <div class="header-day">Tuesday</div>
+                    <div class="header-day">Wednesday</div>
+                    <div class="header-day">Thursday</div>
+                    <div class="header-day">Friday</div>
+                    <div class="header-day">Saturday</div>
+                    <div class="header-day">Sunday</div>
                 </div>
 
                 <!-- Calendar Grid -->
@@ -2801,9 +2801,6 @@ use Carbon\Carbon;
                             <i class="fas fa-hand-pointer"></i>
                         </div>
                         <p class="cal-panel-empty-title">Pick an available day</p>
-                        <p class="cal-panel-empty-body">
-                            Days outlined in green have open slots. Click one to see time options.
-                        </p>
                     </div>
 
                 @else
@@ -2873,10 +2870,6 @@ use Carbon\Carbon;
                                    title="Use Bulk Edit to change attendees"
                                    onclick="window.dispatchEvent(new CustomEvent('cal-open-attendees'))"
                                    placeholder="Click Bulk Edit to add attendees">
-                            <p class="cal-field-hint">
-                                <i class="fas fa-circle-info"></i>
-                                Separate multiple emails with semicolons (;)
-                            </p>
                         </div>
 
                         <div class="cal-confirm-row">
@@ -2910,7 +2903,7 @@ use Carbon\Carbon;
 
                             <p class="cal-panel-footnote">
                                 <i class="fas fa-envelope"></i>
-                                A Microsoft Teams invite will be emailed to all attendees after booking.
+                                A Microsoft Teams invitation will be emailed to all attendees after booking.
                             </p>
                         </div>
                     @else
@@ -3631,11 +3624,7 @@ use Carbon\Carbon;
 
                     <header class="cal-att-head">
                         <div class="cal-att-head-text">
-                            <p class="cal-att-head-eyebrow">Required Attendees</p>
-                            <h3 id="cal-att-title" class="cal-att-head-title">Manage attendee list</h3>
-                            <p class="cal-att-head-sub">
-                                Add up to <span x-text="maxEmails"></span> email addresses. You can paste a comma- or semicolon-separated list into any row.
-                            </p>
+                            <h3 id="cal-att-title" class="cal-att-head-title">Manage Attendee List</h3>
                         </div>
                         <button type="button" class="cal-att-close" @click="close()" aria-label="Close drawer">
                             <i class="fas fa-xmark"></i>
