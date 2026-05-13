@@ -724,7 +724,8 @@ class CustomerCalendar extends Component
             return;
         }
 
-        $this->requiredAttendees = (string) $emails;
+        $cleaned = $this->filterAttendeeEmails((string) $emails);
+        $this->requiredAttendees = implode(';', $cleaned);
 
         DB::table('customers')
             ->where('id', $customer->id)
@@ -735,6 +736,23 @@ class CustomerCalendar extends Component
             ->body('This list will be pre-filled for your future bookings.')
             ->success()
             ->send();
+    }
+
+    private function filterAttendeeEmails(string $emails): array
+    {
+        $forbiddenPattern = '/@(?:[^@\s]+\.)?timeteccloud\.com$/i';
+        $seen = [];
+        $out  = [];
+        foreach (array_map('trim', explode(';', $emails)) as $email) {
+            if ($email === '') continue;
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
+            if (preg_match($forbiddenPattern, $email)) continue;
+            $key = strtolower($email);
+            if (isset($seen[$key])) continue;
+            $seen[$key] = true;
+            $out[] = $email;
+        }
+        return $out;
     }
 
     /**

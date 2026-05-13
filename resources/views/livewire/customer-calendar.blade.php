@@ -1072,6 +1072,15 @@ use Carbon\Carbon;
             box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.14);
         }
 
+        .cal-att-row-error {
+            margin: 6px 2px 0;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--cal-holiday-text);
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.4;
+        }
+
         .cal-att-add {
             display: flex;
             align-items: center;
@@ -1167,6 +1176,15 @@ use Carbon\Carbon;
             background: var(--cal-accent-mid);
             box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35);
             transform: translateY(-1px);
+        }
+
+        .cal-att-btn-save:disabled,
+        .cal-att-btn-save:disabled:hover {
+            background: var(--cal-accent-dark);
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         body.cal-att-drawer-open {
@@ -2763,7 +2781,7 @@ use Carbon\Carbon;
                             @elseif($dayData['canBook'])
                                 <div class="available-count"><i class="fas fa-star"></i>{{ $dayData['availableCount'] }} Open</div>
                             @elseif($dayData['isCurrentMonth'] && !$dayData['isPast'] && !$dayData['isWeekend'] && !$dayData['isPublicHoliday'] && !$dayData['isBeyondBookingWindow'] && $canScheduleMeeting)
-                                <div class="cal-full-marker"><i class="fas fa-lock"></i>Full</div>
+                                <div class="cal-full-marker"><i class="fas fa-lock"></i>Not Available</div>
                             @endif
                         </div>
                     @endforeach
@@ -2775,7 +2793,7 @@ use Carbon\Carbon;
                     <span class="cal-legend-chip"><span class="cal-legend-dot meet"></span>Your meeting</span>
                     <span class="cal-legend-chip"><span class="cal-legend-dot wknd"></span>Weekend</span>
                     <span class="cal-legend-chip"><span class="cal-legend-dot hol"></span>Holiday</span>
-                    <span class="cal-legend-chip"><span class="cal-legend-dot full"></span>Full</span>
+                    <span class="cal-legend-chip"><span class="cal-legend-dot full"></span>Not Available</span>
                 </div>
             </div>
 
@@ -2800,7 +2818,7 @@ use Carbon\Carbon;
                         <div class="cal-panel-empty-icon">
                             <i class="fas fa-hand-pointer"></i>
                         </div>
-                        <p class="cal-panel-empty-title">Pick an available day</p>
+                        <p class="cal-panel-empty-title">Pick an available date</p>
                     </div>
 
                 @else
@@ -3558,9 +3576,26 @@ use Carbon\Carbon;
                     this.emails.push(parts[i]);
                 }
             },
+            isForbiddenDomain(email) {
+                const t = (email || '').trim().toLowerCase();
+                return /@(?:[^@\s]+\.)?timeteccloud\.com$/.test(t);
+            },
             isInvalid(email) {
                 const t = (email || '').trim();
-                return t.length > 0 && !this.emailRe.test(t);
+                if (t.length === 0) return false;
+                if (!this.emailRe.test(t)) return true;
+                if (this.isForbiddenDomain(t)) return true;
+                return false;
+            },
+            errorTextFor(email) {
+                const t = (email || '').trim();
+                if (t.length === 0) return '';
+                if (!this.emailRe.test(t)) return 'Invalid email format.';
+                if (this.isForbiddenDomain(t)) return 'Internal @timeteccloud.com addresses are not allowed.';
+                return '';
+            },
+            hasInvalidRows() {
+                return this.emails.some(e => this.isInvalid(e));
             },
             uniqueCount() {
                 const seen = new Set();
@@ -3576,11 +3611,13 @@ use Carbon\Carbon;
                 const cleaned = [];
                 for (const e of this.emails) {
                     const trimmed = (e || '').trim();
+                    if (!trimmed) continue;
+                    if (!this.emailRe.test(trimmed)) continue;
+                    if (this.isForbiddenDomain(trimmed)) continue;
                     const key = trimmed.toLowerCase();
-                    if (trimmed && !seen.has(key)) {
-                        seen.add(key);
-                        cleaned.push(trimmed);
-                    }
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    cleaned.push(trimmed);
                 }
                 // Single server roundtrip: update the Livewire property,
                 // persist to customers.saved_attendees for reuse on future
@@ -3652,6 +3689,7 @@ use Carbon\Carbon;
                                        placeholder="name@example.com"
                                        autocomplete="off"
                                        spellcheck="false">
+                                <p class="cal-att-row-error" x-show="isInvalid(email)" x-text="errorTextFor(email)"></p>
                             </div>
                         </template>
 
@@ -3673,7 +3711,10 @@ use Carbon\Carbon;
 
                     <footer class="cal-att-foot">
                         <button type="button" class="cal-att-btn-cancel" @click="close()">Cancel</button>
-                        <button type="button" class="cal-att-btn-save" @click="save()">
+                        <button type="button"
+                                class="cal-att-btn-save"
+                                @click="save()"
+                                :disabled="hasInvalidRows()">
                             <i class="fas fa-check"></i>
                             Save attendees
                         </button>
