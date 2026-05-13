@@ -2,6 +2,12 @@
 <style>
     .cshp-container {
         width: 100%;
+        height: calc(100vh - 112px);
+        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     /* --- Featured onboarding card --- */
@@ -13,6 +19,10 @@
         border: 1px solid #e7eafc;
         box-shadow: 0 10px 30px -18px rgba(88, 95, 182, 0.35);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
     }
     .cshp-featured::before {
         content: '';
@@ -28,6 +38,7 @@
         display: flex;
         gap: 18px;
         align-items: flex-start;
+        flex-shrink: 0;
     }
     .cshp-badge {
         width: 52px;
@@ -111,6 +122,7 @@
         align-items: flex-start;
         font-size: 13px;
         color: #78350f;
+        flex-shrink: 0;
     }
     .cshp-banner i { margin-top: 2px; color: #d97706; }
 
@@ -130,67 +142,124 @@
         border: 1px solid #e2e8f0;
         background: #f8fafc;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+        flex: 1;
+        min-height: 0;
+        display: flex;
     }
     .cshp-viewer {
         display: block;
         width: 100%;
-        min-height: 820px;
+        flex: 1;
+        height: 100%;
         border: 0;
         background: #f8fafc;
     }
-    @media (max-width: 1024px) {
-        .cshp-viewer { min-height: 680px; }
-    }
-    @media (max-width: 768px) {
-        .cshp-viewer { min-height: 520px; }
-    }
     .cshp-viewer-fallback {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         padding: 40px 24px;
         text-align: center;
         color: #64748b;
         font-size: 13px;
     }
 
-    /* --- Actions --- */
-    .cshp-actions {
+    /* --- Header icon actions --- */
+    .cshp-head-actions {
         position: relative;
         display: flex;
         gap: 10px;
-        margin-top: 18px;
-        flex-wrap: wrap;
+        margin-left: auto;
+        align-self: flex-start;
+        flex-shrink: 0;
     }
-    .cshp-btn-primary,
-    .cshp-btn-ghost {
+    .cshp-icon-btn {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
+        justify-content: center;
+        font-size: 14px;
         text-decoration: none;
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
         cursor: pointer;
         border: none;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
     }
-    .cshp-btn-primary {
+    .cshp-icon-btn--primary {
         background: linear-gradient(135deg, #667eea 0%, #8f5df7 100%);
         color: #ffffff;
         box-shadow: 0 8px 18px -10px rgba(102,126,234,0.8);
     }
-    .cshp-btn-primary:hover {
+    .cshp-icon-btn--primary:hover {
         transform: translateY(-1px);
         box-shadow: 0 10px 22px -10px rgba(102,126,234,0.95);
         color: #ffffff;
     }
-    .cshp-btn-ghost {
+    .cshp-icon-btn--ghost {
         background: #f8f9ff;
         color: #667eea;
         border: 1px solid #e7eafc;
     }
-    .cshp-btn-ghost:hover {
+    .cshp-icon-btn--ghost:hover {
         background: #eef0ff;
         color: #4f62c7;
+    }
+
+    /* Tooltip — right-anchored so it never extends past the card's right padding
+       (the card uses overflow:hidden for the gradient ::before overlay). */
+    .cshp-icon-btn::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: #1e293b;
+        color: #f1f5f9;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding: 6px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        box-shadow: 0 6px 18px -8px rgba(15, 23, 42, 0.5);
+        z-index: 10;
+    }
+    .cshp-icon-btn::before {
+        content: '';
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 6px solid #1e293b;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-50%) translateY(-4px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 10;
+    }
+    .cshp-icon-btn:hover::after,
+    .cshp-icon-btn:focus-visible::after {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .cshp-icon-btn:hover::before,
+    .cshp-icon-btn:focus-visible::before {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    .cshp-icon-btn[aria-disabled="true"]::after,
+    .cshp-icon-btn[aria-disabled="true"]::before {
+        display: none;
     }
 
 </style>
@@ -216,6 +285,23 @@
                         <span class="cshp-meta-value {{ $context['licenseDate'] === 'To be confirmed' ? 'is-placeholder' : '' }}">{{ $context['licenseDate'] }}</span>
                     </span>
                 </div>
+            </div>
+            <div class="cshp-head-actions">
+                <a href="{{ route('customer.onboarding-pdf.download') }}"
+                   class="cshp-icon-btn cshp-icon-btn--primary"
+                   data-tooltip="Download PDF"
+                   aria-label="Download PDF"
+                   @if($templateMissing) aria-disabled="true" tabindex="-1" style="pointer-events:none; opacity:0.5;" @endif>
+                    <i class="fas fa-download"></i>
+                </a>
+                <a href="{{ route('customer.onboarding-pdf.view') }}"
+                   target="_blank" rel="noopener"
+                   class="cshp-icon-btn cshp-icon-btn--ghost"
+                   data-tooltip="Open in new tab"
+                   aria-label="Open in new tab"
+                   @if($templateMissing) aria-disabled="true" tabindex="-1" style="pointer-events:none; opacity:0.5;" @endif>
+                    <i class="fas fa-up-right-from-square"></i>
+                </a>
             </div>
         </div>
 
@@ -244,25 +330,12 @@
                 </div>
             @else
                 <iframe
-                    src="{{ route('customer.onboarding-pdf.view') }}#view=FitH&toolbar=1"
+                    src="{{ route('customer.onboarding-pdf.view') }}#toolbar=0&navpanes=0&view=FitH"
                     class="cshp-viewer"
                     title="Software Onboarding Document"
                     loading="lazy">
                 </iframe>
             @endif
-        </div>
-
-        <div class="cshp-actions">
-            <a href="{{ route('customer.onboarding-pdf.download') }}" class="cshp-btn-primary"
-               @if($templateMissing) aria-disabled="true" style="pointer-events:none; opacity:0.5;" @endif>
-                <i class="fas fa-download"></i>
-                Download PDF
-            </a>
-            <a href="{{ route('customer.onboarding-pdf.view') }}" target="_blank" rel="noopener" class="cshp-btn-ghost"
-               @if($templateMissing) aria-disabled="true" style="pointer-events:none; opacity:0.5;" @endif>
-                <i class="fas fa-up-right-from-square"></i>
-                Open in new tab
-            </a>
         </div>
     </div>
     @endif

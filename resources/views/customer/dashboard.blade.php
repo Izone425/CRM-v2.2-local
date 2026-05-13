@@ -922,7 +922,7 @@
             </div>
 
             {{-- Software Onboarding Process --}}
-            <div id="softwareHandover-content" class="tab-content" style="display: none; min-height: 600px;">
+            <div id="softwareHandover-content" class="tab-content" style="display: none;">
                 @livewire('customer-software-handover-process')
             </div>
 
