@@ -310,7 +310,7 @@ class LeadResource extends Resource
         }
 
         if (in_array('software_handover_process', $activeTabs)) {
-            $tabs[] = Tabs\Tab::make('Software Handover Process')
+            $tabs[] = Tabs\Tab::make('Software Onboarding Process')
                 ->schema(SoftwareHandoverProcessTabs::getSchema());
         }
 

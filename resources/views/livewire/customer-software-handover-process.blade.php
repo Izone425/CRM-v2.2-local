@@ -33,14 +33,13 @@
         width: 52px;
         height: 52px;
         border-radius: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #8f5df7 55%, #e93886 100%);
-        color: #fff;
+        background: rgba(6, 182, 212, 0.10);
+        color: #06b6d4;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 22px;
         flex-shrink: 0;
-        box-shadow: 0 10px 22px -10px rgba(102,126,234,0.7);
     }
     .cshp-featured-titleblock {
         flex: 1;
@@ -63,42 +62,40 @@
         font-weight: 600;
     }
 
-    /* --- Info chip strip --- */
-    .cshp-chips {
-        position: relative;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 20px;
+    /* --- Inline meta in subtitle row --- */
+    .cshp-subtitle {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 10px;
     }
-    .cshp-chip {
-        background: #f8f9ff;
-        border: 1px solid #e7eafc;
-        border-radius: 10px;
-        padding: 10px 14px;
-        min-width: 0;
+    .cshp-meta {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
     }
-    .cshp-chip-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: #94a3b8;
-        margin-bottom: 4px;
-    }
-    .cshp-chip-value {
-        font-size: 14px;
+    .cshp-meta + .cshp-meta::before {
+        content: '·';
+        margin-right: 6px;
+        color: #cbd5e1;
         font-weight: 700;
-        color: #1e293b;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
-    .cshp-chip-value.is-placeholder {
+    .cshp-meta-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+    }
+    .cshp-meta-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+    }
+    .cshp-meta-value.is-placeholder {
         color: #94a3b8;
         font-style: italic;
         font-weight: 500;
-    }
-    @media (max-width: 640px) {
-        .cshp-chips { grid-template-columns: 1fr; }
     }
 
     /* --- Incomplete banner --- */
@@ -208,30 +205,16 @@
                 <i class="fas fa-file-contract"></i>
             </div>
             <div class="cshp-featured-titleblock">
-                <h2 class="cshp-title">Software Handover Process</h2>
+                <h2 class="cshp-title">Software Onboarding Process</h2>
                 <div class="cshp-subtitle">
-                    Personalized for <strong>{{ $context['companyName'] }}</strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="cshp-chips">
-            <div class="cshp-chip">
-                <div class="cshp-chip-label">Project Code</div>
-                <div class="cshp-chip-value {{ $context['projectCode'] === '—' ? 'is-placeholder' : '' }}">
-                    {{ $context['projectCode'] }}
-                </div>
-            </div>
-            <div class="cshp-chip">
-                <div class="cshp-chip-label">Implementer</div>
-                <div class="cshp-chip-value {{ $context['implementer'] === 'To be assigned' ? 'is-placeholder' : '' }}">
-                    {{ $context['implementer'] }}
-                </div>
-            </div>
-            <div class="cshp-chip">
-                <div class="cshp-chip-label">License Activation</div>
-                <div class="cshp-chip-value {{ $context['licenseDate'] === 'To be confirmed' ? 'is-placeholder' : '' }}">
-                    {{ $context['licenseDate'] }}
+                    <span class="cshp-meta">
+                        <span class="cshp-meta-label">Project Code</span>
+                        <span class="cshp-meta-value {{ $context['projectCode'] === '—' ? 'is-placeholder' : '' }}">{{ $context['projectCode'] }}</span>
+                    </span>
+                    <span class="cshp-meta">
+                        <span class="cshp-meta-label">License Activation</span>
+                        <span class="cshp-meta-value {{ $context['licenseDate'] === 'To be confirmed' ? 'is-placeholder' : '' }}">{{ $context['licenseDate'] }}</span>
+                    </span>
                 </div>
             </div>
         </div>

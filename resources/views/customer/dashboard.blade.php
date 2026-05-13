@@ -918,7 +918,7 @@
                 @livewire('customer-calendar')
             </div>
 
-            {{-- Software Handover Process --}}
+            {{-- Software Onboarding Process --}}
             <div id="softwareHandover-content" class="tab-content" style="display: none; min-height: 600px;">
                 @livewire('customer-software-handover-process')
             </div>

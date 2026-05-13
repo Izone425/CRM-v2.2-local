@@ -502,7 +502,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         return response()->download($path, $file->file_name);
     })->middleware('auth:customer')->name('data-migration-file.download');
 
-    // Software Handover Process file download (customer must own the file via lead_id)
+    // Software Onboarding Process file download (customer must own the file via lead_id)
     Route::get('/software-handover-process-file/{file}/download', function (\App\Models\SoftwareHandoverProcessFile $file) {
         $customer = auth('customer')->user();
         if (!$customer || $file->lead_id != $customer->lead_id) {
