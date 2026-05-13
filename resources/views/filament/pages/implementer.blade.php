@@ -136,69 +136,100 @@
     .group-project-closing .group-count { color: #ef4444; background-color: rgba(239, 68, 68, 0.10); }
     .group-project-closing.selected { background-color: rgba(239, 68, 68, 0.05); }
 
+    .group-thread { border-left-color: #0d9488; }
+    .group-thread .group-count { color: #0d9488; background-color: rgba(13, 148, 136, 0.10); }
+    .group-thread.selected { background-color: rgba(13, 148, 136, 0.05); }
+
     /* Category column styling */
     .category-column {
         padding-right: 10px;
     }
 
-    /* Category container */
+    /* Category container — horizontal filter pill strip */
     .category-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 10px;
-        border-right: 1px solid #e5e7eb;
-        padding-right: 10px;
-        max-height: 75vh;
-        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 4px 10px 14px 0;
+        margin-bottom: 14px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        max-height: none;
+        overflow: visible;
     }
 
-    /* Stat box styling */
+    /* Stat pill */
     .stat-box {
-        background-color: white;
-        width: 100%;
-        min-height: 65px;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-left: 4px solid transparent;
-        display: flex;
-        justify-content: space-between;
+        --stat-rgb: 100, 116, 139;
+        display: inline-flex;
         align-items: center;
-        padding: 12px 15px;
-        margin-bottom: 8px;
+        gap: 8px;
+        padding: 6px 10px 6px 11px;
+        min-height: 0;
+        width: auto;
+        margin: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        box-shadow: none;
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+        color: #475569;
+        font: 500 12.5px/1 Poppins, system-ui, sans-serif;
+    }
+
+    .stat-box::before {
+        content: '';
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgb(var(--stat-rgb));
+        flex-shrink: 0;
     }
 
     .stat-box:hover {
-        background-color: #f9fafb;
-        transform: translateX(3px);
+        transform: none;
+        border-color: rgba(var(--stat-rgb), 0.45);
+        color: rgb(var(--stat-rgb));
+        background: rgba(var(--stat-rgb), 0.04);
     }
 
     .stat-box.selected {
-        background-color: #f9fafb;
-        transform: translateX(5px);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        transform: none;
+        background: rgba(var(--stat-rgb), 0.12);
+        border-color: rgba(var(--stat-rgb), 0.50);
+        color: rgb(var(--stat-rgb));
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(var(--stat-rgb), 0.10);
     }
 
     .stat-info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-    }
-
-    .stat-count {
-        font-size: 20px;
-        font-weight: bold;
-        margin: 0;
-        line-height: 1.2;
+        display: inline-flex;
+        align-items: center;
     }
 
     .stat-label {
-        color: #6b7280;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.2;
+        color: inherit;
+        font-size: 12.5px;
+        font-weight: inherit;
+        line-height: 1;
+        letter-spacing: 0.01em;
+    }
+
+    .stat-count {
+        color: rgb(var(--stat-rgb));
+        background: rgba(var(--stat-rgb), 0.12);
+        font-size: 11.5px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 3px 7px;
+        border-radius: 999px;
+        margin-left: 2px;
+    }
+
+    .stat-box.selected .stat-count {
+        background: rgba(var(--stat-rgb), 0.18);
     }
 
     /* Content area */
@@ -224,7 +255,7 @@
         background-color: #f9fafb;
         border-radius: 0.5rem;
         border: 1px dashed #d1d5db;
-        height: 530px;
+        min-height: 60vh;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -252,154 +283,59 @@
         border-bottom: 1px solid #e5e7eb;
     }
 
-    /* STAT BOX COLORS - PROJECT STATUS */
-    .status-all { border-left: 4px solid #6b7280; }
-    .status-all .stat-count { color: #6b7280; }
+    /* STAT PILL COLORS — each pill class sets --stat-rgb consumed by .stat-box base rule */
 
-    .status-open { border-left: 4px solid #2563eb; }
-    .status-open .stat-count { color: #2563eb; }
+    /* Project Status */
+    .status-all      { --stat-rgb: 107, 114, 128; }
+    .status-open     { --stat-rgb: 37, 99, 235; }
+    .status-closed   { --stat-rgb: 16, 185, 129; }
+    .status-delay    { --stat-rgb: 245, 158, 11; }
+    .status-inactive { --stat-rgb: 239, 68, 68; }
 
-    .status-closed { border-left: 4px solid #10b981; }
-    .status-closed .stat-count { color: #10b981; }
+    /* License Certification */
+    .license-pending   { --stat-rgb: 139, 92, 246; }
+    .license-completed { --stat-rgb: 168, 85, 247; }
 
-    .status-delay { border-left: 4px solid #f59e0b; }
-    .status-delay .stat-count { color: #f59e0b; }
+    /* Data Migration */
+    .migration-pending   { --stat-rgb: 16, 185, 129; }
+    .migration-completed { --stat-rgb: 52, 211, 153; }
 
-    .status-inactive { border-left: 4px solid #ef4444; }
-    .status-inactive .stat-count { color: #ef4444; }
+    /* Follow Up Reminder */
+    .follow-up-today   { --stat-rgb: 245, 158, 11; }
+    .follow-up-overdue { --stat-rgb: 249, 115, 22; }
+    .follow-up-future  { --stat-rgb: 250, 104, 0; }
+    .follow-up-none    { --stat-rgb: 100, 116, 139; }
+    .follow-up-1       { --stat-rgb: 245, 158, 11; }
+    .follow-up-2       { --stat-rgb: 249, 115, 22; }
+    .follow-up-3       { --stat-rgb: 239, 68, 68; }
+    .follow-up-4       { --stat-rgb: 220, 38, 38; }
 
-    /* STAT BOX COLORS - LICENSE CERTIFICATION */
-    .license-pending { border-left: 4px solid #8b5cf6; }
-    .license-pending .stat-count { color: #8b5cf6; }
+    /* Ticketing System */
+    .ticketing-today   { --stat-rgb: 236, 72, 153; }
+    .ticketing-overdue { --stat-rgb: 217, 70, 239; }
 
-    .license-completed { border-left: 4px solid #a855f7; }
-    .license-completed .stat-count { color: #a855f7; }
+    /* New Request */
+    .customization-pending   { --stat-rgb: 6, 182, 212; }
+    .customization-completed { --stat-rgb: 14, 165, 233; }
+    .enhancement-pending     { --stat-rgb: 2, 132, 199; }
+    .enhancement-completed   { --stat-rgb: 3, 105, 161; }
 
-    /* STAT BOX COLORS - DATA MIGRATION */
-    .migration-pending { border-left: 4px solid #10b981; }
-    .migration-pending .stat-count { color: #10b981; }
+    /* Implementer Request */
+    .request-pending   { --stat-rgb: 99, 102, 241; }
+    .request-approved  { --stat-rgb: 139, 92, 246; }
+    .request-rejected  { --stat-rgb: 239, 68, 68; }
+    .request-cancelled { --stat-rgb: 148, 163, 184; }
 
-    .migration-completed { border-left: 4px solid #34d399; }
-    .migration-completed .stat-count { color: #34d399; }
+    /* Thread */
+    .thread-all      { --stat-rgb: 20, 184, 166; }
+    .thread-overdue  { --stat-rgb: 220, 38, 38; }
+    .thread-today    { --stat-rgb: 245, 158, 11; }
+    .thread-upcoming { --stat-rgb: 16, 185, 129; }
 
-    /* STAT BOX COLORS - PROJECT FOLLOW UP */
-    .follow-up-today { border-left: 4px solid #f59e0b; }
-    .follow-up-today .stat-count { color: #f59e0b; }
-
-    .follow-up-overdue { border-left: 4px solid #f97316; }
-    .follow-up-overdue .stat-count { color: #f97316; }
-
-    .follow-up-future { border-left: 4px solid #ff6a00; }
-    .follow-up-future .stat-count { color: #fa6800; }
-
-    /* STAT BOX COLORS - TICKETING SYSTEM */
-    .ticketing-today { border-left: 4px solid #ec4899; }
-    .ticketing-today .stat-count { color: #ec4899; }
-
-    .ticketing-overdue { border-left: 4px solid #d946ef; }
-    .ticketing-overdue .stat-count { color: #d946ef; }
-
-    /* STAT BOX COLORS - NEW REQUEST */
-    .customization-pending { border-left: 4px solid #06b6d4; }
-    .customization-pending .stat-count { color: #06b6d4; }
-
-    .customization-completed { border-left: 4px solid #0ea5e9; }
-    .customization-completed .stat-count { color: #0ea5e9; }
-
-    .enhancement-pending { border-left: 4px solid #0284c7; }
-    .enhancement-pending .stat-count { color: #0284c7; }
-
-    .enhancement-completed { border-left: 4px solid #0369a1; }
-    .enhancement-completed .stat-count { color: #0369a1; }
-
-    /* Styles for Implementer Request sub-tabs */
-    .request-pending { border-left: 4px solid #6366f1; }
-    .request-pending .stat-count { color: #6366f1; }
-
-    .request-approved { border-left: 4px solid #8b5cf6; }
-    .request-approved .stat-count { color: #8b5cf6; }
-
-    .request-rejected { border-left: 4px solid #ef4444; }
-    .request-rejected .stat-count { color: #ef4444; }
-
-    .request-cancelled { border-left: 4px solid #94a3b8; }
-    .request-cancelled .stat-count { color: #94a3b8; }
-
-    /* GROUP COLOR — Thread */
-    .group-thread { border-left-color: #0d9488; }
-    .group-thread .group-count { color: #0d9488; background-color: rgba(13, 148, 136, 0.10); }
-    .group-thread.selected { background-color: rgba(13, 148, 136, 0.05); }
-
-    /* STAT BOX COLORS — Thread */
-    .thread-all { border-left: 4px solid #14b8a6; }
-    .thread-all .stat-count { color: #14b8a6; }
-    .thread-overdue { border-left: 4px solid #dc2626; }
-    .thread-overdue .stat-count { color: #dc2626; }
-    .thread-today { border-left: 4px solid #f59e0b; }
-    .thread-today .stat-count { color: #f59e0b; }
-    .thread-upcoming { border-left: 4px solid #10b981; }
-    .thread-upcoming .stat-count { color: #10b981; }
-
+    /* Preserved: legacy group modifier (still used elsewhere) */
     .group-no-respond { border-left-color: #e11d48; }
     .group-no-respond .group-count { color: #e11d48; background-color: rgba(225, 29, 72, 0.10); }
     .group-no-respond.selected { background-color: rgba(225, 29, 72, 0.05); }
-
-    /* Follow up count status colors */
-    .follow-up-none { border-left: 4px solid #64748b; }
-    .follow-up-none .stat-count { color: #64748b; }
-
-    .follow-up-1 { border-left: 4px solid #f59e0b; }
-    .follow-up-1 .stat-count { color: #f59e0b; }
-
-    .follow-up-2 { border-left: 4px solid #f97316; }
-    .follow-up-2 .stat-count { color: #f97316; }
-
-    .follow-up-3 { border-left: 4px solid #ef4444; }
-    .follow-up-3 .stat-count { color: #ef4444; }
-
-    .follow-up-4 { border-left: 4px solid #dc2626; }
-    .follow-up-4 .stat-count { color: #dc2626; }
-
-    /* Selected states for follow-up counts */
-    .stat-box.selected.follow-up-none { background-color: rgba(100, 116, 139, 0.05); border-left-width: 6px; }
-    .stat-box.selected.follow-up-1 { background-color: rgba(245, 158, 11, 0.05); border-left-width: 6px; }
-    .stat-box.selected.follow-up-2 { background-color: rgba(249, 115, 22, 0.05); border-left-width: 6px; }
-    .stat-box.selected.follow-up-3 { background-color: rgba(239, 68, 68, 0.05); border-left-width: 6px; }
-    .stat-box.selected.follow-up-4 { background-color: rgba(220, 38, 38, 0.05); border-left-width: 6px; }
-
-    /* Selected states for categories */
-    .stat-box.selected.status-all { background-color: rgba(107, 114, 128, 0.05); border-left-width: 6px; }
-    .stat-box.selected.status-open { background-color: rgba(37, 99, 235, 0.05); border-left-width: 6px; }
-    .stat-box.selected.status-closed { background-color: rgba(16, 185, 129, 0.05); border-left-width: 6px; }
-    .stat-box.selected.status-delay { background-color: rgba(245, 158, 11, 0.05); border-left-width: 6px; }
-    .stat-box.selected.status-inactive { background-color: rgba(239, 68, 68, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.license-pending { background-color: rgba(139, 92, 246, 0.05); border-left-width: 6px; }
-    .stat-box.selected.license-completed { background-color: rgba(168, 85, 247, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.migration-pending { background-color: rgba(16, 185, 129, 0.05); border-left-width: 6px; }
-    .stat-box.selected.migration-completed { background-color: rgba(52, 211, 153, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.follow-up-today { background-color: rgba(245, 158, 11, 0.05); border-left-width: 6px; }
-    .stat-box.selected.follow-up-overdue { background-color: rgba(249, 115, 22, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.ticketing-today { background-color: rgba(236, 72, 153, 0.05); border-left-width: 6px; }
-    .stat-box.selected.ticketing-overdue { background-color: rgba(217, 70, 239, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.customization-pending { background-color: rgba(6, 182, 212, 0.05); border-left-width: 6px; }
-    .stat-box.selected.customization-completed { background-color: rgba(14, 165, 233, 0.05); border-left-width: 6px; }
-    .stat-box.selected.enhancement-pending { background-color: rgba(2, 132, 199, 0.05); border-left-width: 6px; }
-    .stat-box.selected.enhancement-completed { background-color: rgba(3, 105, 161, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.request-pending { background-color: rgba(99, 102, 241, 0.05); border-left-width: 6px; }
-    .stat-box.selected.request-approved { background-color: rgba(139, 92, 246, 0.05); border-left-width: 6px; }
-    .stat-box.selected.request-rejected { background-color: rgba(239, 68, 68, 0.05); border-left-width: 6px; }
-    .stat-box.selected.request-cancelled { background-color: rgba(148, 163, 184, 0.05); border-left-width: 6px; }
-
-    .stat-box.selected.thread-all { background-color: rgba(20, 184, 166, 0.05); border-left-width: 6px; }
-    .stat-box.selected.thread-overdue { background-color: rgba(220, 38, 38, 0.05); border-left-width: 6px; }
-    .stat-box.selected.thread-today { background-color: rgba(245, 158, 11, 0.05); border-left-width: 6px; }
-    .stat-box.selected.thread-upcoming { background-color: rgba(16, 185, 129, 0.05); border-left-width: 6px; }
     /* Animation for tab switching */
     [x-transition] {
         transition: all 0.2s ease-out;
@@ -422,37 +358,435 @@
         .group-box { min-height: 60px; }
 
         .category-container {
-            grid-template-columns: repeat(3, 1fr);
-            border-right: none;
+            padding: 4px 0 12px;
+            margin-bottom: 12px;
             border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            max-height: none;
         }
     }
 
     @media (max-width: 768px) {
-        .group-column,
-        .category-container {
+        .group-column {
             grid-template-columns: repeat(2, 1fr);
         }
-
+        .category-container { gap: 6px; }
+        .stat-box { font-size: 12px; padding: 5px 8px 5px 10px; }
         .stat-box:hover,
-        .group-box:hover {
-            transform: none;
-        }
-
+        .group-box:hover { transform: none; }
         .stat-box.selected,
-        .group-box.selected {
-            transform: none;
-        }
+        .group-box.selected { transform: none; }
     }
 
     @media (max-width: 640px) {
-        .group-column,
-        .category-container {
-            grid-template-columns: 1fr;
+        .group-column { grid-template-columns: 1fr; }
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       Command Center: Today's Focus hero, sparklines, motion, pulse
+       ─────────────────────────────────────────────────────────────── */
+
+    /* Atmospheric backdrop */
+    .implementer-container {
+        background:
+            radial-gradient(ellipse 50% 38% at 0% 0%, rgba(0, 80, 181, 0.05), transparent 65%),
+            radial-gradient(ellipse 38% 50% at 100% 100%, rgba(0, 164, 224, 0.04), transparent 60%);
+        padding: 6px;
+        border-radius: 14px;
+    }
+
+    /* Hero panel */
+    .imp-hero {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px 28px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        min-height: 60vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .imp-hero-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+    }
+    .imp-hero-hello {
+        font: 600 24px/1.2 Poppins, system-ui, -apple-system, sans-serif;
+        color: #0f172a;
+        margin: 0 0 4px;
+        letter-spacing: -0.01em;
+    }
+    .imp-hero-date {
+        font: 500 13px/1 Poppins, system-ui, sans-serif;
+        color: #64748b;
+    }
+    .imp-hero-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font: 500 11px/1 Poppins, sans-serif;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 6px 12px;
+        background: rgba(16, 185, 129, 0.08);
+        border-radius: 999px;
+    }
+    .imp-hero-pulse {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+        animation: imp-pulse-ring 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    .imp-hero-meta-label { color: #047857; }
+
+    /* Today strip — 3 tiles */
+    .imp-today-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 22px;
+    }
+    .imp-today-tile {
+        border-radius: 10px;
+        padding: 18px 18px 16px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        font-family: Poppins, system-ui, sans-serif;
+    }
+    .imp-today-tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+    .imp-today-due      { background: rgba(0, 164, 224, 0.09); color: #075985; }
+    .imp-today-due:hover      { border-color: rgba(0, 164, 224, 0.30); }
+    .imp-today-overdue  { background: rgba(239, 68, 68, 0.09); color: #991b1b; }
+    .imp-today-overdue:hover  { border-color: rgba(239, 68, 68, 0.30); }
+    .imp-today-new      { background: rgba(245, 158, 11, 0.09); color: #92400e; }
+    .imp-today-new:hover      { border-color: rgba(245, 158, 11, 0.30); }
+    .imp-today-count {
+        font: 700 30px/1 Poppins, system-ui, sans-serif;
+        letter-spacing: -0.02em;
+    }
+    .imp-today-label {
+        font: 600 11px/1 Poppins, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 4px;
+    }
+    .imp-today-hint {
+        font: 400 11.5px/1.3 Poppins, sans-serif;
+        opacity: 0.7;
+        margin-top: 2px;
+    }
+
+    /* Priority list */
+    .imp-priority-block { margin-top: 26px; }
+    .imp-priority-head {
+        font: 600 11px/1 Poppins, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: #64748b;
+        margin-bottom: 10px;
+    }
+    .imp-priority-list {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: 8px;
+    }
+    .imp-priority-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: border-color .15s ease, transform .15s ease, background .15s ease;
+        font-family: Poppins, system-ui, sans-serif;
+    }
+    .imp-priority-item:hover {
+        border-color: #0050B5;
+        background: #f8fbff;
+        transform: translateX(3px);
+    }
+    .imp-priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .imp-priority-high .imp-priority-dot { background: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,0.15); }
+    .imp-priority-med  .imp-priority-dot { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245,158,11,0.12); }
+    .imp-priority-low  .imp-priority-dot { background: #64748b; }
+    .imp-priority-count {
+        font: 700 15px/1 Poppins, sans-serif;
+        color: #0f172a;
+        min-width: 24px;
+        text-align: right;
+    }
+    .imp-priority-label {
+        font: 500 13.5px/1.3 Poppins, sans-serif;
+        color: #1f2937;
+        flex: 1;
+    }
+    .imp-priority-chev {
+        font-size: 22px;
+        color: #94a3b8;
+        line-height: 1;
+        transition: transform .15s ease, color .15s ease;
+    }
+    .imp-priority-item:hover .imp-priority-chev { color: #0050B5; transform: translateX(2px); }
+
+    /* Action Inbox */
+    .imp-inbox { margin-top: 26px; }
+    .imp-inbox-head {
+        display: flex; align-items: baseline; justify-content: space-between;
+        margin-bottom: 12px;
+        gap: 12px;
+    }
+    .imp-inbox-head-title {
+        font: 600 12px/1 Poppins, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: #64748b;
+    }
+    .imp-inbox-head-sub {
+        font: 500 11.5px/1 Poppins, sans-serif;
+        color: #94a3b8;
+    }
+
+    .imp-inbox-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+
+    .imp-inbox-item {
+        display: flex; align-items: center; gap: 14px;
+        padding: 12px 14px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .15s ease, transform .15s ease, background .15s ease;
+        font-family: Poppins, system-ui, sans-serif;
+    }
+    .imp-inbox-item:hover {
+        border-color: #0050B5;
+        background: #f8fbff;
+        transform: translateX(3px);
+    }
+    .imp-inbox-item:focus-visible {
+        outline: 2px solid #0050B5;
+        outline-offset: 2px;
+    }
+
+    .imp-inbox-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .imp-inbox-high .imp-inbox-dot { background: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,0.15); }
+    .imp-inbox-med  .imp-inbox-dot { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245,158,11,0.12); }
+    .imp-inbox-low  .imp-inbox-dot { background: #64748b; }
+
+    .imp-inbox-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+    .imp-inbox-title {
+        font: 600 13.5px/1.2 Poppins, sans-serif;
+        color: #0f172a;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .imp-inbox-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .imp-inbox-type-chip {
+        font: 600 10px/1 Poppins, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 3px 7px;
+        border-radius: 999px;
+        color: var(--imp-type-color, #64748b);
+        background: rgba(0,0,0,0.04);
+    }
+    .imp-inbox-age { font: 500 12px/1.2 Poppins, sans-serif; color: #64748b; }
+    .imp-inbox-chev {
+        font-size: 20px; line-height: 1; color: #94a3b8;
+        transition: transform .15s ease, color .15s ease;
+        flex-shrink: 0;
+    }
+    .imp-inbox-item:hover .imp-inbox-chev { color: #0050B5; transform: translateX(2px); }
+
+    .imp-inbox-footer { margin-top: 14px; text-align: right; }
+    .imp-inbox-footer a {
+        font: 500 12.5px/1 Poppins, sans-serif;
+        color: #0050B5;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .imp-inbox-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+        .imp-inbox-item { padding: 10px 12px; gap: 10px; }
+        .imp-inbox-title { font-size: 13px; }
+        .imp-inbox-chev { display: none; }
+    }
+
+    /* All-clear state */
+    .imp-allclear {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 40px 20px;
+    }
+    .imp-allclear-icon {
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.10);
+        color: #10b981;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+    }
+    .imp-allclear-icon svg { width: 30px; height: 30px; }
+    .imp-allclear-title {
+        font: 600 17px/1.2 Poppins, sans-serif;
+        color: #0f172a; margin: 0;
+    }
+    .imp-allclear-sub {
+        font: 400 13px/1.4 Poppins, sans-serif;
+        color: #64748b; margin: 0;
+    }
+
+    /* Tile sparkline (sits behind content) */
+    .group-box { position: relative; overflow: hidden; }
+    .group-box .group-info,
+    .group-box .group-count { position: relative; z-index: 1; }
+    .imp-tile-spark {
+        position: absolute;
+        left: 4px; right: 0; bottom: 0;
+        width: calc(100% - 4px);
+        height: 22px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Hot-pulse dot inside tile */
+    .imp-tile-pulse {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: var(--imp-pulse-color, #ef4444);
+        animation: imp-pulse-dot 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+        margin-right: 2px;
+    }
+    @keyframes imp-pulse-dot {
+        0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 var(--imp-pulse-color, #ef4444); }
+        50%      { transform: scale(1.15); opacity: 0.85; box-shadow: 0 0 0 5px transparent; }
+    }
+    @keyframes imp-pulse-ring {
+        0%   { box-shadow: 0 0 0 0 currentColor; }
+        70%  { box-shadow: 0 0 0 8px transparent; }
+        100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    /* Per-tile accent variables (used by hover glow) */
+    .group-project-status      { --imp-accent: 37, 99, 235; }
+    .group-license             { --imp-accent: 139, 92, 246; }
+    .group-ticketing           { --imp-accent: 236, 72, 153; }
+    .group-migration           { --imp-accent: 16, 185, 129; }
+    .group-follow-up           { --imp-accent: 245, 158, 11; }
+    .group-project-closing     { --imp-accent: 239, 68, 68; }
+    .group-implementer-request { --imp-accent: 99, 102, 241; }
+    .group-thread              { --imp-accent: 13, 148, 136; }
+
+    /* Hover glow keyed to accent */
+    .group-box:hover {
+        box-shadow:
+            0 2px 6px rgba(0,0,0,0.06),
+            0 0 0 1px rgba(var(--imp-accent, 0,80,181), 0.18),
+            0 10px 26px rgba(var(--imp-accent, 0,80,181), 0.10);
+    }
+    .group-box.selected {
+        box-shadow:
+            0 2px 5px rgba(0,0,0,0.10),
+            0 0 0 1px rgba(var(--imp-accent, 0,80,181), 0.22),
+            0 12px 30px rgba(var(--imp-accent, 0,80,181), 0.12);
+    }
+
+    /* Staggered entrance for hero + tiles */
+    .imp-hero {
+        animation: imp-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .group-box {
+        animation: imp-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .group-box:nth-child(1) { animation-delay: 80ms; }
+    .group-box:nth-child(2) { animation-delay: 140ms; }
+    .group-box:nth-child(3) { animation-delay: 200ms; }
+    .group-box:nth-child(4) { animation-delay: 260ms; }
+    .group-box:nth-child(5) { animation-delay: 320ms; }
+    .group-box:nth-child(6) { animation-delay: 380ms; }
+    .group-box:nth-child(7) { animation-delay: 440ms; }
+    .group-box:nth-child(8) { animation-delay: 500ms; }
+    @keyframes imp-fade-up {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Keyboard shortcuts overlay */
+    .imp-shortcuts-overlay {
+        position: fixed; inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+    .imp-shortcuts-card {
+        background: white;
+        border-radius: 14px;
+        padding: 28px 32px;
+        max-width: 380px;
+        width: 90%;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+        font-family: Poppins, system-ui, sans-serif;
+    }
+    .imp-shortcuts-card h3 {
+        font-weight: 600; font-size: 16px;
+        margin: 0 0 14px; color: #0f172a;
+    }
+    .imp-shortcuts-card dl {
+        display: grid; grid-template-columns: 80px 1fr;
+        gap: 10px 16px; margin: 0;
+    }
+    .imp-shortcuts-card dt {
+        font: 600 12px/1 Poppins, sans-serif;
+        background: #f1f5f9;
+        color: #1e293b;
+        padding: 6px 10px;
+        border-radius: 6px;
+        text-align: center;
+        align-self: center;
+    }
+    .imp-shortcuts-card dd {
+        margin: 0;
+        font: 500 13px/1.3 Poppins, sans-serif;
+        color: #475569;
+        align-self: center;
+    }
+    .imp-shortcuts-hint {
+        margin-top: 18px;
+        font: 400 11.5px/1.4 Poppins, sans-serif;
+        color: #94a3b8;
+        text-align: center;
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        .imp-hero, .group-box {
+            animation: none !important;
         }
+        .imp-tile-pulse, .imp-hero-pulse {
+            animation: none !important;
+        }
+    }
+
+    /* Today strip — responsive */
+    @media (max-width: 768px) {
+        .imp-today-strip { grid-template-columns: 1fr; }
+        .imp-hero { padding: 20px; }
     }
 </style>
 
@@ -603,9 +937,6 @@
     $implementerRequestTotal = $pendingRequestCount;
     $noRespondProjects = $followUpNone + $followUp1 + $followUp2 + $followUp3 + $followUp4;
 
-    $implementerRequestTotal = $pendingRequestCount;
-    $noRespondProjects = $followUpNone + $followUp1 + $followUp2 + $followUp3 + $followUp4;
-
     $sessionReminderPending = app(\App\Livewire\ImplementerDashboard\ImplementerSessionPending::class)
         ->getAppointments()
         ->count();
@@ -630,12 +961,188 @@
         ->count();
 
     $projectClosingTotal = $projectClosingNew;
+
+    // ── Command Center: hero + sparkline data ───────────────────────────────
+    $impHour = (int) now()->format('G');
+    $impGreeting = $impHour < 12 ? 'Good morning' : ($impHour < 18 ? 'Good afternoon' : 'Good evening');
+    $impFirstName = trim(explode(' ', auth()->user()->name ?? 'there')[0]);
+
+    $impDueTodayTotal = (int) ($followUpToday ?? 0) + (int) ($sessionsToday ?? 0) + (int) ($threadDueToday ?? 0);
+    $impOverdueTotal = (int) ($threadOverdue ?? 0) + (int) ($followUpOverdue ?? 0) + (int) ($delayProjects ?? 0);
+    $impNewSinceYesterdayTotal = \App\Models\ImplementerTicket::where('created_at', '>=', now()->subDay())->count();
+
+    $impPriorityList = collect([
+        ['count' => (int)($threadOverdue ?? 0),    'label' => 'overdue thread'.((int)($threadOverdue ?? 0) === 1 ? '' : 's').' need a reply', 'group' => 'thread',      'stat' => 'thread-overdue',   'severity' => 'high'],
+        ['count' => (int)($followUpOverdue ?? 0),  'label' => 'follow-up'.((int)($followUpOverdue ?? 0) === 1 ? '' : 's').' overdue',         'group' => 'follow-up',   'stat' => 'follow-up-overdue','severity' => 'high'],
+        ['count' => (int)($delayProjects ?? 0),    'label' => 'delayed project'.((int)($delayProjects ?? 0) === 1 ? '' : 's'),                'group' => 'project-status','stat' => 'status-delay',    'severity' => 'high'],
+        ['count' => (int)($followUpToday ?? 0),    'label' => 'follow-up'.((int)($followUpToday ?? 0) === 1 ? '' : 's').' due today',         'group' => 'follow-up',   'stat' => 'follow-up-today',  'severity' => 'med'],
+        ['count' => (int)($threadDueToday ?? 0),   'label' => 'thread'.((int)($threadDueToday ?? 0) === 1 ? '' : 's').' due today',           'group' => 'thread',      'stat' => 'thread-today',     'severity' => 'med'],
+        ['count' => (int)($sessionsToday ?? 0),    'label' => 'session'.((int)($sessionsToday ?? 0) === 1 ? '' : 's').' scheduled today',     'group' => 'session-reminder','stat' => 'session-pending','severity' => 'med'],
+    ])->filter(fn ($i) => $i['count'] > 0)->take(5)->values()->all();
+
+    // Hot-pulse: which categories have any overdue items right now
+    $impHasOverdue = [
+        'project-status'      => (int) ($delayProjects ?? 0) > 0,
+        'license'             => false,
+        'ticket-reminder'     => (int) ($ticketCompletedOverdueCount ?? 0) > 0,
+        'session-reminder'    => false,
+        'follow-up'           => (int) ($followUpOverdue ?? 0) > 0,
+        'project-closing'     => false,
+        'implementer-request' => false,
+        'thread'              => (int) ($threadOverdue ?? 0) > 0,
+    ];
+
+    // Sparkline: last 7 days of created_at activity per category (backward-looking workload trend)
+    $impSparkClasses = [
+        'project-status'      => \App\Models\SoftwareHandover::class,
+        'license'             => \App\Models\SoftwareHandover::class,
+        'ticket-reminder'     => \App\Models\ImplementerTicket::class,
+        'session-reminder'    => \App\Models\ImplementerAppointment::class,
+        'follow-up'           => \App\Models\Lead::class,
+        'project-closing'     => \App\Models\SoftwareHandover::class,
+        'implementer-request' => \App\Models\ImplementerHandoverRequest::class,
+        'thread'              => \App\Models\ImplementerTicket::class,
+    ];
+
+    $impSparkBuild = function (string $modelClass): array {
+        try {
+            if (! class_exists($modelClass)) {
+                return array_fill(0, 7, 0);
+            }
+            $start = now()->startOfDay()->subDays(6);
+            $rows = $modelClass::query()
+                ->where('created_at', '>=', $start)
+                ->selectRaw('DATE(created_at) as day, COUNT(*) as n')
+                ->groupBy('day')
+                ->pluck('n', 'day')
+                ->toArray();
+            $points = [];
+            for ($i = 0; $i < 7; $i++) {
+                $d = $start->copy()->addDays($i)->format('Y-m-d');
+                $points[] = (int) ($rows[$d] ?? 0);
+            }
+            return $points;
+        } catch (\Throwable $e) {
+            return array_fill(0, 7, 0);
+        }
+    };
+
+    $impSparklines = [];
+    foreach ($impSparkClasses as $key => $cls) {
+        $impSparklines[$key] = $impSparkBuild($cls);
+    }
+
+    // ── Action Inbox: real pending/due items, mixed types, sorted by urgency ──
+    $impInboxItems = collect();
+
+    $impSafeLeadUrl = function ($id) {
+        try {
+            return \App\Filament\Resources\LeadResource::getUrl('view', ['record' => $id]);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    };
+
+    try {
+        \App\Models\Lead::query()
+            ->whereNotNull('follow_up_date')
+            ->whereDate('follow_up_date', '<', today())
+            ->orderBy('follow_up_date', 'asc')
+            ->limit(10)
+            ->get(['id', 'name', 'company_name', 'follow_up_date'])
+            ->each(function ($lead) use ($impInboxItems, $impSafeLeadUrl) {
+                $days = (int) today()->diffInDays(\Carbon\Carbon::parse($lead->follow_up_date));
+                $impInboxItems->push([
+                    'severity'   => 'high',
+                    'priority'   => 100000 + $days,
+                    'type'       => 'Follow-up',
+                    'type_color' => '#f59e0b',
+                    'title'      => $lead->company_name ?: ($lead->name ?: "Lead #{$lead->id}"),
+                    'age'        => $days . ' day' . ($days === 1 ? '' : 's') . ' overdue',
+                    'group'      => 'follow-up',
+                    'stat'       => 'follow-up-overdue',
+                    'url'        => $impSafeLeadUrl($lead->id),
+                ]);
+            });
+    } catch (\Throwable $e) { /* defensive */ }
+
+    try {
+        \App\Models\Lead::query()
+            ->whereDate('follow_up_date', today())
+            ->limit(5)
+            ->get(['id', 'name', 'company_name', 'follow_up_date'])
+            ->each(function ($lead) use ($impInboxItems, $impSafeLeadUrl) {
+                $impInboxItems->push([
+                    'severity'   => 'med',
+                    'priority'   => 50000,
+                    'type'       => 'Follow-up',
+                    'type_color' => '#f59e0b',
+                    'title'      => $lead->company_name ?: ($lead->name ?: "Lead #{$lead->id}"),
+                    'age'        => 'due today',
+                    'group'      => 'follow-up',
+                    'stat'       => 'follow-up-today',
+                    'url'        => $impSafeLeadUrl($lead->id),
+                ]);
+            });
+    } catch (\Throwable $e) { /* defensive */ }
+
+    try {
+        $threadComp = app(\App\Livewire\ImplementerDashboard\ImplementerThreadPendingAction::class);
+        $threadComp->selectedUser = $selectedUser ?? session('selectedUser');
+        if (method_exists($threadComp, 'getOverdueTickets')) {
+            $overdueTickets = $threadComp->getOverdueTickets();
+            if (is_iterable($overdueTickets)) {
+                collect($overdueTickets)->take(5)->each(function ($t) use ($impInboxItems) {
+                    $impInboxItems->push([
+                        'severity'   => 'high',
+                        'priority'   => 90000,
+                        'type'       => 'Thread',
+                        'type_color' => '#0d9488',
+                        'title'      => optional($t->customer ?? null)->name ?? ('Ticket ' . ($t->ticket_number ?? '#' . ($t->id ?? '?'))),
+                        'age'        => 'thread overdue',
+                        'group'      => 'thread',
+                        'stat'       => 'thread-overdue',
+                        'url'        => null,
+                    ]);
+                });
+            }
+        }
+    } catch (\Throwable $e) { /* defensive */ }
+
+    $impActionInbox = $impInboxItems
+        ->sortByDesc('priority')
+        ->take(8)
+        ->values()
+        ->all();
+
+    // ── Dynamic Today-tile hints ───────────────────────────────────────────
+    $impTileHints = [];
+    $impTileHints['due_today'] = (function () use ($followUpToday, $sessionsToday, $threadDueToday) {
+        $parts = array_filter([
+            (int) $followUpToday  > 0 ? $followUpToday  . ' follow-up'  . ((int) $followUpToday  === 1 ? '' : 's') : null,
+            (int) $sessionsToday  > 0 ? $sessionsToday  . ' session'    . ((int) $sessionsToday  === 1 ? '' : 's') : null,
+            (int) $threadDueToday > 0 ? $threadDueToday . ' thread'     . ((int) $threadDueToday === 1 ? '' : 's') : null,
+        ]);
+        return $parts ? implode(' · ', $parts) : 'Nothing due today';
+    })();
+    $impTileHints['overdue'] = (function () use ($followUpOverdue, $threadOverdue, $delayProjects) {
+        $parts = array_filter([
+            (int) $followUpOverdue > 0 ? $followUpOverdue . ' follow-up' . ((int) $followUpOverdue === 1 ? '' : 's') : null,
+            (int) $threadOverdue   > 0 ? $threadOverdue   . ' thread'    . ((int) $threadOverdue   === 1 ? '' : 's') : null,
+            (int) $delayProjects   > 0 ? $delayProjects   . ' delayed'   : null,
+        ]);
+        return $parts ? implode(' · ', $parts) : 'Past due date';
+    })();
+    $impTileHints['new'] = $impNewSinceYesterdayTotal > 0
+        ? $impNewSinceYesterdayTotal . ' ticket' . ($impNewSinceYesterdayTotal === 1 ? '' : 's') . ' in 24h'
+        : 'Nothing new';
 @endphp
 
 <div id="implementer-container" class="implementer-container"
     x-data="{
         selectedGroup: null,
         selectedStat: null,
+        showShortcuts: false,
 
         setSelectedGroup(value) {
             if (this.selectedGroup === value) {
@@ -645,6 +1152,7 @@
                 this.selectedGroup = value;
                 this.selectedStat = null;
             }
+            this.syncUrl();
         },
 
         setSelectedStat(value) {
@@ -653,149 +1161,226 @@
             } else {
                 this.selectedStat = value;
             }
+            this.syncUrl();
+        },
+
+        syncUrl() {
+            try {
+                const url = new URL(window.location);
+                this.selectedGroup ? url.searchParams.set('group', this.selectedGroup) : url.searchParams.delete('group');
+                this.selectedStat ? url.searchParams.set('stat', this.selectedStat) : url.searchParams.delete('stat');
+                window.history.replaceState({}, '', url);
+            } catch (e) {}
+        },
+
+        readUrlState() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                this.selectedGroup = params.get('group') || null;
+                this.selectedStat = params.get('stat') || null;
+            } catch (e) {}
+        },
+
+        handleKey(e) {
+            if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+            const map = ['project-status','license','ticket-reminder','session-reminder','follow-up','project-closing','implementer-request','thread'];
+            if (/^[1-8]$/.test(e.key)) {
+                e.preventDefault();
+                this.setSelectedGroup(map[parseInt(e.key) - 1]);
+            } else if (e.key === 'Escape') {
+                if (this.showShortcuts) { this.showShortcuts = false; return; }
+                this.selectedGroup = null;
+                this.selectedStat = null;
+                this.syncUrl();
+            } else if (e.key === '?' && e.shiftKey) {
+                e.preventDefault();
+                this.showShortcuts = !this.showShortcuts;
+            }
         },
 
         init() {
-            this.selectedGroup = null;
-            this.selectedStat = null;
+            this.readUrlState();
+            document.addEventListener('keydown', (e) => this.handleKey(e));
+            setTimeout(() => { try { window.sessionStorage.setItem('imp-counted-v1', '1'); } catch (e) {} }, 800);
         }
     }"
     x-init="init()">
 
     <div class="dashboard-layout" wire:poll.300s>
         <!-- Left sidebar with main category groups -->
-        <div class="group-column">
+        <div class="group-column" role="tablist" aria-label="Dashboard categories">
             <!-- NO1 - PROJECT STATUS -->
             <div class="group-box group-project-status"
                 :class="{'selected': selectedGroup === 'project-status'}"
-                @click="setSelectedGroup('project-status')">
+                @click="setSelectedGroup('project-status')"
+                role="tab"
+                :aria-selected="selectedGroup === 'project-status'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['project-status'], 'color' => '#2563eb'])
                 <div class="group-info">
+                    @if ($impHasOverdue['project-status'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #2563eb;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-chart-bar class="group-icon" style="color: #2563eb;" />
                     <div class="group-title">Project Status</div>
                 </div>
-                <div class="group-count {{ $projectStatusTotal == 0 ? 'is-zero' : '' }}">{{ $projectStatusTotal }}</div>
+                <div class="group-count {{ $projectStatusTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$projectStatusTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$projectStatusTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $projectStatusTotal }}</div>
             </div>
-
-            <!-- NO7 - DEMO SESSION -->
-            {{-- <div class="group-box group-new-request"
-                :class="{'selected': selectedGroup === 'new-request'}"
-                @click="setSelectedGroup('appointment')">
-                <div class="group-info">
-                    <div class="group-title">Project Session</div>
-                </div>
-                <div class="group-count">{{ $sessionsTotal }}</div>
-            </div> --}}
 
             <!-- NO2 - LICENSE CERTIFICATION -->
             <div class="group-box group-license"
                 :class="{'selected': selectedGroup === 'license'}"
-                @click="setSelectedGroup('license')">
+                @click="setSelectedGroup('license')"
+                role="tab"
+                :aria-selected="selectedGroup === 'license'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['license'], 'color' => '#8b5cf6'])
                 <div class="group-info">
+                    @if ($impHasOverdue['license'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #8b5cf6;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-clipboard-document-list class="group-icon" style="color: #8b5cf6;" />
                     <div class="group-title">Project Task</div>
                 </div>
-                <div class="group-count {{ $licenseTotal == 0 ? 'is-zero' : '' }}">{{ $licenseTotal }}</div>
+                <div class="group-count {{ $licenseTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$licenseTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$licenseTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $licenseTotal }}</div>
             </div>
 
             <!-- NO3 - TICKET REMINDER -->
             <div class="group-box group-ticketing"
                 :class="{'selected': selectedGroup === 'ticket-reminder'}"
-                @click="setSelectedGroup('ticket-reminder')">
+                @click="setSelectedGroup('ticket-reminder')"
+                role="tab"
+                :aria-selected="selectedGroup === 'ticket-reminder'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['ticket-reminder'], 'color' => '#ec4899'])
                 <div class="group-info">
+                    @if ($impHasOverdue['ticket-reminder'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #ec4899;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-ticket class="group-icon" style="color: #ec4899;" />
                     <div class="group-title">Ticket Reminder</div>
                 </div>
-                <div class="group-count {{ $ticketReminderTotal == 0 ? 'is-zero' : '' }}">{{ $ticketReminderTotal }}</div>
+                <div class="group-count {{ $ticketReminderTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$ticketReminderTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$ticketReminderTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $ticketReminderTotal }}</div>
             </div>
 
             <!-- NO4 - SESSION REMINDER -->
             <div class="group-box group-migration"
                 :class="{'selected': selectedGroup === 'session-reminder'}"
-                @click="setSelectedGroup('session-reminder')">
+                @click="setSelectedGroup('session-reminder')"
+                role="tab"
+                :aria-selected="selectedGroup === 'session-reminder'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['session-reminder'], 'color' => '#10b981'])
                 <div class="group-info">
+                    @if ($impHasOverdue['session-reminder'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #10b981;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-calendar-days class="group-icon" style="color: #10b981;" />
                     <div class="group-title">Session Reminder</div>
                 </div>
-                <div class="group-count {{ $sessionReminderTotal == 0 ? 'is-zero' : '' }}">{{ $sessionReminderTotal }}</div>
+                <div class="group-count {{ $sessionReminderTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$sessionReminderTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$sessionReminderTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $sessionReminderTotal }}</div>
             </div>
 
             <!-- NO5 - PROJECT FOLLOW UP -->
             <div class="group-box group-follow-up"
                 :class="{'selected': selectedGroup === 'follow-up'}"
-                @click="setSelectedGroup('follow-up')">
+                @click="setSelectedGroup('follow-up')"
+                role="tab"
+                :aria-selected="selectedGroup === 'follow-up'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['follow-up'], 'color' => '#f59e0b'])
                 <div class="group-info">
+                    @if ($impHasOverdue['follow-up'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #f59e0b;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-bell-alert class="group-icon" style="color: #f59e0b;" />
                     <div class="group-title">Follow Up Reminder</div>
                 </div>
-                <div class="group-count {{ $followUpTotal == 0 ? 'is-zero' : '' }}">{{ $followUpTotal }}</div>
+                <div class="group-count {{ $followUpTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$followUpTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$followUpTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $followUpTotal }}</div>
             </div>
 
             <!-- NO6 - PROJECT CLOSING -->
             <div class="group-box group-project-closing"
                 :class="{'selected': selectedGroup === 'project-closing'}"
-                @click="setSelectedGroup('project-closing')">
+                @click="setSelectedGroup('project-closing')"
+                role="tab"
+                :aria-selected="selectedGroup === 'project-closing'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['project-closing'], 'color' => '#ef4444'])
                 <div class="group-info">
+                    @if ($impHasOverdue['project-closing'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #ef4444;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-check-circle class="group-icon" style="color: #ef4444;" />
                     <div class="group-title">Project Closing</div>
                 </div>
-                <div class="group-count {{ $projectClosingTotal == 0 ? 'is-zero' : '' }}">{{ $projectClosingTotal }}</div>
+                <div class="group-count {{ $projectClosingTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$projectClosingTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$projectClosingTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $projectClosingTotal }}</div>
             </div>
 
             <!-- NO7 - IMPLEMENTER REQUEST -->
             <div class="group-box group-implementer-request"
                 :class="{'selected': selectedGroup === 'implementer-request'}"
-                @click="setSelectedGroup('implementer-request')">
+                @click="setSelectedGroup('implementer-request')"
+                role="tab"
+                :aria-selected="selectedGroup === 'implementer-request'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['implementer-request'], 'color' => '#6366f1'])
                 <div class="group-info">
+                    @if ($impHasOverdue['implementer-request'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #6366f1;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-inbox-arrow-down class="group-icon" style="color: #6366f1;" />
                     <div class="group-title">Session Request</div>
                 </div>
-                <div class="group-count {{ $implementerRequestTotal == 0 ? 'is-zero' : '' }}">{{ $implementerRequestTotal }}</div>
+                <div class="group-count {{ $implementerRequestTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$implementerRequestTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$implementerRequestTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $implementerRequestTotal }}</div>
             </div>
 
             <!-- NO8 - THREAD -->
             <div class="group-box group-thread"
                 :class="{'selected': selectedGroup === 'thread'}"
-                @click="setSelectedGroup('thread')">
+                @click="setSelectedGroup('thread')"
+                role="tab"
+                :aria-selected="selectedGroup === 'thread'"
+                tabindex="0">
+                @include('filament.pages.partials._imp-tile-sparkline', ['points' => $impSparklines['thread'], 'color' => '#0d9488'])
                 <div class="group-info">
+                    @if ($impHasOverdue['thread'])
+                        <span class="imp-tile-pulse" style="--imp-pulse-color: #0d9488;" aria-hidden="true"></span>
+                    @endif
                     <x-heroicon-o-chat-bubble-left-right class="group-icon" style="color: #0d9488;" />
                     <div class="group-title">Thread</div>
                 </div>
-                <div class="group-count {{ $threadTotal == 0 ? 'is-zero' : '' }}">{{ $threadTotal }}</div>
+                <div class="group-count {{ $threadTotal == 0 ? 'is-zero' : '' }}"
+                    x-data="{ target: {{ (int)$threadTotal }}, display: window.sessionStorage.getItem('imp-counted-v1') ? {{ (int)$threadTotal }} : 0 }"
+                    x-init="if (!window.sessionStorage.getItem('imp-counted-v1')) { const s = performance.now(); const tick = (n) => { const t = Math.min(1, (n - s) / 600); display = Math.round(target * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); else display = target; }; requestAnimationFrame(tick); }"
+                    x-text="display">{{ $threadTotal }}</div>
             </div>
 
-            <!-- NO5 - PROJECT FOLLOW UP -->
-            {{-- <div class="group-box group-no-respond"
-                :class="{'selected': selectedGroup === 'no-respond'}"
-                @click="setSelectedGroup('no-respond')">
-                <div class="group-info">
-                    <div class="group-title">Follow Up Count</div>
-                </div>
-                <div class="group-count">{{ $noRespondProjects }}</div>
-            </div> --}}
-
-            {{-- <!-- NO5 - TICKETING SYSTEM -->
-            <div class="group-box group-ticketing"
-                :class="{'selected': selectedGroup === 'ticketing'}"
-                @click="setSelectedGroup('ticketing')">
-                <div class="group-info">
-                    <div class="group-title">Ticketing System</div>
-                </div>
-                <div class="group-count">{{ $ticketingTotal }}</div>
-            </div> --}}
-
-            {{-- <!-- NO6 - NEW REQUEST -->
-            <div class="group-box group-new-request"
-                :class="{'selected': selectedGroup === 'new-request'}"
-                @click="setSelectedGroup('new-request')">
-                <div class="group-info">
-                    <div class="group-title">New Request</div>
-                </div>
-                <div class="group-count">{{ $requestTotal }}</div>
-            </div> --}}
         </div>
 
         <!-- Right content column -->
-        <div class="content-column">
+        <div class="content-column" role="region" aria-label="Selected category content">
             <!-- PROJECT STATUS Sub-tabs -->
             <div class="category-container" x-show="selectedGroup === 'project-status'" x-transition>
                 <div class="stat-box status-all"
@@ -965,7 +1550,7 @@
             </div>
 
             <!-- IMPLEMENTER REQUEST Sub-tabs -->
-            <div class="category-container" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));" x-show="selectedGroup === 'implementer-request'" x-transition>
+            <div class="category-container" x-show="selectedGroup === 'implementer-request'" x-transition>
                 <div class="stat-box request-pending"
                     :class="{'selected': selectedStat === 'request-pending'}"
                     @click="setSelectedStat('request-pending')">
@@ -1004,8 +1589,7 @@
             </div>
 
             <!-- THREAD Sub-tabs -->
-            <div class="category-container" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));"
-                 x-show="selectedGroup === 'thread'" x-transition>
+            <div class="category-container" x-show="selectedGroup === 'thread'" x-transition>
                 <div class="stat-box thread-all"
                     :class="{'selected': selectedStat === 'thread-all'}"
                     @click="setSelectedStat('thread-all'); $wire.dispatch('thread-filter-changed', { value: 'all' })">
@@ -1232,9 +1816,11 @@
             <!-- Content area for tables -->
             <div class="content-area">
                 <!-- Display hint message when nothing is selected -->
-                <div class="hint-message" x-show="selectedGroup === null || selectedStat === null" x-transition>
-                    <h3 x-text="selectedGroup === null ? 'Select a category to continue' : 'Select a subcategory to view data'"></h3>
-                    <p x-text="selectedGroup === null ? 'Click on any of the category boxes to see options' : 'Click on any of the subcategory boxes to display the corresponding information'"></p>
+                @include('filament.pages.partials._imp-today-focus')
+
+                <div class="hint-message" x-show="selectedGroup !== null && selectedStat === null" x-transition>
+                    <h3>Select a subcategory to view data</h3>
+                    <p>Click on any of the subcategory boxes to display the corresponding information</p>
                 </div>
 
                 <!-- Content panels for each table -->
@@ -1474,6 +2060,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Keyboard shortcuts overlay -->
+    <div class="imp-shortcuts-overlay" x-show="showShortcuts" x-cloak
+        @click.self="showShortcuts = false"
+        x-transition.opacity>
+        <div class="imp-shortcuts-card" role="dialog" aria-label="Keyboard shortcuts">
+            <h3>Keyboard shortcuts</h3>
+            <dl>
+                <dt>1 – 8</dt><dd>Jump to category</dd>
+                <dt>Esc</dt><dd>Clear selection / close overlay</dd>
+                <dt>Shift + ?</dt><dd>Toggle this overlay</dd>
+            </dl>
+            <p class="imp-shortcuts-hint">Press Esc or click outside to dismiss</p>
         </div>
     </div>
 </div>

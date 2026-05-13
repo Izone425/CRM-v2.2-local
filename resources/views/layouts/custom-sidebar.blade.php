@@ -1706,7 +1706,7 @@
                                 <div class="menu-icon-wrapper">
                                     <i class="bi bi-chat-left-text"></i>
                                 </div>
-                                <span class="menu-text">Implementer - Thread</span>
+                                <span class="menu-text">Project Thread</span>
                             </div>
                         </div>
                     @endif
@@ -2214,7 +2214,7 @@
                             <div class="submenu" id="settings-email-template-submenu">
                                 @if(auth()->user()->hasRouteAccess('filament.admin.pages.implementer-thread-email-template'))
                                 <a href="{{ route('filament.admin.pages.implementer-thread-email-template') }}" class="submenu-item">
-                                    <span class="module-font">Implementer Thread</span>
+                                    <span class="module-font">Project Thread</span>
                                 </a>
                                 @endif
 

@@ -23,7 +23,7 @@ class DataFileAssignedByImplementerNotification extends Notification
     {
         return [
             'type' => 'data_file.assigned_by_implementer',
-            'title' => 'Implementer assigned a Data File',
+            'title' => 'Project assigned a Project File',
             'message' => $this->implementerName . ' assigned "' . $this->file->file_name . '" to ' . $this->sectionLabel . ' / ' . $this->itemLabel . ' (v' . $this->file->version . ').',
             'action_url' => '/customer/dashboard?tab=dataMigration',
             'priority' => 'normal',

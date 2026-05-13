@@ -12,12 +12,12 @@ return new class extends Migration {
 
         if (!str_contains((string) $template->content, '{customer_portal_data_file_link}')) {
             $needle = 'Software Onboarding PDF attached (please refer to page 07).';
-            $insertion = '<br>You can also access the data files via the {customer_portal_data_file_link}.';
+            $insertion = '<br>You can also access the project files via the {customer_portal_data_file_link}.';
 
             if (str_contains((string) $template->content, $needle)) {
                 $template->content = str_replace($needle, $needle . $insertion, $template->content);
             } else {
-                $template->content .= '<p>You can also access the data files via the {customer_portal_data_file_link}.</p>';
+                $template->content .= '<p>You can also access the project files via the {customer_portal_data_file_link}.</p>';
             }
         }
 

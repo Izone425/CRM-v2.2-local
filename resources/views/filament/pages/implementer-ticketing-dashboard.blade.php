@@ -2980,7 +2980,7 @@
         <!-- Header -->
         <div class="imp-dashboard-header">
             <div class="imp-header-left">
-                <h1>Thread - Customer & Implementer</h1>
+                <h1>Thread - Customer & Project</h1>
                 <p>Monitor and manage implementer support tickets</p>
             </div>
             <div class="imp-header-right">

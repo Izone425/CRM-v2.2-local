@@ -81,7 +81,11 @@
             font-family: 'Poppins', sans-serif;
             font-size: 14px;
             font-weight: 600;
-            color: var(--tt-accent-dark);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
             letter-spacing: -0.01em;
             white-space: nowrap;
         }
@@ -739,7 +743,7 @@
                      xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="1.75"
                      stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>
+                    <path d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
                 </svg>
                 <span>Implementation</span>
                 @if($impThreadBadgeCount > 0)
@@ -782,7 +786,7 @@
                    class="menu-item"
                    style="text-decoration: none;">
                     <span class="menu-dot" aria-hidden="true"></span>
-                    <span>Implementer Thread</span>
+                    <span>Project Thread</span>
                     @if($impThreadBadgeCount > 0)
                         <span class="sidebar-badge" @if($impThreadBadgeCount > 9) data-count-overflow="true" @endif>{{ $impThreadBadgeCount }}</span>
                     @endif
@@ -793,7 +797,7 @@
                    class="menu-item"
                    style="text-decoration: none;">
                     <span class="menu-dot" aria-hidden="true"></span>
-                    <span>Data File</span>
+                    <span>Project File</span>
                 </a>
             </div>
 

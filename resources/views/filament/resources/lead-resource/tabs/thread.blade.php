@@ -47,7 +47,7 @@
                 </svg>
             </div>
             <div class="thr-empty-title">No threads found</div>
-            <div class="thr-empty-desc">No implementer threads have been created for this company yet.</div>
+            <div class="thr-empty-desc">No project threads have been created for this company yet.</div>
         </div>
     @else
         {{-- Filter row --}}

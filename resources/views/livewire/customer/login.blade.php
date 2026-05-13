@@ -65,8 +65,6 @@
             color: #0369a1;
             font-size: 0.72rem;
             font-weight: 600;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
         }
 
         .portal-chip .dot {
@@ -108,8 +106,6 @@
             color: #0ea5e9;
             font-size: 0.95rem;
             font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
         }
 
         .portal-eyebrow .line {

@@ -57,6 +57,9 @@ class CustomerDashboard extends Component
     /** Project codes whose dashboards get demo-filled values for sales/UAT viewing. */
     private const DEMO_PROJECT_CODES = ['SW_260005'];
 
+    /** Demo Go-Live date — pinned to the "19 Jun" stage date in applyDemoOverrides(). */
+    private const DEMO_GO_LIVE_DATE = '2026-06-19';
+
     /** Implementation-mode stat strip values */
     public array $implStats = [
         'days_to_go_live' => null,   // int days remaining (negative = past)
@@ -241,11 +244,11 @@ class CustomerDashboard extends Component
     private function loadJourneyNodes(?SoftwareHandover $handover): void
     {
         $stages = [
-            ['key' => 'kickoff', 'label' => 'Kick-Off', 'icon' => 'fa-handshake'],
-            ['key' => 'training', 'label' => 'Training', 'icon' => 'fa-chalkboard-user'],
-            ['key' => 'data_migration', 'label' => 'Data Migration', 'icon' => 'fa-database'],
+            ['key' => 'kickoff', 'label' => 'Kick-Off', 'icon' => 'fa-clipboard-check'],
+            ['key' => 'training', 'label' => 'Training', 'icon' => 'fa-clipboard-check'],
+            ['key' => 'data_migration', 'label' => 'Data Migration', 'icon' => 'fa-clipboard-check'],
             ['key' => 'first_review', 'label' => 'First Review', 'icon' => 'fa-clipboard-check'],
-            ['key' => 'final_review', 'label' => 'Final Review', 'icon' => 'fa-list-check'],
+            ['key' => 'final_review', 'label' => 'Final Review', 'icon' => 'fa-clipboard-check'],
             ['key' => 'go_live', 'label' => 'Go Live', 'icon' => 'fa-rocket'],
         ];
 
@@ -270,12 +273,12 @@ class CustomerDashboard extends Component
         };
 
         $datesByNode = [
-            0 => optional($handover?->kick_off_meeting)->format('d M'),
-            1 => optional($handover?->webinar_training)->format('d M'),
+            0 => optional($handover?->kick_off_meeting)->format('d M Y'),
+            1 => optional($handover?->webinar_training)->format('d M Y'),
             2 => null,
             3 => null,
             4 => null,
-            5 => optional($handover?->go_live_date)->format('d M'),
+            5 => optional($handover?->go_live_date)->format('d M Y'),
         ];
 
         $nodes = [];
@@ -348,7 +351,7 @@ class CustomerDashboard extends Component
             $this->heroCompanion = [
                 'type' => 'next_session',
                 'day' => $date->format('d'),
-                'month' => strtoupper($date->format('M')),
+                'month' => $date->format('M'),
                 'weekday' => $date->format('l'),
                 'session' => $next->session ?: 'Implementation Session',
                 'title' => $next->title ?: $next->session,
@@ -670,9 +673,9 @@ class CustomerDashboard extends Component
     private function loadQuickActions(): void
     {
         $base = [
-            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Implementer Thread', 'description' => 'Raise a new ticket for help or issues', 'url' => '?tab=impThread', 'category' => 'Support', 'color' => '#ef4444'],
+            ['key' => 'create_ticket', 'icon' => 'fa-circle-plus', 'label' => 'New Project Thread', 'description' => 'Raise a new ticket for help or issues', 'url' => '?tab=impThread', 'category' => 'Support', 'color' => '#ef4444'],
             ['key' => 'book_session', 'icon' => 'fa-calendar-plus', 'label' => 'Book a Session', 'description' => 'Schedule a meeting with your implementer', 'url' => '?tab=calendar', 'category' => 'Calendar', 'color' => '#3b82f6'],
-            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Data File Template', 'description' => 'Download or upload migration data', 'url' => '?tab=dataMigration', 'category' => 'Data', 'color' => '#f59e0b'],
+            ['key' => 'upload_migration', 'icon' => 'fa-upload', 'label' => 'Project File Template', 'description' => 'Download or upload migration data', 'url' => '?tab=dataMigration', 'category' => 'Data', 'color' => '#f59e0b'],
         ];
 
         if ($this->hasProjectPlan) {
@@ -887,8 +890,13 @@ class CustomerDashboard extends Component
         $this->migrationCounts['total']     = 5;
         $this->migrationCounts['approved']  = 5;
 
-        // Days to Go-Live shows "—" (no remaining countdown for the demo snapshot).
-        $this->implStats['days_to_go_live'] = null;
+        // Days to Go-Live: match the demo "Go Live" stage date (19 Jun 2026) so the tile
+        // agrees with the journey node. Sign is preserved — once the date passes, the
+        // blade flips the label to "Days Live".
+        $demoGoLive = Carbon::parse(self::DEMO_GO_LIVE_DATE)->startOfDay();
+        $this->implStats['days_to_go_live'] = (int) round(
+            now()->startOfDay()->diffInDays($demoGoLive, false)
+        );
         // Implementer Threads tile shows "1" so the rose tile isn't empty.
         $this->ticketsTotal = 1;
 
@@ -918,12 +926,12 @@ class CustomerDashboard extends Component
         // record but we still hardcode them here so the demo is consistent even if the DB
         // values drift over time.
         $demoStageDates = [
-            0 => '17 Apr',   // Kick-Off
-            1 => '24 Apr',   // Training
-            2 => '1 May',    // Data Migration
-            3 => '8 May',    // First Review
-            4 => '29 May',   // Final Review
-            5 => '19 Jun',   // Go Live
+            0 => '17 Apr 2026',   // Kick-Off
+            1 => '24 Apr 2026',   // Training
+            2 => '1 May 2026',    // Data Migration
+            3 => '8 May 2026',    // First Review
+            4 => '29 May 2026',   // Final Review
+            5 => '19 Jun 2026',   // Go Live
         ];
         foreach ($this->journeyNodes as $i => &$node) {
             if (isset($demoStageDates[$i])) {

@@ -421,8 +421,6 @@
             font-size: 11px;
             font-weight: 700;
             color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             margin-bottom: 6px;
         }
         .dmt-slider-value {
@@ -510,17 +508,15 @@
             color: #0e7490;
             font-size: 10px;
             font-weight: 700;
-            text-transform: uppercase;
             padding: 2px 6px;
             border-radius: 4px;
             margin-left: 6px;
-            letter-spacing: 0.4px;
         }
         .dmt-from-implementer i { font-size: 9px; }
     </style>
 
     <div class="dmt-container" x-data="dmtCustomer()" x-cloak>
-        <h2 class="dmt-title">Data File</h2>
+        <h2 class="dmt-title">Project File</h2>
         <p class="dmt-subtitle">Download Excel templates, fill them in, and upload back for processing</p>
 
         @if(session()->has('success'))

@@ -89,8 +89,6 @@
             border-radius: 999px;
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
             background: var(--cdb-info-bg);
             color: var(--cdb-accent-dark);
             border: 1px solid #c8e7fa;
@@ -153,8 +151,6 @@
         .cdb-card-title {
             font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
             display: inline-flex;
             align-items: center;
@@ -319,8 +315,6 @@
         .cdb-companion-title {
             font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
             margin-bottom: 10px;
         }
@@ -679,8 +673,6 @@
         .cdb-gauge-suffix {
             font-size: 9px;
             color: var(--cdb-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
             margin-top: 2px;
         }
         .cdb-gauge-meta {
@@ -763,8 +755,6 @@
             font-weight: 700;
             padding: 2px 7px;
             border-radius: 999px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
         }
         .cdb-sla-on_track { background: var(--cdb-success-bg); color: #047857; }
         .cdb-sla-at_risk { background: var(--cdb-warning-bg); color: #b45309; }
@@ -813,8 +803,6 @@
         }
         .cdb-tile-label {
             font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             color: var(--cdb-text-secondary);
             margin-top: 3px;
             font-weight: 600;
@@ -1078,8 +1066,6 @@
         .cdb-stat-label {
             font-size: 9px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
             color: var(--cdb-text-secondary);
             margin-bottom: 1px;
             line-height: 1.2;
@@ -1392,8 +1378,6 @@
             border-radius: 10px;
             font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
             position: relative;
             overflow: hidden;
         }
@@ -1481,8 +1465,6 @@
         .cdb-tickets-hero-label {
             font-size: 10px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             color: var(--cdb-text-secondary);
             margin-bottom: 6px;
         }
@@ -1588,8 +1570,6 @@
             font-size: 11px;
             font-weight: 700;
             color: var(--cdb-text);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
             line-height: 1.2;
         }
         .cdb-snapshot-sub  {
@@ -1649,8 +1629,6 @@
         .cdb-range-section {
             font-size: 9px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             color: var(--cdb-text-muted);
             padding: 6px 12px 4px;
         }
@@ -1796,7 +1774,6 @@
             border-top: 1px dashed rgba(15, 23, 42, 0.07);
             font-size: 9px;
             font-weight: 600;
-            letter-spacing: 0.04em;
             color: var(--cdb-accent-color, var(--cdb-sky));
             text-decoration: none;
             display: inline-flex;
@@ -1807,7 +1784,6 @@
             background: transparent;
             border: none;
             font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
             transition: color 0.15s ease, gap 0.15s ease;
             width: 100%;
         }
@@ -1884,8 +1860,6 @@
         .cdb-support-health-label {
             font-size: 10px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             color: var(--cdb-text-secondary);
             margin-bottom: 4px;
         }
@@ -2526,7 +2500,7 @@
                     <a href="?tab=project" onclick="event.preventDefault(); switchTab('project');" class="cdb-bm-tile cdb-bm-tile--green">
                         <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $progressPct }}%</span>
-                        <span class="cdb-bm-tile-lbl">Project Progress</span>
+                        <span class="cdb-bm-tile-lbl">Implementation Progress</span>
                     </a>
                     <a href="?tab=dataMigration" onclick="event.preventDefault(); switchTab('dataMigration');" class="cdb-bm-tile cdb-bm-tile--amber">
                         <span class="cdb-bm-tile-bar"></span>
@@ -2536,7 +2510,7 @@
                     <a href="?tab=impThread" onclick="event.preventDefault(); switchTab('impThread');" class="cdb-bm-tile cdb-bm-tile--rose">
                         <span class="cdb-bm-tile-bar"></span>
                         <span class="cdb-bm-num">{{ $ticketsTotal }}</span>
-                        <span class="cdb-bm-tile-lbl">Implementer Threads</span>
+                        <span class="cdb-bm-tile-lbl">Project Threads</span>
                     </a>
                 </div>
                 <div class="cdb-bm-chart" aria-hidden="true">
@@ -2606,7 +2580,7 @@
                 <div class="cdb-support-health-value">{{ $ticketsTotal }}</div>
                 <div class="cdb-support-health-meta">{{ $healthLabel }} on SLA</div>
                 <a href="?tab=impThread" onclick="event.preventDefault(); switchTab('impThread');" class="cdb-support-health-cta">
-                    <i class="fas fa-circle-plus"></i> New Implementer Thread
+                    <i class="fas fa-circle-plus"></i> New Project Thread
                 </a>
             </div>
             <div class="cdb-support-health-cell">

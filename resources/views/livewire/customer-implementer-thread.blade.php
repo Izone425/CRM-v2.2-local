@@ -25,7 +25,7 @@
         @php $canCreate = $this->canCreateTicket; @endphp
         <div class="cit-header">
             <div>
-                <h1 class="cit-title">Implementer Thread</h1>
+                <h1 class="cit-title">Project Thread</h1>
                 <p class="cit-subtitle">Manage and track your support requests</p>
             </div>
             <div class="cit-create-wrap" x-data="{ tip: false }">
@@ -960,7 +960,7 @@
 /* ── Filter Panel ── */
 .cit-filter-panel { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
 .cit-filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.cit-filter-label { display: block; font-size: 0.74rem; font-weight: 600; color: #64748B; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.cit-filter-label { display: block; font-size: 0.74rem; font-weight: 600; color: #64748B; margin-bottom: 6px; }
 .cit-filter-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
 .cit-filter-clear { background: none; border: none; color: #1a6dd4; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
 .cit-filter-clear:hover { color: #003c75; text-decoration: underline; }
@@ -1004,7 +1004,7 @@
 .cit-table thead { background: #F9FAFB; border-bottom: 1px solid #E2E8F0; }
 .cit-table th {
     padding: 10px 16px; text-align: left; font-size: 0.7rem; font-weight: 600;
-    color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+    color: #64748B; white-space: nowrap;
 }
 .cit-table-row {
     cursor: pointer; transition: background 0.1s; animation: citFadeIn 0.3s ease both;
@@ -1108,7 +1108,7 @@
     padding-top: 14px; border-top: 1px solid #F1F5F9;
 }
 .cit-detail-meta-item { display: flex; flex-direction: column; gap: 3px; }
-.cit-detail-meta-label { font-size: 0.7rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; }
+.cit-detail-meta-label { font-size: 0.7rem; font-weight: 600; color: #94A3B8; }
 .cit-detail-meta-value { font-size: 0.82rem; color: #334155; }
 
 /* ── SLA Card ── */

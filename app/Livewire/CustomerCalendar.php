@@ -1058,31 +1058,31 @@ class CustomerCalendar extends Component
     private function getSessionSlots($dayOfWeek)
     {
         $standardSessions = [
-            'SESSION 1' => [
+            'Session 1' => [
                 'start_time' => '09:30:00',
                 'end_time' => '10:30:00',
                 'formatted_start' => '9:30 AM',
                 'formatted_end' => '10:30 AM',
             ],
-            'SESSION 2' => [
+            'Session 2' => [
                 'start_time' => '11:00:00',
                 'end_time' => '12:00:00',
                 'formatted_start' => '11:00 AM',
                 'formatted_end' => '12:00 PM',
             ],
-            'SESSION 3' => [
+            'Session 3' => [
                 'start_time' => '14:00:00',
                 'end_time' => '15:00:00',
                 'formatted_start' => '2:00 PM',
                 'formatted_end' => '3:00 PM',
             ],
-            'SESSION 4' => [
+            'Session 4' => [
                 'start_time' => '15:30:00',
                 'end_time' => '16:30:00',
                 'formatted_start' => '3:30 PM',
                 'formatted_end' => '4:30 PM',
             ],
-            'SESSION 5' => [
+            'Session 5' => [
                 'start_time' => '17:00:00',
                 'end_time' => '18:00:00',
                 'formatted_start' => '5:00 PM',
@@ -1092,19 +1092,19 @@ class CustomerCalendar extends Component
 
         // Friday has different schedule
         if ($dayOfWeek === 'friday') {
-            $standardSessions['SESSION 3'] = [
+            $standardSessions['Session 3'] = [
                 'start_time' => '15:00:00',
                 'end_time' => '16:00:00',
                 'formatted_start' => '3:00 PM',
                 'formatted_end' => '4:00 PM',
             ];
-            $standardSessions['SESSION 4'] = [
+            $standardSessions['Session 4'] = [
                 'start_time' => '16:30:00',
                 'end_time' => '17:30:00',
                 'formatted_start' => '4:30 PM',
                 'formatted_end' => '5:30 PM',
             ];
-            unset($standardSessions['SESSION 5']);
+            unset($standardSessions['Session 5']);
         }
 
         return $standardSessions;

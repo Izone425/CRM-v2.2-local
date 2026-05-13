@@ -81,8 +81,6 @@
     .cshp-chip-label {
         font-size: 10px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
         color: #94a3b8;
         margin-bottom: 4px;
     }

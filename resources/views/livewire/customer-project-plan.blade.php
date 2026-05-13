@@ -198,7 +198,6 @@
         padding: 2px 6px;
         border-radius: 8px;
         font-weight: 600;
-        text-transform: uppercase;
         white-space: nowrap;
     }
 

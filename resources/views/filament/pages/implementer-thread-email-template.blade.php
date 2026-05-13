@@ -629,7 +629,7 @@
     <div class="emt-container">
         <!-- Header -->
         <div class="emt-header">
-            <h1 class="emt-title">Implementer Thread Email Templates</h1>
+            <h1 class="emt-title">Project Thread Email Templates</h1>
             <button class="emt-btn-create" wire:click="openCreateModal">
                 <i class="bi bi-plus-lg"></i>
                 Create Template

@@ -370,8 +370,6 @@ use Carbon\Carbon;
             font-family: 'Poppins', sans-serif;
             font-size: 9px;
             font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
             border-radius: 999px;
             line-height: 1.4;
             pointer-events: none;
@@ -461,8 +459,6 @@ use Carbon\Carbon;
             font-size: 11px;
             font-weight: 600;
             color: var(--cal-primary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             margin: 0 0 4px 0;
         }
 
@@ -601,8 +597,6 @@ use Carbon\Carbon;
         .cal-slot-session-label {
             font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             color: var(--cal-text-muted);
             line-height: 1;
         }
@@ -716,8 +710,6 @@ use Carbon\Carbon;
             font-size: 10px;
             font-weight: 600;
             color: var(--cal-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             margin: 0;
         }
 
@@ -771,6 +763,27 @@ use Carbon\Carbon;
         }
 
         .cal-field-input:focus {
+            border-color: var(--cal-accent-dark);
+            box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.12);
+        }
+
+        /* Locked variant — read-only display, opens Bulk Edit drawer on click */
+        .cal-field-input--locked {
+            background-color: #f8fafc;
+            color: #334155;
+            cursor: pointer;
+            border-style: dashed;
+        }
+        .cal-field-input--locked::placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .cal-field-input--locked:hover {
+            border-color: var(--cal-accent-dark);
+            background-color: #f1f5f9;
+        }
+        .cal-field-input--locked:focus {
+            outline: none;
             border-color: var(--cal-accent-dark);
             box-shadow: 0 0 0 3px rgba(0, 60, 117, 0.12);
         }
@@ -865,8 +878,6 @@ use Carbon\Carbon;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             line-height: 1.4;
             white-space: nowrap;
         }
@@ -927,8 +938,6 @@ use Carbon\Carbon;
             font-size: 11px;
             font-weight: 600;
             color: var(--cal-primary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
             margin: 0 0 4px 0;
         }
 
@@ -1005,8 +1014,6 @@ use Carbon\Carbon;
             font-size: 10px;
             font-weight: 600;
             color: var(--cal-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
         }
 
         .cal-att-row-remove {
@@ -1199,7 +1206,6 @@ use Carbon\Carbon;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
-            text-transform: uppercase;
         }
 
         .status-pending {
@@ -1234,8 +1240,6 @@ use Carbon\Carbon;
             text-align: center;
             font-weight: 700;
             color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             font-size: 0.875rem;
         }
 
@@ -2335,10 +2339,8 @@ use Carbon\Carbon;
         }
         .cal-page-shell .calendar-days-header .header-day {
             font-size: 11px;
-            letter-spacing: .04em;
             color: var(--cal-text-quiet);
             font-weight: 700;
-            text-transform: uppercase;
             text-align: left;
             padding: 0 4px;
         }
@@ -2560,9 +2562,7 @@ use Carbon\Carbon;
             margin: 0;
             font-size: 10.5px;
             font-weight: 600;
-            letter-spacing: 0.08em;
             color: #94a3b8;
-            text-transform: uppercase;
         }
 
         .cal-bookings-drawer-body .bk-actions {
@@ -2761,7 +2761,7 @@ use Carbon\Carbon;
                                     <div class="meeting-indicator"><i class="fas fa-calendar-check"></i>Your slot</div>
                                 @endif
                             @elseif($dayData['canBook'])
-                                <div class="available-count"><i class="fas fa-star"></i>{{ $dayData['availableCount'] }} open</div>
+                                <div class="available-count"><i class="fas fa-star"></i>{{ $dayData['availableCount'] }} Open</div>
                             @elseif($dayData['isCurrentMonth'] && !$dayData['isPast'] && !$dayData['isWeekend'] && !$dayData['isPublicHoliday'] && !$dayData['isBeyondBookingWindow'] && $canScheduleMeeting)
                                 <div class="cal-full-marker"><i class="fas fa-lock"></i>Full</div>
                             @endif
@@ -2810,7 +2810,7 @@ use Carbon\Carbon;
                     {{-- Date-selected state --}}
                     <div class="cal-panel-head">
                         <div>
-                            <p class="cal-panel-eyebrow">Selected date</p>
+                            <p class="cal-panel-eyebrow">Selected Date</p>
                             <p class="cal-panel-date">{{ Carbon::parse($selectedDate)->format('l') }}</p>
                             <p class="cal-panel-sub">{{ Carbon::parse($selectedDate)->format('F j, Y') }} · {{ count($availableSessions) }} {{ count($availableSessions) === 1 ? 'slot' : 'slots' }}</p>
                         </div>
@@ -2855,22 +2855,24 @@ use Carbon\Carbon;
                         <div class="cal-field-block">
                             <div class="cal-field-label-row">
                                 <label for="cal-attendees-input" class="cal-field-label">
-                                    Required attendees <span class="cal-field-required">*</span>
+                                    Required Attendees <span class="cal-field-required">*</span>
                                 </label>
                                 <button type="button"
                                         class="cal-att-btn-inline"
                                         onclick="window.dispatchEvent(new CustomEvent('cal-open-attendees'))"
                                         title="Open bulk editor">
                                     <i class="fas fa-users"></i>
-                                    <span>Bulk edit</span>
+                                    <span>Bulk Edit</span>
                                 </button>
                             </div>
                             <input type="text"
                                    id="cal-attendees-input"
-                                   class="cal-field-input"
-                                   wire:model.live.debounce.500ms="requiredAttendees"
-                                   wire:keydown.enter="submitBooking"
-                                   placeholder="john@example.com;jane@example.com">
+                                   class="cal-field-input cal-field-input--locked"
+                                   wire:model="requiredAttendees"
+                                   readonly
+                                   title="Use Bulk Edit to change attendees"
+                                   onclick="window.dispatchEvent(new CustomEvent('cal-open-attendees'))"
+                                   placeholder="Click Bulk Edit to add attendees">
                             <p class="cal-field-hint">
                                 <i class="fas fa-circle-info"></i>
                                 Separate multiple emails with semicolons (;)
@@ -3014,16 +3016,16 @@ use Carbon\Carbon;
                             <!-- Session Selector Preview -->
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1.5rem 0;">
                                 <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 1</div>
+                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">Session 1</div>
                                     <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">9:30 AM</div>
                                 </div>
                                 <div style="padding: 1rem; border: 1.5px solid #003c75; border-radius: 12px; text-align: center; background: #003c75; transform: scale(1.05); box-shadow: 0 6px 16px -4px rgba(0, 60, 117, 0.35); font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">SESSION 2</div>
+                                    <div style="font-weight: 600; color: #ffffff; font-size: 0.875rem;">Session 2</div>
                                     <div style="color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; margin-top: 0.25rem;">11:00 AM</div>
                                     <div style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; background: rgba(255, 255, 255, 0.18); color: white; border-radius: 20px; font-size: 0.625rem; letter-spacing: 0.04em;">Selected</div>
                                 </div>
                                 <div style="padding: 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; text-align: center; background: white; font-family: 'Poppins', sans-serif;">
-                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">SESSION 3</div>
+                                    <div style="font-weight: 600; color: #003c75; font-size: 0.875rem;">Session 3</div>
                                     <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">2:00 PM</div>
                                 </div>
                             </div>
@@ -3629,7 +3631,7 @@ use Carbon\Carbon;
 
                     <header class="cal-att-head">
                         <div class="cal-att-head-text">
-                            <p class="cal-att-head-eyebrow">Required attendees</p>
+                            <p class="cal-att-head-eyebrow">Required Attendees</p>
                             <h3 id="cal-att-title" class="cal-att-head-title">Manage attendee list</h3>
                             <p class="cal-att-head-sub">
                                 Add up to <span x-text="maxEmails"></span> email addresses. You can paste a comma- or semicolon-separated list into any row.
