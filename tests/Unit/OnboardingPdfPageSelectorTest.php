@@ -50,20 +50,20 @@ class OnboardingPdfPageSelectorTest extends TestCase
         );
     }
 
-    public function test_leave_only_adds_15_16_18(): void
+    public function test_leave_only_adds_15_16(): void
     {
         $pages = $this->gen->selectPages($this->makeHandover(['tl' => true]));
         $this->assertSame(
-            [1, 2, 3, 4, 5, 8, 9, 10, 11, 15, 16, 18, 24],
+            [1, 2, 3, 4, 5, 8, 9, 10, 11, 15, 16, 24],
             $pages
         );
     }
 
-    public function test_claim_only_adds_17(): void
+    public function test_claim_only_adds_17_18(): void
     {
         $pages = $this->gen->selectPages($this->makeHandover(['tc' => true]));
         $this->assertSame(
-            [1, 2, 3, 4, 5, 8, 9, 10, 11, 17, 24],
+            [1, 2, 3, 4, 5, 8, 9, 10, 11, 17, 18, 24],
             $pages
         );
     }

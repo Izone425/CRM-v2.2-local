@@ -28,8 +28,8 @@ class OnboardingPdfGenerator
     private const MODULE_PAGES = [
         'tp' => [6, 7, 19, 20, 21, 22, 23], // Payroll
         'ta' => [12, 13, 14],               // Attendance
-        'tl' => [15, 16, 18],               // Leave
-        'tc' => [17],                       // Claim
+        'tl' => [15, 16],                   // Leave
+        'tc' => [17, 18],                   // Claim
     ];
 
     /**
