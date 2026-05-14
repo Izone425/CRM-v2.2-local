@@ -5,13 +5,32 @@ namespace App\Services;
 use App\Models\Customer;
 use App\Models\SoftwareHandover;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 
 class OnboardingPdfGenerator
 {
     private const TEMPLATE_PATH = 'templates/software-handover/onboarding-process.pdf';
-    private const EXPECTED_PAGES = 29;
+    private const EXPECTED_PAGES = 24;
+
+    private const URL_V1 = 'www.timeteccloud.com';
+    private const URL_V2 = 'www.hr2.timeteccloud.com';
+
+    /**
+     * Pages always rendered regardless of subscribed modules.
+     */
+    private const DEFAULT_PAGES = [1, 2, 3, 4, 5, 8, 9, 10, 11, 24];
+
+    /**
+     * Additional pages keyed by the SoftwareHandover boolean module flag.
+     */
+    private const MODULE_PAGES = [
+        'tp' => [6, 7, 19, 20, 21, 22, 23], // Payroll
+        'ta' => [12, 13, 14],               // Attendance
+        'tl' => [15, 16, 18],               // Leave
+        'tc' => [17],                       // Claim
+    ];
 
     /**
      * Field overlays per page. All coordinates are millimetres from the top-left
@@ -26,46 +45,34 @@ class OnboardingPdfGenerator
      * If you replace the template, re-run `php artisan onboarding-pdf:calibrate`.
      */
     private const FIELD_MAP = [
-        2 => [
-            'companyName' => [
-                'box'   => ['x' => 104, 'y' => 79, 'w' => 145, 'h' => 16],
-                'size'  => 18,
-                'color' => [198, 40, 40],
-                'padX'  => 2,
-                'align' => 'L',
-            ],
-            'implementer' => [
-                'box'   => ['x' => 104, 'y' => 97, 'w' => 145, 'h' => 16],
-                'size'  => 18,
-                'color' => [198, 40, 40],
-                'padX'  => 2,
-                'align' => 'L',
-            ],
-            'projectCode' => [
-                'box'   => ['x' => 104, 'y' => 115, 'w' => 145, 'h' => 16],
-                'size'  => 18,
-                'color' => [198, 40, 40],
-                'padX'  => 2,
-                'align' => 'L',
-            ],
-        ],
-        5 => [
+        // Page 4 — license activation date + login URL + temporary admin credentials.
+        // URL is V1 (www.timeteccloud.com) or V2 (www.hr2.timeteccloud.com)
+        // depending on SoftwareHandover.hr_version. Email & password come
+        // from customers.email + customers.plain_password.
+        4 => [
             'licenseDate' => [
-                'box'   => ['x' => 125, 'y' => 72, 'w' => 130, 'h' => 15],
+                'box'   => ['x' => 125, 'y' => 72,  'w' => 130, 'h' => 16],
+                'size'  => 18,
+                'color' => [0, 144, 234],
+                'padX'  => 10,
+                'align' => 'L',
+            ],
+            'loginUrl' => [
+                'box'   => ['x' => 125, 'y' => 100, 'w' => 130, 'h' => 16],
                 'size'  => 18,
                 'color' => [0, 144, 234],
                 'padX'  => 10,
                 'align' => 'L',
             ],
             'tempEmail' => [
-                'box'   => ['x' => 125, 'y' => 123, 'w' => 130, 'h' => 16],
+                'box'   => ['x' => 125, 'y' => 128, 'w' => 130, 'h' => 16],
                 'size'  => 18,
                 'color' => [0, 144, 234],
                 'padX'  => 10,
                 'align' => 'L',
             ],
             'tempPassword' => [
-                'box'   => ['x' => 125, 'y' => 150, 'w' => 130, 'h' => 16],
+                'box'   => ['x' => 125, 'y' => 156, 'w' => 130, 'h' => 16],
                 'size'  => 18,
                 'color' => [0, 144, 234],
                 'padX'  => 10,
@@ -85,6 +92,7 @@ class OnboardingPdfGenerator
             );
         }
 
+        $handover = $this->findHandover($customer);
         $fields = $this->resolveFields($customer);
         $linkMap = $this->buildLinkMap();
 
@@ -98,7 +106,22 @@ class OnboardingPdfGenerator
 
         $pageCount = $pdf->setSourceFile($templatePath);
 
-        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+        if ($pageCount !== self::EXPECTED_PAGES) {
+            Log::warning('Onboarding master PDF page count drift', [
+                'expected' => self::EXPECTED_PAGES,
+                'actual'   => $pageCount,
+            ]);
+        }
+
+        foreach ($this->selectPages($handover) as $pageNo) {
+            if ($pageNo > $pageCount) {
+                Log::warning('Skipping onboarding page beyond master length', [
+                    'requested' => $pageNo,
+                    'available' => $pageCount,
+                ]);
+                continue;
+            }
+
             $tplId = $pdf->importPage($pageNo);
             $size = $pdf->getTemplateSize($tplId);
 
@@ -118,9 +141,61 @@ class OnboardingPdfGenerator
         return $pdf->Output('', 'S');
     }
 
+    /**
+     * Returns the sorted, deduplicated list of master PDF pages to import
+     * for a given customer based on their SoftwareHandover module flags.
+     * Public so unit tests can exercise the rules without rendering a PDF.
+     */
+    public function selectPages(?SoftwareHandover $handover): array
+    {
+        $pages = self::DEFAULT_PAGES;
+
+        foreach (self::MODULE_PAGES as $flag => $extra) {
+            if ($handover && $handover->{$flag}) {
+                $pages = array_merge($pages, $extra);
+            }
+        }
+
+        $pages = array_values(array_unique($pages));
+        sort($pages);
+        return $pages;
+    }
+
+    /**
+     * V1 = www.timeteccloud.com, V2 = www.hr2.timeteccloud.com.
+     * Defaults to V1 for null handover or any unrecognised hr_version.
+     */
+    public function resolveLoginUrl(?SoftwareHandover $handover): string
+    {
+        return ((int) ($handover?->hr_version ?? 1)) === 2
+            ? self::URL_V2
+            : self::URL_V1;
+    }
+
+    /**
+     * Resolve the canonical SoftwareHandover row for a customer.
+     * V2 customers are linked via Customer.sw_id (exact match);
+     * V1 customers are linked via Customer.lead_id (latest by id).
+     */
+    private function findHandover(Customer $customer): ?SoftwareHandover
+    {
+        if ($customer->sw_id) {
+            $byId = SoftwareHandover::find($customer->sw_id);
+            if ($byId) {
+                return $byId;
+            }
+        }
+        if ($customer->lead_id) {
+            return SoftwareHandover::where('lead_id', $customer->lead_id)
+                ->orderByDesc('id')
+                ->first();
+        }
+        return null;
+    }
+
     public function filenameFor(Customer $customer): string
     {
-        $projectCode = optional($customer->softwareHandover)->project_code ?: 'handover';
+        $projectCode = $this->findHandover($customer)?->project_code ?: 'handover';
         return "Software_Onboarding_{$projectCode}.pdf";
     }
 
@@ -239,10 +314,15 @@ class OnboardingPdfGenerator
             $pdf->SetTextColor($r, $g, $b);
 
             $padX = $spec['padX'] ?? 2;
-            $pdf->SetXY($spec['box']['x'] + $padX, $spec['box']['y']);
+            // Vertically centre by shrinking the cell to the font height and
+            // anchoring it at the box midpoint — TCPDF's default Cell baseline
+            // sits below the visual centre of the master's rounded input box.
+            $fontHeight = $spec['size'] * 0.3528; // pt → mm
+            $yCentered = $spec['box']['y'] + ($spec['box']['h'] - $fontHeight) / 2;
+            $pdf->SetXY($spec['box']['x'] + $padX, $yCentered);
             $pdf->Cell(
                 $spec['box']['w'] - $padX * 2,
-                $spec['box']['h'],
+                $fontHeight,
                 $value,
                 0,
                 0,
@@ -253,14 +333,12 @@ class OnboardingPdfGenerator
     }
 
     /**
-     * @return array{companyName:string,implementer:string,projectCode:string,licenseDate:string,tempEmail:string,tempPassword:string}
+     * @return array{companyName:string,implementer:string,projectCode:string,licenseDate:string,tempEmail:string,tempPassword:string,loginUrl:string}
      */
     public function resolveFields(Customer $customer): array
     {
         $lead = $customer->lead;
-        $handover = $customer->lead_id
-            ? SoftwareHandover::where('lead_id', $customer->lead_id)->orderByDesc('id')->first()
-            : null;
+        $handover = $this->findHandover($customer);
 
         $companyName = $customer->company_name
             ?: optional($lead)->company_name
@@ -289,6 +367,7 @@ class OnboardingPdfGenerator
 
         $tempEmail    = $customer->email ?: '—';
         $tempPassword = $customer->plain_password ?: '—';
+        $loginUrl     = $this->resolveLoginUrl($handover);
 
         return [
             'companyName'  => $companyName,
@@ -297,6 +376,7 @@ class OnboardingPdfGenerator
             'licenseDate'  => $licenseDate,
             'tempEmail'    => $tempEmail,
             'tempPassword' => $tempPassword,
+            'loginUrl'     => $loginUrl,
         ];
     }
 
