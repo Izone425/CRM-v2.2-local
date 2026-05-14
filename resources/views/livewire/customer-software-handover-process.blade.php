@@ -15,7 +15,7 @@
         position: relative;
         background: #ffffff;
         border-radius: 16px;
-        padding: 28px 32px 26px;
+        padding: 18px 28px 18px;
         border: 1px solid #e7eafc;
         box-shadow: 0 10px 30px -18px rgba(88, 95, 182, 0.35);
         overflow: hidden;
@@ -36,20 +36,20 @@
     .cshp-featured-head {
         position: relative;
         display: flex;
-        gap: 18px;
-        align-items: flex-start;
+        gap: 14px;
+        align-items: center;
         flex-shrink: 0;
     }
     .cshp-badge {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         background: rgba(6, 182, 212, 0.10);
         color: #06b6d4;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 18px;
         flex-shrink: 0;
     }
     .cshp-featured-titleblock {
@@ -57,56 +57,11 @@
         min-width: 0;
     }
     .cshp-title {
-        font-size: 22px;
+        font-size: 18px;
         font-weight: 700;
         color: #1e293b;
         line-height: 1.25;
         margin: 0;
-    }
-    .cshp-subtitle {
-        font-size: 13px;
-        color: #64748b;
-        margin-top: 4px;
-    }
-    .cshp-subtitle strong {
-        color: #334155;
-        font-weight: 600;
-    }
-
-    /* --- Inline meta in subtitle row --- */
-    .cshp-subtitle {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 4px 10px;
-    }
-    .cshp-meta {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 6px;
-    }
-    .cshp-meta + .cshp-meta::before {
-        content: '·';
-        margin-right: 6px;
-        color: #cbd5e1;
-        font-weight: 700;
-    }
-    .cshp-meta-label {
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #94a3b8;
-    }
-    .cshp-meta-value {
-        font-size: 13px;
-        font-weight: 600;
-        color: #334155;
-    }
-    .cshp-meta-value.is-placeholder {
-        color: #94a3b8;
-        font-style: italic;
-        font-weight: 500;
     }
 
     /* --- Incomplete banner --- */
@@ -154,6 +109,7 @@
         border: 0;
         background: #f8fafc;
     }
+    .cshp-viewer:fullscreen { background: #000; }
     .cshp-viewer-fallback {
         flex: 1;
         display: flex;
@@ -275,16 +231,6 @@
             </div>
             <div class="cshp-featured-titleblock">
                 <h2 class="cshp-title">Software Onboarding Process</h2>
-                <div class="cshp-subtitle">
-                    <span class="cshp-meta">
-                        <span class="cshp-meta-label">Project Code</span>
-                        <span class="cshp-meta-value {{ $context['projectCode'] === '—' ? 'is-placeholder' : '' }}">{{ $context['projectCode'] }}</span>
-                    </span>
-                    <span class="cshp-meta">
-                        <span class="cshp-meta-label">License Activation</span>
-                        <span class="cshp-meta-value {{ $context['licenseDate'] === 'To be confirmed' ? 'is-placeholder' : '' }}">{{ $context['licenseDate'] }}</span>
-                    </span>
-                </div>
             </div>
             <div class="cshp-head-actions">
                 <a href="{{ route('customer.onboarding-pdf.download') }}"
@@ -294,6 +240,14 @@
                    @if($templateMissing) aria-disabled="true" tabindex="-1" style="pointer-events:none; opacity:0.5;" @endif>
                     <i class="fas fa-download"></i>
                 </a>
+                <button type="button"
+                        class="cshp-icon-btn cshp-icon-btn--ghost"
+                        data-tooltip="Full screen"
+                        aria-label="View in full screen"
+                        onclick="this.closest('.cshp-featured').querySelector('.cshp-viewer').requestFullscreen()"
+                        @if($templateMissing) aria-disabled="true" disabled style="pointer-events:none; opacity:0.5;" @endif>
+                    <i class="fas fa-expand"></i>
+                </button>
                 <a href="{{ route('customer.onboarding-pdf.view') }}"
                    target="_blank" rel="noopener"
                    class="cshp-icon-btn cshp-icon-btn--ghost"

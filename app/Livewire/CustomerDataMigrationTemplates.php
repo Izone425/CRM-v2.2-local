@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\CustomerDataMigrationFile;
+use App\Models\SoftwareHandover;
 use App\Support\DataFileSections;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -11,6 +12,14 @@ use Illuminate\Support\Facades\Storage;
 class CustomerDataMigrationTemplates extends Component
 {
     use WithFileUploads;
+
+    private const SECTION_FLAG = [
+        'profile'    => null,   // foundational — always enabled
+        'attendance' => 'ta',
+        'leave'      => 'tl',
+        'claim'      => 'tc',
+        'payroll'    => 'tp',
+    ];
 
     protected string $storagePath = 'templates/data-migration-v1';
 
@@ -21,9 +30,43 @@ class CustomerDataMigrationTemplates extends Component
 
     public array $templateSections = [];
 
+    protected ?SoftwareHandover $handover = null;
+
     public function mount(): void
     {
         $this->templateSections = DataFileSections::map();
+        $this->handover = $this->resolveHandover();
+    }
+
+    public function hydrate(): void
+    {
+        $this->handover = $this->resolveHandover();
+    }
+
+    protected function resolveHandover(): ?SoftwareHandover
+    {
+        $customer = auth('customer')->user();
+        if (!$customer) {
+            return null;
+        }
+        if ($customer->sw_id && $byId = SoftwareHandover::find($customer->sw_id)) {
+            return $byId;
+        }
+        if ($customer->lead_id) {
+            return SoftwareHandover::where('lead_id', $customer->lead_id)
+                ->orderByDesc('id')
+                ->first();
+        }
+        return null;
+    }
+
+    protected function moduleEnabled(string $sectionKey): bool
+    {
+        $flag = self::SECTION_FLAG[$sectionKey] ?? null;
+        if ($flag === null) {
+            return true;
+        }
+        return $this->handover ? (bool) $this->handover->{$flag} : false;
     }
 
     public function getSections(): array
@@ -56,6 +99,7 @@ class CustomerDataMigrationTemplates extends Component
                 'label' => $section['label'],
                 'icon' => $section['icon'],
                 'color' => $section['color'],
+                'enabled' => $this->moduleEnabled($sectionKey),
                 'items' => $items,
             ];
         }
@@ -91,6 +135,11 @@ class CustomerDataMigrationTemplates extends Component
 
     public function downloadTemplate(string $sectionKey, string $itemKey)
     {
+        if (!$this->moduleEnabled($sectionKey)) {
+            session()->flash('error', 'This module is not included in your subscription.');
+            return;
+        }
+
         $section = $this->templateSections[$sectionKey] ?? null;
         $item = $section['items'][$itemKey] ?? null;
 
@@ -111,6 +160,11 @@ class CustomerDataMigrationTemplates extends Component
 
     public function startUpload(string $sectionKey, string $itemKey): void
     {
+        if (!$this->moduleEnabled($sectionKey)) {
+            session()->flash('error', 'This module is not included in your subscription.');
+            return;
+        }
+
         $this->uploadingSection = $sectionKey;
         $this->uploadingItem = $itemKey;
         $this->uploadFile = null;
@@ -144,6 +198,11 @@ class CustomerDataMigrationTemplates extends Component
 
         if (!isset($this->templateSections[$section]['items'][$item])) {
             session()->flash('error', 'Invalid template selection.');
+            return;
+        }
+
+        if (!$this->moduleEnabled($section)) {
+            session()->flash('error', 'This module is not included in your subscription.');
             return;
         }
 

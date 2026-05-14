@@ -84,6 +84,39 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
             border-color: #cbd5e1;
         }
+        .dmt-card--disabled {
+            opacity: 0.55;
+            background: #f8fafc;
+        }
+        .dmt-card--disabled:hover {
+            box-shadow: none;
+            border-color: #e2e8f0;
+        }
+        .dmt-card--disabled .dmt-card-icon { filter: grayscale(1); }
+        .dmt-card--disabled .dmt-download-btn,
+        .dmt-card--disabled .dmt-version-row,
+        .dmt-card--disabled .dmt-toggle,
+        .dmt-card--disabled .dmt-coming-soon {
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        .dmt-locked-tag {
+            margin-left: auto;
+            padding: 2px 8px;
+            background: #e2e8f0;
+            color: #64748b;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .dmt-locked-note {
+            padding: 14px 16px;
+            color: #94a3b8;
+            font-style: italic;
+            font-size: 13px;
+            text-align: center;
+        }
         .dmt-card-body {
             flex: 1;
             min-height: 0;
@@ -528,15 +561,21 @@
 
         <div class="dmt-grid">
             @foreach($sections as $sectionKey => $section)
-                <div class="dmt-card {{ $sectionKey === 'payroll' ? 'dmt-card--payroll' : '' }}">
+                <div class="dmt-card {{ $sectionKey === 'payroll' ? 'dmt-card--payroll' : '' }} {{ !$section['enabled'] ? 'dmt-card--disabled' : '' }}">
                     <div class="dmt-card-header">
                         <div class="dmt-card-icon" style="background: {{ $section['color'] }}15; color: {{ $section['color'] }};">
                             <i class="{{ $section['icon'] }}"></i>
                         </div>
                         <div class="dmt-card-name">{{ $section['label'] }}</div>
+                        @unless($section['enabled'])
+                            <span class="dmt-locked-tag">Not subscribed</span>
+                        @endunless
                     </div>
 
                     <div class="dmt-card-body">
+                    @if(!$section['enabled'])
+                        <div class="dmt-locked-note">Not included in your subscription.</div>
+                    @else
                     @foreach($section['items'] as $itemKey => $item)
                         @php
                             $fileKey = $sectionKey . '|' . $itemKey;
@@ -638,6 +677,7 @@
                             @endif
                         </div>
                     @endforeach
+                    @endif
                     </div>
                 </div>
             @endforeach

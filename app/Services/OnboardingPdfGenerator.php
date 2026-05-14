@@ -242,10 +242,10 @@ class OnboardingPdfGenerator
     /**
      * Clickable regions per page (landscape A4, millimetres from top-left).
      *
-     * - Pg 6: 5 topic cards × 1-2 file buttons. 4 Excel buttons stream the
-     *   existing V1 templates via `customer.onboarding-template.download`.
-     *   The Project Timeline Excel (no file on disk) and the User Data
-     *   Migration PDF (no PDF on disk) fall back to the Data Migration tab.
+     * - Pg 5: 5 topic cards (Topics 2-6). Each card is fully clickable; all
+     *   five hit-boxes deep-link to the customer-portal Project File tab so
+     *   any click inside a card (Excel pill, PDF pill, title, "Click Here >")
+     *   navigates through the subscription gating.
      * - Pg 10: 6 "Click Here" buttons (3 modules × 2 rows) all deep-link
      *   to the Webinar/Training tab since TrainerFile records aren't seeded.
      *
@@ -258,22 +258,18 @@ class OnboardingPdfGenerator
         $dataMigrationTab = $dashboard . '?tab=dataMigration';
         $webinarTab = $dashboard . '?tab=webinar';
 
-        $tmpl = fn(string $key) => route('customer.onboarding-template.download', ['key' => $key]);
-
         return [
-            6 => [
-                // Row 1 — Topic 2: Project Timeline (no file → fallback to tab)
-                ['box' => ['x' => 38,  'y' => 102, 'w' => 50, 'h' => 14], 'url' => $dataMigrationTab],
-                // Row 1 — Topic 3: User Data Migration — Excel (direct)
-                ['box' => ['x' => 123, 'y' => 98,  'w' => 50, 'h' => 14], 'url' => $tmpl('user-data-migration')],
-                // Row 1 — Topic 3: User Data Migration — PDF (no file → fallback)
-                ['box' => ['x' => 123, 'y' => 114, 'w' => 50, 'h' => 14], 'url' => $dataMigrationTab],
-                // Row 1 — Topic 4: Request Clocking Schedule (direct)
-                ['box' => ['x' => 208, 'y' => 102, 'w' => 50, 'h' => 14], 'url' => $tmpl('clocking-schedule')],
-                // Row 2 — Topic 5: Request Leave Policy (direct)
-                ['box' => ['x' => 80,  'y' => 182, 'w' => 50, 'h' => 14], 'url' => $tmpl('leave-policy')],
-                // Row 2 — Topic 6: Request Claim Policy (direct)
-                ['box' => ['x' => 165, 'y' => 182, 'w' => 50, 'h' => 14], 'url' => $tmpl('claim-policy')],
+            5 => [
+                // Topic 2 — Project Timeline (Row 1, Col 1)
+                ['box' => ['x' => 25,  'y' => 55,  'w' => 80, 'h' => 100], 'url' => $dataMigrationTab],
+                // Topic 3 — User Data Migration Template (Row 1, Col 2)
+                ['box' => ['x' => 110, 'y' => 55,  'w' => 80, 'h' => 100], 'url' => $dataMigrationTab],
+                // Topic 4 — Request Clocking Schedule (Row 1, Col 3)
+                ['box' => ['x' => 195, 'y' => 55,  'w' => 80, 'h' => 100], 'url' => $dataMigrationTab],
+                // Topic 5 — Request Leave Policy (Row 2, Col 1)
+                ['box' => ['x' => 65,  'y' => 160, 'w' => 80, 'h' => 45],  'url' => $dataMigrationTab],
+                // Topic 6 — Request Claim Policy (Row 2, Col 2)
+                ['box' => ['x' => 150, 'y' => 160, 'w' => 80, 'h' => 45],  'url' => $dataMigrationTab],
             ],
             10 => [
                 // Col 1 Attendance — upper / lower buttons
