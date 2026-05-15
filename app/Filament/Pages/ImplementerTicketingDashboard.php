@@ -14,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use App\Mail\ImplementerTicketHrNotification;
 use Livewire\WithFileUploads;
 
@@ -200,15 +201,6 @@ class ImplementerTicketingDashboard extends Page
         $this->dispatch('drawerReset');
     }
 
-    public function updatedNewTicketCategory()
-    {
-        if ($this->newTicketCategory === 'License Activation') {
-            $this->newTicketStatus = 'closed';
-        } elseif ($this->newTicketStatus === 'closed') {
-            $this->newTicketStatus = 'open';
-        }
-    }
-
     public function applyEmailTemplate($templateId)
     {
         $this->newTicketEmailTemplate = $templateId;
@@ -276,12 +268,17 @@ class ImplementerTicketingDashboard extends Page
     {
         $this->validate([
             'newTicketCustomerId' => 'required|exists:customers,id',
-            'newTicketCategory' => 'required|string',
+            'newTicketCategory' => ['required', 'string', Rule::notIn(['Add on License', 'Add on Module', 'Add on Device'])],
             'newTicketModule' => 'required|string',
             'newTicketStatus' => 'required|string',
             'newTicketEmailSubject' => 'required|string|max:255',
             'newTicketEmailBody' => 'required|string',
-            'ticketAttachments.*' => 'nullable|file|max:10240',
+            'ticketAttachments' => 'nullable|array',
+            'ticketAttachments.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,pdf,png,jpg,jpeg',
+        ], [
+            'newTicketCategory.not_in' => 'Add-on requests should be handled by the Sales team, not via support tickets.',
+            'ticketAttachments.*.mimes' => 'Only Word, Excel, PDF, and image files are accepted.',
+            'ticketAttachments.*.max'   => 'Each file must be 10MB or smaller.',
         ]);
 
         $customer = Customer::find($this->newTicketCustomerId);

@@ -6,6 +6,7 @@ use App\Enums\ImplementerTicketStatus;
 use App\Models\ImplementerTicket;
 use App\Models\ImplementerTicketReply;
 use App\Notifications\ImplementerTicketNotification;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -207,9 +208,15 @@ class CustomerImplementerThread extends Component
         $this->validate([
             'newSubject' => 'required|string|max:255',
             'newDescription' => 'required|string',
-            'newCategory' => 'required|string',
+            'newCategory' => ['required', 'string', Rule::notIn(['Add on License', 'Add on Module', 'Add on Device'])],
             'newModule' => 'required|string',
             'newPriority' => 'required|in:low,medium,high,urgent',
+            'newAttachments' => 'nullable|array',
+            'newAttachments.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,pdf,png,jpg,jpeg',
+        ], [
+            'newCategory.not_in' => 'For Add-on requests, please contact your dedicated Salesperson.',
+            'newAttachments.*.mimes' => 'Only Word, Excel, PDF, and image files are accepted.',
+            'newAttachments.*.max'   => 'Each file must be 10MB or smaller.',
         ]);
 
         $customer = $this->getCustomer();

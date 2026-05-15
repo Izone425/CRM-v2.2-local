@@ -1465,6 +1465,98 @@
             height: 16px;
         }
 
+        .imp-drawer-submit[disabled],
+        .imp-drawer-submit.imp-drawer-submit-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        /* Add-on category block banner */
+        .imp-block-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            margin-top: 8px;
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            border-radius: 8px;
+            color: #92400E;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .imp-block-banner svg {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .imp-fields-disabled {
+            opacity: 0.45;
+            pointer-events: none;
+            user-select: none;
+            filter: saturate(0.6);
+        }
+
+        /* Email Body drop zone */
+        .imp-editor-zone { position: relative; }
+        .imp-editor-zone--dragover .imp-drawer-textarea {
+            outline: 2px dashed #7C3AED;
+            outline-offset: -2px;
+            background: rgba(124, 58, 237, 0.04);
+        }
+        .imp-editor-drop-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(124, 58, 237, 0.06);
+            color: #7C3AED;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+        .imp-editor-hint {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6B7280;
+            line-height: 1.4;
+        }
+        .imp-editor-hint svg { flex-shrink: 0; color: #9CA3AF; }
+        .imp-editor-hint a { color: #7C3AED; text-decoration: underline; cursor: pointer; }
+
+        /* Email Body flex-grow chain (fills remaining drawer height) */
+        .imp-drawer-body { display: flex; flex-direction: column; }
+        .imp-fields-stack {
+            display: flex; flex-direction: column;
+            flex: 1; min-height: 0;
+        }
+        .imp-drawer-section--grow {
+            flex: 1; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        .imp-drawer-section--grow > .imp-drawer-field {
+            flex: 1; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        .imp-drawer-section--grow .imp-editor-zone {
+            flex: 1; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        .imp-drawer-section--grow .imp-editor-zone__inner {
+            flex: 1; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        .imp-drawer-section--grow .imp-drawer-textarea {
+            flex: 1; min-height: 200px; max-height: none;
+        }
+
         /* Search select for company */
         .imp-drawer-search-select {
             position: relative;
@@ -3779,19 +3871,30 @@
                             <label>Category <span class="imp-required">*</span></label>
                             <select class="imp-drawer-select" wire:model.live="newTicketCategory">
                                 <option value="">Select category</option>
-                                <option value="License Activation">License Activation</option>
-                                <option value="Data Migration">Data Migration</option>
-                                <option value="Software Enquiries">Software Enquiries</option>
-                                <option value="Session Enquiries">Session Enquiries</option>
-                                <option value="Training Enquiries">Training Enquiries</option>
-                                <option value="Enhancement/CR">Enhancement/CR</option>
-                                <option value="Add-on License">Add-on License</option>
-                                <option value="Others">Others</option>
+                                <option value="Enhancement">Enhancement</option>
+                                <option value="Paid Customization">Paid Customization</option>
+                                <option value="Others Inquiry">Others Inquiry</option>
+                                <option value="Add on License">Add on License</option>
+                                <option value="Add on Module">Add on Module</option>
+                                <option value="Add on Device">Add on Device</option>
                             </select>
                             @error('newTicketCategory') <div class="imp-drawer-error">{{ $message }}</div> @enderror
+                            <div x-show="['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory)" x-cloak class="imp-block-banner">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8"  x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <span>Add-on requests should be handled by the Sales team. This ticket cannot be submitted.</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Fields below Category are locked when an Add-on category is selected -->
+                <div class="imp-fields-stack"
+                     :class="{ 'imp-fields-disabled': ['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory) }"
+                     x-effect="$el.toggleAttribute('inert', ['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory))">
 
                 <!-- Row 2: Module & Status -->
                 <div class="imp-drawer-section">
@@ -3806,8 +3909,6 @@
                                 <option value="Leave">Leave</option>
                                 <option value="Claim">Claim</option>
                                 <option value="Payroll">Payroll</option>
-                                <option value="Appraisal">Appraisal</option>
-                                <option value="Hire">Hire</option>
                             </select>
                             @error('newTicketModule') <div class="imp-drawer-error">{{ $message }}</div> @enderror
                         </div>
@@ -3815,34 +3916,14 @@
                         <!-- Status -->
                         <div class="imp-drawer-field">
                             <label>Status <span class="imp-required">*</span></label>
-                            <select class="imp-drawer-select" wire:model="newTicketStatus" {{ $this->newTicketCategory === 'License Activation' ? 'disabled' : '' }}>
+                            <select class="imp-drawer-select" wire:model="newTicketStatus">
                                 <option value="open">Open</option>
                                 <option value="pending_support">Pending Support</option>
                                 <option value="pending_client">Pending Client</option>
                                 <option value="pending_rnd">Pending R&D</option>
                                 <option value="closed">Closed</option>
                             </select>
-                            @if($this->newTicketCategory === 'License Activation')
-                                <div class="imp-drawer-helper">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Auto-set to "Closed" for License Activation
-                                </div>
-                            @endif
                         </div>
-                    </div>
-                </div>
-
-                <!-- Priority -->
-                <div class="imp-drawer-section">
-                    <div class="imp-drawer-field">
-                        <label>Priority <span class="imp-required">*</span></label>
-                        <select class="imp-drawer-select" wire:model="newTicketPriority">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                        </select>
                     </div>
                 </div>
 
@@ -3869,15 +3950,18 @@
                         <input type="text"
                                class="imp-drawer-input"
                                wire:model="newTicketEmailSubject"
+                               style="text-transform: uppercase;"
+                               @input="const s=$event.target.selectionStart; $event.target.value=$event.target.value.toUpperCase(); $event.target.setSelectionRange(s,s);"
                                placeholder="Enter email subject line">
                         @error('newTicketEmailSubject') <div class="imp-drawer-error">{{ $message }}</div> @enderror
                     </div>
                 </div>
 
                 <!-- Email Body (Rich Text Editor) -->
-                <div class="imp-drawer-section">
+                <div class="imp-drawer-section imp-drawer-section--grow">
                     <div class="imp-drawer-field"
                          x-data="{
+                            editorDragOver: false,
                             exec(command, value = null) {
                                 document.execCommand(command, false, value);
                                 this.$refs.editor.focus();
@@ -3894,6 +3978,24 @@
                                 const html = e.clipboardData.getData('text/html');
                                 const text = e.clipboardData.getData('text/plain');
                                 document.execCommand('insertHTML', false, html || text);
+                            },
+                            handleAttachmentDrop(fileList) {
+                                const files = Array.from(fileList || []);
+                                if (!files.length) return;
+                                const allowedExts = ['doc','docx','xls','xlsx','pdf','png','jpg','jpeg'];
+                                const maxBytes = 10 * 1024 * 1024;
+                                const valid = [], errors = [];
+                                files.forEach(f => {
+                                    const ext = (f.name.split('.').pop() || '').toLowerCase();
+                                    if (!allowedExts.includes(ext))   errors.push(`&quot;${f.name}&quot; — unsupported file type`);
+                                    else if (f.size > maxBytes)       errors.push(`&quot;${f.name}&quot; — exceeds 10MB`);
+                                    else                              valid.push(f);
+                                });
+                                if (errors.length) alert(errors.join('\n'));
+                                if (!valid.length) return;
+                                this.$wire.uploadMultiple('ticketAttachments', valid,
+                                    () => {},
+                                    () => alert('File upload failed.'));
                             }
                          }"
                          x-init="
@@ -3902,6 +4004,10 @@
                             });
                             $wire.on('drawerReset', () => {
                                 $refs.editor.innerHTML = '';
+                            });
+                            window.addEventListener('dragover', e => e.preventDefault());
+                            window.addEventListener('drop', e => {
+                                if (!e.target.closest('.imp-editor-zone')) e.preventDefault();
                             });
                          "
                     >
@@ -3921,36 +4027,37 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" /></svg>
                             </button>
                         </div>
-                        <div wire:ignore>
-                            <div class="imp-drawer-textarea"
-                                 contenteditable="true"
-                                 x-ref="editor"
-                                 @paste="handlePaste($event)"
-                                 data-placeholder="Type your email message here..."></div>
-                        </div>
-                        @error('newTicketEmailBody') <div class="imp-drawer-error">{{ $message }}</div> @enderror
-                    </div>
-                </div>
-
-                <!-- Attachments -->
-                <div class="imp-drawer-section">
-                    <div class="imp-drawer-field">
-                        <label>Attachments</label>
-                        <label for="imp-file-upload" class="imp-drawer-upload">
-                            <div class="imp-drawer-upload-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px; color: #7C3AED;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                                </svg>
+                        <div class="imp-editor-zone"
+                             :class="{ 'imp-editor-zone--dragover': editorDragOver }"
+                             @dragenter.prevent="editorDragOver = true"
+                             @dragover.prevent
+                             @dragleave.prevent="if (!$el.contains($event.relatedTarget)) editorDragOver = false"
+                             @drop.prevent="editorDragOver = false; handleAttachmentDrop($event.dataTransfer.files)">
+                            <div wire:ignore class="imp-editor-zone__inner">
+                                <div class="imp-drawer-textarea"
+                                     contenteditable="true"
+                                     x-ref="editor"
+                                     @paste="handlePaste($event)"
+                                     data-placeholder="Type your email message here..."></div>
                             </div>
-                            <div class="imp-drawer-upload-text">Click to upload or drag and drop</div>
-                            <div class="imp-drawer-upload-hint">PDF, PNG, JPG, XLSX up to 10MB each</div>
-                        </label>
+                            <div x-show="editorDragOver" x-cloak class="imp-editor-drop-overlay">
+                                <span>Drop files to attach</span>
+                            </div>
+                        </div>
+
                         <input type="file"
                                id="imp-file-upload"
                                wire:model="ticketAttachments"
                                multiple
-                               accept=".pdf,.png,.jpg,.jpeg,.xlsx"
+                               accept=".doc,.docx,.xls,.xlsx,.pdf,.png,.jpg,.jpeg"
                                style="display: none;">
+
+                        <div class="imp-editor-hint">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                            </svg>
+                            <span>Drag files into the description (or <a href="#" @click.prevent="document.getElementById('imp-file-upload').click()">click to browse</a>). Word, Excel, PDF, Images &middot; max 10MB each.</span>
+                        </div>
 
                         @if(!empty($ticketAttachments))
                             <div class="imp-drawer-file-list">
@@ -3972,14 +4079,22 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        @error('newTicketEmailBody') <div class="imp-drawer-error">{{ $message }}</div> @enderror
+                        @error('ticketAttachments.*') <div class="imp-drawer-error">{{ $message }}</div> @enderror
                     </div>
                 </div>
+                </div>{{-- /imp-fields-disabled wrapper --}}
             </div>
 
             <!-- Footer -->
             <div class="imp-drawer-footer">
                 <button type="button" class="imp-drawer-cancel" wire:click="closeCreateDrawer">Cancel</button>
-                <button type="button" class="imp-drawer-submit" @click="const editor = document.querySelector('[x-ref=editor]'); if (editor) @this.set('newTicketEmailBody', editor.innerHTML); $nextTick(() => { $wire.createTicket(); });" wire:loading.attr="disabled">
+                <button type="button" class="imp-drawer-submit"
+                        @click="if (['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory)) return; const editor = document.querySelector('[x-ref=editor]'); if (editor) @this.set('newTicketEmailBody', editor.innerHTML); $nextTick(() => { $wire.createTicket(); });"
+                        wire:loading.attr="disabled"
+                        :disabled="['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory)"
+                        :class="{ 'imp-drawer-submit-disabled': ['Add on License','Add on Module','Add on Device'].includes($wire.newTicketCategory) }">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                     </svg>
@@ -4266,7 +4381,7 @@
                                                 </div>
                                             @else
                                                 <div class="imp-detail-msg-body">{!! preg_replace(
-                                                '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
+                                                '/(SW_\d{6}_\d{4}|SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
                                                 strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
                                             ) !!}</div>
@@ -4302,7 +4417,7 @@
                                                 </div>
                                             </div>
                                             <div class="imp-detail-msg-body">{!! preg_replace(
-                                                '/(SW_\d{6}_IMP\d{4}|IMP-\d+)/',
+                                                '/(SW_\d{6}_\d{4}|SW_\d{6}_IMP\d{4}|IMP-\d+)/',
                                                 '<span class="imp-ticket-link" onclick="Livewire.dispatch(\'openTicketByNumber\', {number: \'$1\'})">$1</span>',
                                                 strip_tags($reply->message, '<p><br><strong><b><em><i><a><ul><ol><li>')
                                             ) !!}</div>
@@ -4541,7 +4656,9 @@
                         {{-- Subject --}}
                         <div class="imp-split-section">
                             <label class="imp-split-label">Subject</label>
-                            <input type="text" class="imp-split-input" wire:model="splitSubject" placeholder="Ticket subject...">
+                            <input type="text" class="imp-split-input" wire:model="splitSubject" placeholder="Ticket subject..."
+                                   style="text-transform: uppercase;"
+                                   @input="const s=$event.target.selectionStart; $event.target.value=$event.target.value.toUpperCase(); $event.target.setSelectionRange(s,s);">
                             @error('splitSubject') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
                         </div>
 
@@ -4550,14 +4667,12 @@
                             <label class="imp-split-label">Category</label>
                             <select class="imp-split-select" wire:model="splitCategory">
                                 <option value="">Select category</option>
-                                <option value="License Activation">License Activation</option>
-                                <option value="Data Migration">Data Migration</option>
-                                <option value="Software Enquiries">Software Enquiries</option>
-                                <option value="Session Enquiries">Session Enquiries</option>
-                                <option value="Training Enquiries">Training Enquiries</option>
-                                <option value="Enhancement/CR">Enhancement/CR</option>
-                                <option value="Add-on License">Add-on License</option>
-                                <option value="Others">Others</option>
+                                <option value="Enhancement">Enhancement</option>
+                                <option value="Paid Customization">Paid Customization</option>
+                                <option value="Others Inquiry">Others Inquiry</option>
+                                <option value="Add on License">Add on License</option>
+                                <option value="Add on Module">Add on Module</option>
+                                <option value="Add on Device">Add on Device</option>
                             </select>
                             @error('splitCategory') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
                         </div>
@@ -4572,21 +4687,10 @@
                                 <option value="Leave">Leave</option>
                                 <option value="Claim">Claim</option>
                                 <option value="Payroll">Payroll</option>
-                                <option value="Appraisal">Appraisal</option>
-                                <option value="Hire">Hire</option>
                             </select>
                             @error('splitModule') <span style="color: #DC2626; font-size: 11px;">{{ $message }}</span> @enderror
                         </div>
 
-                        {{-- Priority --}}
-                        <div class="imp-split-section">
-                            <label class="imp-split-label">Priority</label>
-                            <select class="imp-split-select" wire:model="splitPriority">
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                        </div>
                     </div>
                     <div class="imp-split-drawer-footer">
                         <button class="imp-split-cancel-btn" wire:click="closeSplitDrawer">Cancel</button>

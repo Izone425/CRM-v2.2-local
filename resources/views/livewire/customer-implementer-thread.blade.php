@@ -26,7 +26,6 @@
         <div class="cit-header">
             <div>
                 <h1 class="cit-title">Project Thread</h1>
-                <p class="cit-subtitle">Manage and track your support requests</p>
             </div>
             <div class="cit-create-wrap" x-data="{ tip: false }">
                 <button
@@ -131,7 +130,7 @@
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
                             <div class="cit-dropdown-item {{ !$categoryFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '')" @click="open = false">All Categories</div>
-                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Session Summary', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
+                            @foreach(['Enhancement', 'Paid Customization', 'Others Inquiry', 'Add on License', 'Add on Module', 'Add on Device'] as $cat)
                                 <div class="cit-dropdown-item {{ $categoryFilter === $cat ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '{{ $cat }}')" @click="open = false">{{ $cat }}</div>
                             @endforeach
                         </div>
@@ -148,7 +147,7 @@
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
                             <div class="cit-dropdown-item {{ !$moduleFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('moduleFilter', '')" @click="open = false">All Modules</div>
-                            @foreach(['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll', 'Appraisal', 'Hire'] as $mod)
+                            @foreach(['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll'] as $mod)
                                 <div class="cit-dropdown-item {{ $moduleFilter === $mod ? 'cit-dropdown-selected' : '' }}" wire:click="$set('moduleFilter', '{{ $mod }}')" @click="open = false">{{ $mod }}</div>
                             @endforeach
                         </div>
@@ -644,17 +643,46 @@
     @endif
 
     {{-- ═══════════════════════════════════════════════════════════ --}}
-    {{-- CREATE TICKET MODAL --}}
+    {{-- CREATE TICKET DRAWER (right-side, 50vw) --}}
     {{-- ═══════════════════════════════════════════════════════════ --}}
-    @if($showCreateModal)
-    <div class="cit-modal-overlay" @click.self="$wire.closeCreateModal()">
-        <div class="cit-modal" @click.stop>
-            <div class="cit-modal-header">
-                <h2>Create New Ticket</h2>
-                <button wire:click="closeCreateModal" class="cit-modal-close">&times;</button>
+    <div
+        x-show="$wire.showCreateModal"
+        x-cloak
+        x-effect="
+            if ($wire.showCreateModal) {
+                document.body.classList.add('cit-drawer-open');
+            } else {
+                setTimeout(() => {
+                    document.body.classList.remove('cit-drawer-open');
+                    $refs.descEditor && ($refs.descEditor.innerHTML = '');
+                }, 320);
+            }
+        "
+        @click.self="$wire.closeCreateModal()"
+        @keydown.window.escape="$wire.showCreateModal && $wire.closeCreateModal()"
+        x-transition.opacity.duration.200ms
+        class="cit-drawer-overlay"
+    >
+        <div
+            @click.stop
+            x-show="$wire.showCreateModal"
+            x-transition:enter="cit-drawer-panel-enter"
+            x-transition:enter-start="cit-drawer-panel-enter-start"
+            x-transition:enter-end="cit-drawer-panel-enter-end"
+            x-transition:leave="cit-drawer-panel-leave"
+            x-transition:leave-start="cit-drawer-panel-leave-start"
+            x-transition:leave-end="cit-drawer-panel-leave-end"
+            class="cit-drawer-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cit-drawer-title"
+        >
+            <div class="cit-drawer-header">
+                <h2 id="cit-drawer-title" class="cit-drawer-title">Create New Ticket</h2>
+                <button wire:click="closeCreateModal" class="cit-drawer-close" aria-label="Close">&times;</button>
             </div>
 
-            <div class="cit-modal-body">
+            <div class="cit-drawer-body">
                 {{-- Category --}}
                 <div class="cit-form-group" x-data="{ open: false }">
                     <label class="cit-form-label">Category <span class="cit-required">*</span></label>
@@ -664,13 +692,28 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            @foreach(['License Activation', 'Data Migration', 'Software Enquiries', 'Session Enquiries', 'Session Summary', 'Training Enquiries', 'Enhancement/CR', 'Add On License', 'Others'] as $cat)
+                            @foreach(['Enhancement', 'Paid Customization', 'Others Inquiry', 'Add on License', 'Add on Module', 'Add on Device'] as $cat)
                                 <div class="cit-dropdown-item {{ $newCategory === $cat ? 'cit-dropdown-selected' : '' }}" wire:click="$set('newCategory', '{{ $cat }}')" @click="open = false">{{ $cat }}</div>
                             @endforeach
                         </div>
                     </div>
                     @error('newCategory') <span class="cit-error">{{ $message }}</span> @enderror
                 </div>
+
+                {{-- Add-on category warning --}}
+                <div x-show="isBlockedCategory($wire.newCategory)" x-cloak class="cit-block-banner">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8"  x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>You may contact your dedicated Salesperson for Add-on requests.</span>
+                </div>
+
+                {{-- Fields below Category are locked when an Add-on category is selected --}}
+                <div class="cit-fields-stack"
+                     :class="{ 'cit-fields-disabled': isBlockedCategory($wire.newCategory) }"
+                     x-effect="$el.toggleAttribute('inert', isBlockedCategory($wire.newCategory))">
 
                 {{-- Module --}}
                 <div class="cit-form-group" x-data="{ open: false }">
@@ -681,7 +724,7 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
                         <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            @foreach(['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll', 'Appraisal', 'Hire'] as $mod)
+                            @foreach(['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll'] as $mod)
                                 <div class="cit-dropdown-item {{ $newModule === $mod ? 'cit-dropdown-selected' : '' }}" wire:click="$set('newModule', '{{ $mod }}')" @click="open = false">{{ $mod }}</div>
                             @endforeach
                         </div>
@@ -689,67 +732,52 @@
                     @error('newModule') <span class="cit-error">{{ $message }}</span> @enderror
                 </div>
 
-                {{-- Priority --}}
-                <div class="cit-form-group" x-data="{ open: false }">
-                    <label class="cit-form-label">Priority <span class="cit-required">*</span></label>
-                    <div class="cit-dropdown" @click.away="open = false">
-                        <button type="button" class="cit-dropdown-btn cit-form-input" @click="open = !open">
-                            <span>{{ ucfirst($newPriority) }}</span>
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
-                        </button>
-                        <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            @foreach(['low', 'medium', 'high', 'urgent'] as $pri)
-                                <div class="cit-dropdown-item {{ $newPriority === $pri ? 'cit-dropdown-selected' : '' }}" wire:click="$set('newPriority', '{{ $pri }}')" @click="open = false">{{ ucfirst($pri) }}</div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
                 {{-- Subject --}}
                 <div class="cit-form-group">
                     <label class="cit-form-label">Subject <span class="cit-required">*</span></label>
-                    <input type="text" wire:model="newSubject" class="cit-form-input" placeholder="Brief description of the issue" />
+                    <input type="text" wire:model="newSubject" class="cit-form-input" style="text-transform: uppercase;"
+                           @input="const s=$event.target.selectionStart; $event.target.value=$event.target.value.toUpperCase(); $event.target.setSelectionRange(s,s);"
+                           placeholder="Brief description of the issue" />
                     @error('newSubject') <span class="cit-error">{{ $message }}</span> @enderror
                 </div>
 
-                {{-- Description --}}
-                <div class="cit-form-group">
+                {{-- Description + drag-drop attachment zone --}}
+                <div class="cit-form-group cit-form-group--grow">
                     <label class="cit-form-label">Description <span class="cit-required">*</span></label>
-                    <div class="cit-reply-toolbar" wire:ignore>
-                        <button type="button" @click="execCreate('bold')" title="Bold" class="cit-toolbar-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>
-                        </button>
-                        <button type="button" @click="execCreate('italic')" title="Italic" class="cit-toolbar-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>
-                        </button>
-                        <button type="button" @click="insertLinkCreate()" title="Link" class="cit-toolbar-btn">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-                        </button>
-                    </div>
-                    <div wire:ignore>
-                        <div x-ref="descEditor"
-                             contenteditable="true"
-                             class="cit-reply-editor cit-desc-editor"
-                             data-placeholder="Provide detailed description of your request..."
-                             @paste.prevent="handlePaste($event)"></div>
-                    </div>
-                    @error('newDescription') <span class="cit-error">{{ $message }}</span> @enderror
-                </div>
 
-                {{-- Attachments --}}
-                <div class="cit-form-group">
-                    <label class="cit-form-label">Attachments</label>
-                    <div class="cit-upload-zone" @click="$refs.newFileInput.click()">
-                        <svg width="28" height="28" fill="none" stroke="#94A3B8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                        <span>Click to upload files</span>
+                    <div class="cit-desc-zone"
+                         :class="{ 'cit-desc-zone--dragover': descDragOver }"
+                         @dragenter.prevent="descDragOver = true"
+                         @dragover.prevent
+                         @dragleave.prevent="if (!$el.contains($event.relatedTarget)) descDragOver = false"
+                         @drop.prevent="descDragOver = false; handleAttachmentDrop($event.dataTransfer.files)">
+                        <div wire:ignore class="cit-desc-zone__inner">
+                            <div x-ref="descEditor"
+                                 contenteditable="true"
+                                 class="cit-reply-editor cit-desc-editor"
+                                 data-placeholder="Provide detailed description of your request..."
+                                 @paste.prevent="handlePaste($event)"></div>
+                        </div>
+                        <div x-show="descDragOver" x-cloak class="cit-desc-drop-overlay">
+                            <span>Drop files to attach</span>
+                        </div>
                     </div>
+
                     <input type="file"
                            x-ref="newFileInput"
                            wire:model.live="newAttachments"
                            wire:key="cit-new-file-input"
                            multiple
-                           accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.doc,.docx,.csv,.txt"
+                           accept=".doc,.docx,.xls,.xlsx,.pdf,.png,.jpg,.jpeg"
                            class="cit-hidden" />
+
+                    <div class="cit-desc-hint">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                        <span>Drag files into the description (or <a href="#" @click.prevent="$refs.newFileInput.click()">click to browse</a>). Word, Excel, PDF, Images &middot; max 10MB each.</span>
+                    </div>
+
                     @if($newAttachments && count($newAttachments))
                         <div class="cit-file-list" style="margin-top: 8px;">
                             @foreach($newAttachments as $i => $file)
@@ -761,19 +789,24 @@
                             @endforeach
                         </div>
                     @endif
+
+                    @error('newDescription') <span class="cit-error">{{ $message }}</span> @enderror
+                    @error('newAttachments.*') <span class="cit-error">{{ $message }}</span> @enderror
                 </div>
+                </div>{{-- /cit-fields-disabled wrapper --}}
             </div>
 
-            <div class="cit-modal-footer">
+            <div class="cit-drawer-footer">
                 <button wire:click="closeCreateModal" class="cit-btn-outline">Cancel</button>
-                <button @click="syncAndCreate()" class="cit-btn-primary" wire:loading.attr="disabled" wire:target="createTicket">
+                <button @click="syncAndCreate()" class="cit-btn-primary" wire:loading.attr="disabled" wire:target="createTicket"
+                        :disabled="isBlockedCategory($wire.newCategory)"
+                        :class="{ 'cit-btn-disabled': isBlockedCategory($wire.newCategory) }">
                     <span wire:loading.remove wire:target="createTicket">Submit Ticket</span>
                     <span wire:loading wire:target="createTicket">Creating...</span>
                 </button>
             </div>
         </div>
     </div>
-    @endif
 
     {{-- ═══════════════════════════════════════════════════════════ --}}
     {{-- ALPINE.JS --}}
@@ -783,10 +816,36 @@
         return {
             showFilters: false,
             replyOpen: false,
+            descDragOver: false,
+            addOnCategories: ['Add on License', 'Add on Module', 'Add on Device'],
+            isBlockedCategory(cat) { return this.addOnCategories.includes(cat); },
             init() {
                 if (this.$wire) {
                     this.$wire.on('reply-sent', () => { this.replyOpen = false; });
                 }
+                // Prevent browser from navigating away when a file is dropped outside the description drop zone
+                window.addEventListener('dragover', e => e.preventDefault());
+                window.addEventListener('drop', e => {
+                    if (!e.target.closest('.cit-desc-zone')) e.preventDefault();
+                });
+            },
+            handleAttachmentDrop(fileList) {
+                const files = Array.from(fileList || []);
+                if (!files.length) return;
+                const allowedExts = ['doc','docx','xls','xlsx','pdf','png','jpg','jpeg'];
+                const maxBytes = 10 * 1024 * 1024;
+                const valid = [], errors = [];
+                files.forEach(f => {
+                    const ext = (f.name.split('.').pop() || '').toLowerCase();
+                    if (!allowedExts.includes(ext))   errors.push(`"${f.name}" — unsupported file type`);
+                    else if (f.size > maxBytes)       errors.push(`"${f.name}" — exceeds 10MB`);
+                    else                              valid.push(f);
+                });
+                if (errors.length) alert(errors.join('\n'));
+                if (!valid.length) return;
+                this.$wire.uploadMultiple('newAttachments', valid,
+                    () => {},
+                    () => alert('File upload failed.'));
             },
             openReply() {
                 this.replyOpen = true;
@@ -811,17 +870,9 @@
                 document.execCommand(command, false, value);
                 this.$refs.replyEditor?.focus();
             },
-            execCreate(command, value = null) {
-                document.execCommand(command, false, value);
-                this.$refs.descEditor?.focus();
-            },
             insertLink() {
                 const url = prompt('Enter URL:');
                 if (url) this.exec('createLink', url);
-            },
-            insertLinkCreate() {
-                const url = prompt('Enter URL:');
-                if (url) this.execCreate('createLink', url);
             },
             handlePaste(e) {
                 e.preventDefault();
@@ -835,6 +886,7 @@
                 this.$nextTick(() => this.$wire.submitReply());
             },
             syncAndCreate() {
+                if (this.isBlockedCategory(this.$wire.newCategory)) return;
                 const html = this.$refs.descEditor?.innerHTML || '';
                 this.$wire.set('newDescription', html);
                 this.$nextTick(() => this.$wire.createTicket());
@@ -1479,6 +1531,111 @@
     border-radius: 0 0 16px 16px;
 }
 
+/* ── Drawer (right-side slide-in, 50vw) ── */
+[x-cloak] { display: none !important; }
+.cit-drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+    display: flex; justify-content: flex-end;
+}
+.cit-drawer-panel {
+    width: 50vw; height: 100vh; max-width: 100vw;
+    background: #fff;
+    display: flex; flex-direction: column;
+    box-shadow: -12px 0 32px rgba(0,0,0,0.15), -2px 0 8px rgba(0,0,0,0.04);
+}
+.cit-drawer-panel-enter, .cit-drawer-panel-leave {
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.cit-drawer-panel-enter-start, .cit-drawer-panel-leave-end { transform: translateX(100%); }
+.cit-drawer-panel-enter-end,   .cit-drawer-panel-leave-start { transform: translateX(0); }
+
+.cit-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
+    flex-shrink: 0;
+}
+.cit-drawer-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
+.cit-drawer-close {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: rgba(255,255,255,0.15); color: #fff; font-size: 1.2rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.cit-drawer-close:hover { background: rgba(255,255,255,0.3); }
+.cit-drawer-body   { flex: 1; overflow-y: auto; padding: 24px; }
+.cit-drawer-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 24px; border-top: 1px solid #E2E8F0; background: #F9FAFB;
+    flex-shrink: 0;
+}
+
+body.cit-drawer-open              { overflow: hidden !important; }
+body.cit-drawer-open .main-header { display: none !important; }
+
+/* ── Add-on category block banner ── */
+.cit-block-banner {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px; margin: -8px 0 16px;
+    background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px;
+    color: #92400E; font-size: 0.82rem; line-height: 1.45;
+}
+.cit-block-banner svg { flex-shrink: 0; margin-top: 1px; }
+.cit-btn-primary[disabled], .cit-btn-primary.cit-btn-disabled {
+    opacity: 0.5; cursor: not-allowed; pointer-events: none;
+}
+.cit-fields-disabled { opacity: 0.45; pointer-events: none; user-select: none; filter: saturate(0.6); }
+
+/* ── Description drop zone ── */
+.cit-desc-zone { position: relative; }
+.cit-desc-zone--dragover .cit-desc-editor {
+    outline: 2px dashed #1a6dd4; outline-offset: -2px;
+    background: rgba(26, 109, 212, 0.04);
+}
+.cit-desc-drop-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(26, 109, 212, 0.06);
+    color: #1a6dd4; font-size: 0.85rem; font-weight: 600;
+    pointer-events: none; border-radius: 8px;
+}
+.cit-desc-hint {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px;
+    font-size: 0.72rem; color: #64748B; line-height: 1.35;
+}
+.cit-desc-hint svg { flex-shrink: 0; color: #94A3B8; }
+.cit-desc-hint a { color: #1a6dd4; text-decoration: underline; cursor: pointer; }
+
+/* ── Description flex-grow chain (fills remaining drawer height) ── */
+.cit-drawer-body { display: flex; flex-direction: column; }
+.cit-fields-stack {
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0;
+}
+.cit-form-group--grow {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+}
+.cit-form-group--grow .cit-desc-zone {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+}
+.cit-form-group--grow .cit-desc-zone__inner {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+}
+.cit-form-group--grow .cit-desc-editor {
+    flex: 1; min-height: 180px; max-height: none;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+}
+.cit-form-group--grow .cit-desc-editor:focus {
+    border-color: #1a6dd4; box-shadow: 0 0 0 2px rgba(26,109,212,0.08);
+}
+
 /* ── Form ── */
 .cit-form-group { margin-bottom: 16px; }
 .cit-form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
@@ -1523,6 +1680,7 @@
     .cit-header { flex-direction: column; }
     .cit-search-row { flex-direction: column; }
     .cit-modal { max-width: 100%; margin: 16px; }
+    .cit-drawer-panel { width: 92vw; }
 }
 @media (max-width: 480px) {
     .cit-stats-grid { grid-template-columns: 1fr; }
