@@ -32,22 +32,33 @@ Required env vars (see `.env.example`):
 
 ## Architecture
 - `app/Filament/` — Admin panel (Resources, Pages, Actions, Filters)
-- `app/Filament/Customer/` — Customer portal
-- `app/Filament/Resources/LeadResource/Tabs/` — 39 tab classes for lead view (e.g., `ProjectPlanTabs.php`, `DataMigrationTabs.php`, `ThreadTabs.php`)
+- `app/Filament/Customer/` — Customer portal (separate Filament panel for customer-facing resources/pages)
+- `app/Filament/Resources/LeadResource/Tabs/` — 40 tab classes for lead view (e.g., `ProjectPlanTabs.php`, `DataMigrationTabs.php`, `ThreadTabs.php`, `ProspectPICTabs.php`)
+- `app/Filament/Resources/LeadResource/Pages/ViewLeadRecord.php` — Lead view entry point that owns `$visibleTabs`, `getDefaultVisibleTabs()`, and the `filterTabs` action
 - `app/Filament/Pages/ImplementerTicketingDashboard.php` — Implementer thread/ticketing dashboard (admin)
-- `app/Livewire/` — 142 Livewire components (admin + customer portal)
+- `app/Filament/Actions/` — Reusable custom actions (`LeadActions`, `AdminRenewalActions`, `ImplementerActions`)
+- `app/Livewire/` — Livewire components: ~130 top-level (mostly customer-portal pages and admin one-offs) plus ~209 nested in dashboard subdirectories (`ImplementerDashboard/`, `AdminFinanceDashboard/`, `AdminRenewalDashboard/`, `LeadownerDashboard/`, `ManagerDashboard/`, `SalespersonDashboard/`, etc.). Treat the dashboard subdirs as scoped feature folders, not a flat namespace.
+- `app/Services/` — 22 service classes (PDF generation, external-API integrations, business logic — see "Services Layer" section)
+- `app/Support/` — Lightweight, framework-free utilities: `DataFileSections`, `TicketAttachmentNamer`, `SparklinePath` (Catmull-Rom → Bezier path used by Customer Dashboard spark chart)
+- `app/Mail/` — 29 Mailable classes (handover notifications, ticket alerts, reseller updates, etc.)
+- `app/Notifications/` — 3 Notification classes (`ImplementerTicketNotification`, `TicketNotification`, `DataFileAssignedByImplementerNotification`) — all write to the `notifications` table consumed by `CustomerNotificationBell`
 - `resources/views/customer/dashboard.blade.php` — Customer portal dashboard with inline sidebar navigation and tab-switched content
+- `resources/views/components/icons/` — Custom Blade SVG icon components (currently 5: `timetec-{profile,attendance,leave,claim,payroll}.blade.php`); use `fill="currentColor"` so they inherit text color. Invoke via `<x-dynamic-component :component="$iconName" width="20" height="20" />` or `<x-icons.timetec-profile />`.
 - `app/Models/` — Eloquent models
-- `app/Helpers/general_helpers.php` — Global helper functions
+- `app/Helpers/general_helpers.php` — Three global helpers: `generate_company_id()`, `quotation_reference_no()`, `remove_company_suffix()`. Most utility logic lives in `app/Services/`, not here.
 - `resources/views/filament/pages/` — Custom Blade views for Filament pages
 - `resources/views/filament/resources/lead-resource/tabs/` — Blade views for lead view tabs
 - `resources/views/livewire/` — Blade views for Livewire components
-- `app/Console/Commands/` — 35 custom artisan commands (scheduled tasks, syncs, reminders)
+- `app/Console/Commands/` — 38 custom artisan commands (see "Console Commands & Scheduling" section)
 - `config/` — Includes custom configs: imap.php, reverb.php, invoices.php, notification-scenarios.php
-- `routes/api.php` — API routes (Sanctum-authenticated)
+- `routes/web.php` — Most "API-style" endpoints (PDF generation, file downloads, exports, webhooks) live here, not `api.php`. ~1100 lines, many inline closures.
+- `routes/api.php` — Sanctum-authenticated REST endpoints (smaller surface than `web.php`)
+- `HR icons/` (untracked, repo root) — Legacy Vue 2 SVG icon components from a prior project. NOT used by current code; superseded by `resources/views/components/icons/`. Do not reference.
 
 ## Scale Reference
-- 32 Filament Resources, 100 custom Pages, 134 Models, 171 migrations
+- 32 Filament Resources, 101 custom Pages, 136 Models, 182 migrations
+- 40 Lead view tab classes, ~130 top-level Livewire components (~339 including dashboard subdirectories), 38 artisan commands, 22 Services, 29 Mailables
+- Counts drift over time — re-run `find` if making decisions based on these
 
 ## Conventions
 - Filament custom pages use Livewire properties + Alpine.js for interactivity
@@ -58,7 +69,8 @@ Required env vars (see `.env.example`):
 - CSS is inline `<style>` within Blade views, each feature uses a unique prefix: `imp-` (Implementer Ticketing), `dm-` (Data Migration admin), `dmt-` (Data Migration Templates customer), `thr-` (Thread tab admin), `cit-` (Customer Implementer Thread), `cnb-` (Customer Notification Bell), `emt-` (Email Template), `shp-` (Software Handover Process admin), `cshp-` (Software Handover Process customer), `cdb-` (Customer Dashboard home view)
 - Fixed/overlay drawers use `body.imp-drawer-open` class to hide Filament topbar (stacking context workaround)
 - Admin sidebar is custom (`resources/views/layouts/custom-sidebar.blade.php`), not Filament's default; pages set `$shouldRegisterNavigation = false` and must be manually registered in `AdminPanelProvider->pages([])` (auto-discovery is disabled)
-- Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (e.g., "Software Onboarding") and JS `switchTab()` for content switching; non-working groups (Training, Support, Knowledge Base, Commercial, Settings) render a single `<div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 13px; font-style: italic;">Coming Soon</div>` placeholder under their header — match this convention rather than inventing a new disabled style
+- Customer portal sidebar is inline in `resources/views/customer/dashboard.blade.php` with collapsible groups (Implementation, Training, Support, Knowledge Base, Commercial, Settings) and JS `switchTab()` for content switching. Non-working groups render a single `<div style="padding: 8px 16px 8px 36px; color: #94a3b8; font-size: 12.25px; font-style: italic;">Coming Soon</div>` placeholder under their header — match this convention rather than inventing a new disabled style. The Implementation group contains 5 tabs in order: `calendar` (Project Session), `softwareHandover` (Project Details), `project` (Project Plan, conditional), `impThread` (Project Thread, with badge count), `dataMigration` (Project File). The JS array `implementationTabs` (around line 969) drives auto-expand of the parent group when a sub-tab is active.
+- Custom SVG icons go in `resources/views/components/icons/` as one Blade file per icon. Each file contains a single `<svg>` with `fill="currentColor"` (so the icon inherits text color) and accepts `$attributes->merge(...)` for sizing. Reference them via `<x-dynamic-component :component="$section['icon_component']" width="20" height="20" />` when the icon is data-driven (see `DataFileSections::map()` which emits both `icon_component` and a legacy FontAwesome `icon` for fallback). Don't add raw inline SVGs to feature views when an icon component exists.
 - Lead view tabs follow pattern: `class TabName { public static function getSchema(): array }` returning Filament form components
 - Tab visibility is session-based (`lead_visible_tabs`), with role-based defaults in `ViewLeadRecord::getDefaultVisibleTabs()` AND `LeadResource::form()` fallback
 - When adding new tabs, update three places: `LeadResource::form()` defaults, `ViewLeadRecord::getDefaultVisibleTabs()`, and the `filterTabs` action switch in `ViewLeadRecord`
@@ -107,14 +119,15 @@ Required env vars (see `.env.example`):
 - FPDI's `useTemplate()` renders only the visual content of an imported master page — link annotations baked into the source PDF are dropped. Re-add them via `$pdf->Link($x, $y, $w, $h, $url)` after `useTemplate()` (see `OnboardingPdfGenerator::buildLinkMap` + `drawLinks`)
 
 ## Data Migration System
-- **V1 (nested subsections):** `ImplementerDataFile.php` — 5 sections with sub-items, storage at `templates/data-migration-v1/`
-- **V2 (flat sections):** `DataMigrationFile.php` — 5 simple sections, storage at `templates/data-migration/`
-- **Section definitions:** `app/Support/DataFileSections.php::map()` — hardcoded array of 5 section keys (`profile`, `attendance`, `leave`, `claim`, `payroll`) with labels/icons/colors/items; consumed by both customer and admin views
-- **Customer portal:** `CustomerDataMigrationTemplates.php` — downloads V1 templates, uploads filled files with versioning ("Project File" page; tab key `dataMigration`)
+- **V1 (nested subsections):** `ImplementerDataFile.php` — admin page configured to read templates from `storage/app/templates/data-migration-v1/` (path is wired in code; populate the directory before relying on it)
+- **V2 (flat sections):** `DataMigrationFile.php` — admin page configured to read templates from `storage/app/templates/data-migration/` (same caveat — code-configured destination, populate before relying)
+- **Section definitions:** `app/Support/DataFileSections.php::map()` — hardcoded array of 5 section keys (`profile`, `attendance`, `leave`, `claim`, `payroll`) with labels, FontAwesome `icon` (legacy), `icon_component` (Blade SVG component name from `resources/views/components/icons/`), color, and item lists; consumed by both customer and admin views
+- **Customer portal:** `CustomerDataMigrationTemplates.php` — downloads templates, uploads filled files with versioning ("Project File" page; tab key `dataMigration`)
 - **Implementer review:** `DataMigrationTabs.php` — lead view tab showing customer uploads with slide-over for status/remarks
 - **Model:** `CustomerDataMigrationFile` — tracks versions per lead+section+item with customer remark, implementer remark, status
 - **API routes:** `/admin/api/data-migration-file/{file}/update` (POST), `/admin/data-migration-file/{file}/download` (GET)
 - **Subscription gating (customer portal):** `CustomerDataMigrationTemplates::SECTION_FLAG` maps each section key to a `SoftwareHandover` boolean column (`attendance→ta`, `leave→tl`, `claim→tc`, `payroll→tp`); `profile` is foundational and always enabled. `moduleEnabled($sectionKey)` powers both view-side gating (cards get `dmt-card--disabled` + "Not subscribed" pill + "Not included in your subscription" body note) AND server-side enforcement in `downloadTemplate()`, `startUpload()`, `submitUpload()`. No-handover customers see only Profile. Handover resolved once per request via the same `Customer.sw_id` → `Customer.lead_id` fallback used by `OnboardingPdfGenerator::findHandover()`; cached on a protected `$handover` property and re-resolved in `hydrate()` (Livewire 3 doesn't persist protected props across requests).
+- **Per-item filling guides:** `CustomerDataMigrationTemplates::GUIDE_MAP` (4 entries seeded: `profile.import-user`, plus 3 payroll items) maps `{section}.{item}` keys to PDF filenames stored in `base_path('Project File Guide/')` (NOT `storage/app/`). Customer route `GET /customer/project-file-guide/{key}` (`routes/web.php` ~lines 543–575) streams the PDF inline, gated by the same module flags. To add a new guide: drop the PDF into `Project File Guide/`, add the key→filename pair to `GUIDE_MAP`. UI: `.dmt-guide-btn` (FontAwesome `fa-book-open`) renders next to `.dmt-download-btn` only when the item key has a guide.
 
 ## Implementer Thread System
 - **Admin dashboard:** `ImplementerTicketingDashboard.php` — WhatsApp-style thread view with search, ticket split, SLA tracking
@@ -136,7 +149,8 @@ Required env vars (see `.env.example`):
 - **CSS prefixes:** `imp-` (admin dashboard), `thr-` (admin lead tab), `cit-` (customer portal)
 
 ## Email Template System
-- **Model:** `EmailTemplate` — fields: `name`, `subject`, `content`, `type` (implementer_thread/support_thread), `category`, `created_by`; scopes: `implementerThread()`, `supportThread()`
+- **Model:** `EmailTemplate` — fields: `name`, `subject`, `content`, `type` (implementer_thread/support_thread/general/...), `category`, `thread_label` (short label shown next to template name in thread UIs, added 2026-05), `created_by`; scopes: `implementerThread()`, `supportThread()`; categories enumerated by `availableCategories()` (First Response / Follow-up / Escalation / General)
+- **Pinned template:** `EmailTemplate::KICK_OFF_TEMPLATE_ID = 17` — the kick-off email template referenced from kick-off booking flows. Don't hardcode `17` elsewhere; reference the constant.
 - **Settings pages:** `ImplementerThreadEmailTemplate.php` (full CRUD with modal overlay) + `SupportThreadEmailTemplate.php` (placeholder); under Settings > Email Template in sidebar
 - **Dashboard integration:** `ImplementerTicketingDashboard` uses `getEmailTemplatesProperty()` computed property to load templates from DB; template dropdowns in create ticket drawer and reply section use template `id` as value
 - **Placeholder replacement:** `EmailTemplate::replacePlaceholders($content, $data)` — dual strategy: simple `str_replace` first, then regex fallback for HTML-artifact-tolerant matching; values are XSS-escaped via `e()`
@@ -178,3 +192,64 @@ Required env vars (see `.env.example`):
 - **Filename:** `filenameFor()` returns `Software_Onboarding_{projectCode}.pdf` (falls back to `Software_Onboarding_handover.pdf` when no project code)
 - **Required fields helper:** `hasCompleteData($customer)` flips true only when license date, implementer, temp email, and temp password are all populated — drives the "Some details will be filled in once your implementer completes setup" banner in the customer view
 - **Re-calibration trigger:** any time the master template PDF is replaced, run `onboarding-pdf:calibrate` and visually compare; the May-2026 master required moving the license-date overlay from page 5 to page 4 and reclassifying master page 18 from Leave to Claim (page 5 in the new template carries the Topic-card grid)
+
+## Console Commands & Scheduling
+- **Scheduler entry point:** `app/Console/Kernel.php::schedule()` — 27 active scheduled tasks. `php artisan schedule:run` must be in cron (every minute) for any of this to fire.
+- **High-frequency syncs (≤ 5 min cadence):**
+  - `notifications:sync-ticketing` (every minute) — drains the cross-system ticketing notification queue
+  - `sla:check-first-reply`, `hrdf:sync-emails --days=1`, `hrdf:process-claim-payments` (every 5 min)
+  - `zoho:fetch-leads` (every 4 min via cron expression — pulls leads from Zoho CRM into local DB)
+- **Half-hourly:** `userleave:update`, `handovers:sync`, `renewal:auto-mapping`, `sales-order:update-status`, `teams:fetch-recordings`
+- **Daily housekeeping (00:01–00:15):** `leads:update-status`, `repair-appointments:update-status`, `implementer-appointments:update-status`, `repair:check-pending-status`, `handovers:check-delays`, `renewals:reset-completed` (00:07), `reseller:inactivate-expired` (00:10), `sla:process-followups` (00:15)
+- **Twice daily:** `training:fetch-recordings` (14:00 + 19:00)
+- **Weekly:** `follow-up:auto` (Tue 10:00), `overtime:send-reminders` (Thu+Fri 16:00), `reseller:send-renewal-notification` (Mon 08:00), `reseller:send-pending-payment-reminder` (Mon 09:00)
+- **Conventions:** Commands that hit external APIs (Zoho, Microsoft Graph for Teams, Twilio, IRBM, HRDF email) are stateless and idempotent — re-running them is safe. Several historical commands are commented out in `Kernel.php` (e.g., `tickets:check-updates`, `handovers:check-pending-confirmation`); leave them commented unless the upstream feature is being revived.
+- **Local dev:** Don't run `schedule:run` in development unless you intentionally want syncs to fire — invoke individual commands manually instead.
+
+## Mail & Notification System
+- **Mailables:** `app/Mail/` — 29 classes covering lead/handover lifecycle, ticket alerts, reseller workflows, training. Notable:
+  - `EntityNotificationMail` — generic mailable driven by `config/notification-scenarios.php` (subject/greeting/CTA per scenario key), preferred for new transactional emails over bespoke Mailable classes
+  - `ImplementerThreadNotificationMail`, `ImplementerTicketHrNotification` — implementer-thread email surface
+  - `HandoverNotification`, `HandoverChangeImplementer`, `ProjectClosingNotification` — software-handover lifecycle
+  - `ResellerHandoverStatusUpdate{,Fd,Fe}`, `ResellerInquiryStatusUpdate`, `ResellerDatabaseCreationStatusUpdate`, `ResellerPendingPaymentReminder`, `ResellerRenewalExpiryNotification`, `InstallationPaymentNotification` — reseller workflow surface
+  - `HrdfTrainingNotification`, `WebinarTrainingNotification`, `TrainingCompletionNotification`, `OvertimeReminder` — training/HRDF surface
+  - `CustomerActivationMail`, `CustomerResetPassword` — customer-portal auth
+  - `FollowUpNotification`, `NewLeadNotification`, `LeadOwnerChangedNotification`, `ChangeLeadOwnerNotification`, `BDReferralClosure`, `SalespersonNotification`, `DemoNotification`, `CancelDemoNotification` — sales-pipeline events
+- **Notifications (in-app):** `app/Notifications/` — 3 classes (`ImplementerTicketNotification`, `TicketNotification`, `DataFileAssignedByImplementerNotification`). All persist to the polymorphic `notifications` table, which is what `CustomerNotificationBell` (and any future bell) reads from.
+- **Scenario config:** `config/notification-scenarios.php` defines per-scenario subject lines, greeting text, CTA labels, and recipient roles — `EntityNotificationMail` looks them up by scenario key. Add new scenarios here rather than subclassing Mailable.
+- **Dispatch helper:** `TicketNotificationService` (in `app/Services/`) wraps the common pattern of "create a ticket event, send the in-app notification AND the HR email" — use it from new code instead of dispatching mail + notification separately.
+- **Sync vs queue:** `QUEUE_CONNECTION=database` in dev; if a Mailable/Notification implements `ShouldQueue`, it won't actually send without `php artisan queue:work` running. For local debugging use `notifyNow()` (already a documented gotcha).
+
+## Services Layer
+`app/Services/` (22 classes) — preferred home for non-trivial logic that doesn't fit a model. Grouped by purpose:
+- **PDF generation:** `OnboardingPdfGenerator` (see Onboarding PDF Generator section)
+- **External APIs:**
+  - `MicrosoftGraphService`, `MicrosoftTeamsServiceV2` — MS Graph SDK calls (mail, Teams recordings)
+  - `WhatsAppService` — Twilio WhatsApp send + webhook handling
+  - `HRV2LicenseSeatApiService` — HR2 license-seat provisioning (used by handover sync)
+  - `LeaveAPIService` — leave system bridge
+  - `IrbmService` — Malaysian e-Invoicing (LHDN / MyInvois)
+  - `MetaConversionsApiService` — Meta Conversions API server-side tracking
+  - `SalesOrderApiService` — sales-order sync
+- **Business / domain logic:** `QuotationService`, `ProductService`, `CategoryService`, `CountryService`, `IndustryService`, `ProjectProgressService`, `TicketNotificationService`, `TemplateSelector`
+- **Invoice / OCR:** `AutoCountInvoiceService`, `HrdfAutoCountInvoiceService`, `InvoiceOcrService` (Tesseract-driven)
+- **Data import:** `ImportZohoLeads`, `ImportSoftwareHandovers`
+Conventions: services are plain PHP classes (no base class), instantiated via `app(...)` or constructor injection. Avoid mixing Filament/Livewire concerns inside services — keep them framework-agnostic so they can be reused from commands, controllers, and components.
+
+## Filament Resources & Pages — Major Surface Areas
+The admin panel (`app/Filament/Resources/` + `app/Filament/Pages/`) is large. Use this as a map when locating features.
+- **Sales / pipeline resources:** `LeadResource` (largest — owns the 40 lead-view tabs), `QuotationResource`, `SalesPricingResource`, `ProductResource`, `PolicyResource`
+- **Implementation resources:** `ImplementerTicketResource` (also exists in customer panel), `ProjectTaskResource`
+- **Hardware/inventory resources:** `HardwareAttachmentResource`, `HardwarePendingStockResource`, `SparePartResource`, `AdminRepairResource`
+- **People resources:** `UserResource`
+- **Custom pages by area:** `app/Filament/Pages/` (101 files) is grouped loosely by feature prefix:
+  - **Implementer:** `ImplementerTicketingDashboard`, `ImplementerClientProfile`, `ImplementerCalendar`, `ImplementerAuditList`, `ImplementerRequestList`, `ImplementerRequestCount`, `ImplementationSession`, `KickOffMeetingSession`, `ImplementerDataFile`
+  - **Sales:** `SalesAdminAnalysisV1`–`V4`, `SalesDebtor`, `SalesPersonSurveyRequest`, `SalesForecast*`, `SalesPricingManagement`, `SearchLead`, `SearchLicense`
+  - **Finance / renewal:** `AdminRenewalDashboard*`, `AdminRenewalProcessData{Myr,Usd}`, `DebtorAging*`, `FinanceHandoverList`, `InvoicesTable`, `InvoiceSummary`, `ProformaInvoices`
+  - **Hardware:** `HardwareDashboardAll`, `HardwareDashboardPendingStock`, `DeviceStockInformation`, `DevicePurchaseInformation`, `OnsiteRepairList`
+  - **HRDF / training:** `HrdfClaimTracker`, `HrdfHandoverList`, `HrdfInvoiceList*`, `HeadcountHandoverList`, `TrainerFileUpload`, `TrainerFileView`, `TrainerHandover`, `TrainingRequest*`, `TrainingSettingTrainer*`
+  - **Project tracking:** `ProjectAnalysis`, `ProjectCategoryOpen/Closed/Delay/Inactive`, `ProjectPlanSummary`, `ProjectPriority`
+  - **Analytics / raw data:** `LeadAnalysis`, `DemoAnalysis*`, `CallLogAnalysis`, `RevenueAnalysis`, `RevenueTable`, `TicketAnalysis`, `TicketDashboard`, `MarketingAnalysis`, `ApolloLeadTracker`, `ManageCustomerStages`
+  - **Calendars / utilities:** `MonthlyCalendar`, `TaskCalendar`, `SupportCalendar`, `Whatsapp`
+  - **Settings:** `ImplementerThreadEmailTemplate`, `SupportThreadEmailTemplate` (under Settings > Email Template)
+- **Auto-discovery is OFF.** New custom pages must be added to `AdminPanelProvider->pages([])` and set `$shouldRegisterNavigation = false` (the custom sidebar handles nav).
