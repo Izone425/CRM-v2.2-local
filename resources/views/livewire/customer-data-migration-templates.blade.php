@@ -44,15 +44,10 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .dmt-subtitle {
-            font-size: 0.76rem;
-            color: #64748b;
-            margin: 0 0 4px;
-        }
         .dmt-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-template-rows: auto 1fr;
+            grid-template-rows: auto auto;
             gap: 14px;
             flex: 1;
             min-height: 0;
@@ -94,6 +89,7 @@
         }
         .dmt-card--disabled .dmt-card-icon { filter: grayscale(1); }
         .dmt-card--disabled .dmt-download-btn,
+        .dmt-card--disabled .dmt-combo-btn,
         .dmt-card--disabled .dmt-version-row,
         .dmt-card--disabled .dmt-toggle,
         .dmt-card--disabled .dmt-coming-soon {
@@ -128,6 +124,7 @@
         .dmt-card--payroll .dmt-card-body {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
+            align-items: start;
             gap: 12px;
             overflow-y: auto;
         }
@@ -162,12 +159,16 @@
         .dmt-card-icon {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 15px;
             flex-shrink: 0;
+            transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+        .dmt-card:hover .dmt-card-icon {
+            transform: translateY(-1px);
         }
         .dmt-card-name {
             font-size: 14px;
@@ -197,10 +198,6 @@
             font-weight: 600;
             color: #334155;
             margin-bottom: 2px;
-        }
-        .dmt-sub-item-size {
-            font-size: 12px;
-            color: #94a3b8;
         }
         .dmt-sub-item-actions {
             display: flex;
@@ -234,7 +231,7 @@
         .dmt-download-btn i {
             font-size: 11px;
         }
-        .dmt-guide-btn {
+        .dmt-combo-btn {
             position: relative;
             z-index: 1;
             display: inline-flex;
@@ -247,22 +244,21 @@
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
-            text-decoration: none;
             cursor: pointer;
             transition: background-color .15s ease, border-color .15s ease, box-shadow .25s ease, transform .15s ease;
             flex-shrink: 0;
         }
-        .dmt-guide-btn:hover {
+        .dmt-combo-btn:hover {
             background: #e2efff;
             border-color: rgba(0, 60, 117, 0.32);
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0, 60, 117, 0.14);
         }
-        .dmt-guide-btn i {
+        .dmt-combo-btn i {
             font-size: 11px;
         }
         .dmt-download-btn::after,
-        .dmt-guide-btn::after {
+        .dmt-combo-btn::after {
             content: attr(data-tooltip);
             position: absolute;
             right: calc(100% + 8px);
@@ -283,7 +279,7 @@
             z-index: 10;
         }
         .dmt-download-btn::before,
-        .dmt-guide-btn::before {
+        .dmt-combo-btn::before {
             content: '';
             position: absolute;
             right: calc(100% + 2px);
@@ -301,15 +297,15 @@
         }
         .dmt-download-btn:hover::after,
         .dmt-download-btn:focus-visible::after,
-        .dmt-guide-btn:hover::after,
-        .dmt-guide-btn:focus-visible::after {
+        .dmt-combo-btn:hover::after,
+        .dmt-combo-btn:focus-visible::after {
             opacity: 1;
             transform: translate(0, -50%);
         }
         .dmt-download-btn:hover::before,
         .dmt-download-btn:focus-visible::before,
-        .dmt-guide-btn:hover::before,
-        .dmt-guide-btn:focus-visible::before {
+        .dmt-combo-btn:hover::before,
+        .dmt-combo-btn:focus-visible::before {
             opacity: 1;
             transform: translate(0, -50%);
         }
@@ -380,12 +376,6 @@
             font-size: 11px;
             font-weight: 600;
             flex-shrink: 0;
-        }
-        .dmt-no-files {
-            color: #94a3b8;
-            font-size: 12px;
-            font-style: italic;
-            padding: 4px 0;
         }
         .dmt-toggle {
             font-size: 11px;
@@ -633,7 +623,6 @@
 
     <div class="dmt-container" x-data="dmtCustomer()" x-cloak>
         <h2 class="dmt-title">Project File</h2>
-        <p class="dmt-subtitle">Download Excel templates, fill them in, and upload back for processing</p>
 
         @if(session()->has('success'))
             <div class="dmt-flash dmt-flash-success">{{ session('success') }}</div>
@@ -646,7 +635,7 @@
             @foreach($sections as $sectionKey => $section)
                 <div class="dmt-card {{ $sectionKey === 'payroll' ? 'dmt-card--payroll' : '' }} {{ !$section['enabled'] ? 'dmt-card--disabled' : '' }}">
                     <div class="dmt-card-header">
-                        <div class="dmt-card-icon" style="background: {{ $section['color'] }}15; color: {{ $section['color'] }};">
+                        <div class="dmt-card-icon" style="background: {{ $section['color'] }}28; color: {{ $section['color'] }}; box-shadow: 0 0 0 1.5px {{ $section['color'] }} inset;">
                             @if(!empty($section['icon_component']))
                                 <x-dynamic-component :component="$section['icon_component']" width="20" height="20" />
                             @else
@@ -680,28 +669,25 @@
                                             </span>
                                         @endif
                                     </div>
-                                    @if($item['exists'])
-                                        <div class="dmt-sub-item-size">{{ $item['size'] }}</div>
-                                    @endif
                                 </div>
                                 <div class="dmt-sub-item-actions">
                                     @if($item['exists'])
                                         @if(!empty($item['guide_url']))
-                                            <a href="{{ $item['guide_url'] }}"
-                                               target="_blank"
-                                               rel="noopener"
-                                               class="dmt-guide-btn"
-                                               data-tooltip="Open filling guide"
-                                               aria-label="Open filling guide in a new tab">
-                                                <i class="fas fa-book-open"></i>
-                                            </a>
+                                            <button type="button"
+                                                    @click="window.open('{{ e($item['guide_url']) }}', '_blank', 'noopener,noreferrer'); $wire.call('downloadTemplate', '{{ $sectionKey }}', '{{ $itemKey }}')"
+                                                    class="dmt-combo-btn"
+                                                    data-tooltip="Download Template & User Guide"
+                                                    aria-label="Download template and open user guide">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                        @else
+                                            <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')"
+                                                    class="dmt-download-btn"
+                                                    data-tooltip="Download template"
+                                                    aria-label="Download template">
+                                                <i class="fas fa-download"></i>
+                                            </button>
                                         @endif
-                                        <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')"
-                                                class="dmt-download-btn"
-                                                data-tooltip="Download template"
-                                                aria-label="Download template">
-                                            <i class="fas fa-download"></i>
-                                        </button>
                                     @else
                                         <span class="dmt-coming-soon">Coming soon</span>
                                     @endif
@@ -754,8 +740,6 @@
                                         </div>
                                     </template>
                                 @endif
-                            @else
-                                <div class="dmt-no-files">No files uploaded yet</div>
                             @endif
 
                             @if($uploadingSection === $sectionKey && $uploadingItem === $itemKey)

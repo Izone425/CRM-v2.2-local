@@ -11,7 +11,7 @@ class DataFileSections
                 'label' => 'Profile',
                 'icon' => 'fas fa-user',
                 'icon_component' => 'icons.timetec-profile',
-                'color' => '#7C3AED',
+                'color' => '#64748b',
                 'items' => [
                     'import-user' => ['label' => 'Import User', 'file' => 'profile-import-user.xlsx'],
                 ],
@@ -20,7 +20,7 @@ class DataFileSections
                 'label' => 'Attendance',
                 'icon' => 'fas fa-calendar-check',
                 'icon_component' => 'icons.timetec-attendance',
-                'color' => '#6366F1',
+                'color' => '#06b6d4',
                 'items' => [
                     'clocking-schedule' => ['label' => 'Clocking Schedule', 'file' => 'attendance-clocking-schedule.xlsx'],
                 ],
@@ -29,7 +29,7 @@ class DataFileSections
                 'label' => 'Leave',
                 'icon' => 'fas fa-umbrella-beach',
                 'icon_component' => 'icons.timetec-leave',
-                'color' => '#EF4444',
+                'color' => '#22c55e',
                 'items' => [
                     'leave-policy' => ['label' => 'Leave Policy', 'file' => 'leave-leave-policy.xlsx'],
                 ],
@@ -38,7 +38,7 @@ class DataFileSections
                 'label' => 'Claim',
                 'icon' => 'fas fa-money-bill-wave',
                 'icon_component' => 'icons.timetec-claim',
-                'color' => '#F59E0B',
+                'color' => '#eab308',
                 'items' => [
                     'claim-policy' => ['label' => 'Claim Policy', 'file' => 'claim-claim-policy.xlsx'],
                 ],
@@ -47,7 +47,7 @@ class DataFileSections
                 'label' => 'Payroll',
                 'icon' => 'fas fa-file-invoice-dollar',
                 'icon_component' => 'icons.timetec-payroll',
-                'color' => '#10B981',
+                'color' => '#f97316',
                 'items' => [
                     'employee-information' => ['label' => 'Payroll Employee Information', 'file' => 'payroll-employee-information.xlsx'],
                     'employee-salary-data' => ['label' => 'Employee Salary Data', 'file' => 'payroll-employee-salary-data.xlsx'],
