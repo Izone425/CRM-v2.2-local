@@ -5,19 +5,16 @@
     {{-- ═══════════════════════════════════════════════════════════ --}}
     @if($currentView === 'dashboard')
     @php
-        $statusMap = [
-            'open' => ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'dot' => '#3B82F6', 'label' => 'Open'],
-            'pending_support' => ['bg' => '#FFFBEB', 'text' => '#B45309', 'dot' => '#F59E0B', 'label' => 'Pending Support'],
-            'pending_client' => ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'dot' => '#8B5CF6', 'label' => 'Pending Client'],
-            'pending_rnd' => ['bg' => '#F3F4F6', 'text' => '#4B5563', 'dot' => '#6B7280', 'label' => 'Pending R&D'],
-            'closed' => ['bg' => '#ECFDF5', 'text' => '#047857', 'dot' => '#10B981', 'label' => 'Closed'],
-        ];
-        $priorityMap = [
-            'low' => ['bg' => '#F3F4F6', 'text' => '#6B7280'],
-            'medium' => ['bg' => '#FFFBEB', 'text' => '#B45309'],
-            'high' => ['bg' => '#FEF2F2', 'text' => '#B91C1C'],
-            'urgent' => ['bg' => '#EF4444', 'text' => '#FFFFFF'],
-        ];
+        $statusOptions   = ['open' => 'Open', 'awaiting_reply' => 'Awaiting Reply', 'in_progress' => 'In Progress', 'closed' => 'Closed'];
+        $categoryOptions = ['Enhancement', 'Paid Customization', 'Others Inquiry', 'Add on License', 'Add on Module', 'Add on Device'];
+        $moduleOptions   = ['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll'];
+        $summarize = function (array $values, array $labelMap, string $allLabel): string {
+            if (empty($values)) return $allLabel;
+            $labels = array_map(fn ($v) => $labelMap[$v] ?? $v, $values);
+            if (count($labels) <= 2) return implode(', ', $labels);
+            return implode(', ', array_slice($labels, 0, 2)) . ' +' . (count($labels) - 2) . ' more';
+        };
+        $activeFilterCount = count($statusFilter) + count($categoryFilter) + count($moduleFilter);
     @endphp
     <div class="cit-dashboard">
 
@@ -48,7 +45,7 @@
 
         {{-- Stats Cards --}}
         <div class="cit-stats-grid">
-            <div class="cit-stat-card {{ $statusFilter === 'open' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('open')" style="--stat-color: #3B82F6">
+            <div class="cit-stat-card {{ in_array('open', $statusFilter) ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('open')" style="--stat-color: #3B82F6">
                 <div class="cit-stat-content">
                     <span class="cit-stat-label">Open Tickets</span>
                     <span class="cit-stat-value">{{ $statusCounts['open'] }}</span>
@@ -57,27 +54,27 @@
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
                 </div>
             </div>
-            <div class="cit-stat-card {{ $statusFilter === 'pending_support' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('pending_support')" style="--stat-color: #F59E0B">
+            <div class="cit-stat-card {{ in_array('awaiting_reply', $statusFilter) ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('awaiting_reply')" style="--stat-color: #F59E0B">
+                <div class="cit-stat-content">
+                    <span class="cit-stat-label">Awaiting Reply</span>
+                    <span class="cit-stat-value">{{ $statusCounts['awaiting_reply'] }}</span>
+                </div>
+                <div class="cit-stat-icon {{ ($statusCounts['awaiting_reply'] ?? 0) > 0 ? 'cit-stat-icon--pulse' : '' }}" style="background: #FFFBEB; color: #F59E0B;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M9 11l2 2 4-4"/></svg>
+                </div>
+            </div>
+            <div class="cit-stat-card {{ in_array('in_progress', $statusFilter) ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('in_progress')" style="--stat-color: #8B5CF6">
                 <div class="cit-stat-content">
                     <span class="cit-stat-label">In Progress</span>
-                    <span class="cit-stat-value">{{ $statusCounts['pending_support'] }}</span>
-                </div>
-                <div class="cit-stat-icon" style="background: #FFFBEB; color: #F59E0B;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                </div>
-            </div>
-            <div class="cit-stat-card {{ $statusFilter === 'pending_client' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('pending_client')" style="--stat-color: #8B5CF6">
-                <div class="cit-stat-content">
-                    <span class="cit-stat-label">Waiting on You</span>
-                    <span class="cit-stat-value">{{ $statusCounts['pending_client'] }}</span>
+                    <span class="cit-stat-value">{{ $statusCounts['in_progress'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #F5F3FF; color: #8B5CF6;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                 </div>
             </div>
-            <div class="cit-stat-card {{ $statusFilter === 'closed' ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('closed')" style="--stat-color: #10B981">
+            <div class="cit-stat-card {{ in_array('closed', $statusFilter) ? 'cit-stat-active' : '' }}" wire:click="filterByStatus('closed')" style="--stat-color: #10B981">
                 <div class="cit-stat-content">
-                    <span class="cit-stat-label">Resolved</span>
+                    <span class="cit-stat-label">Closed Tickets</span>
                     <span class="cit-stat-value">{{ $statusCounts['closed'] }}</span>
                 </div>
                 <div class="cit-stat-icon" style="background: #ECFDF5; color: #10B981;">
@@ -95,69 +92,132 @@
             <button @click="showFilters = !showFilters" class="cit-filter-btn" :class="showFilters && 'cit-filter-active'">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
                 Filters
+                @if($activeFilterCount > 0)
+                    <span class="cit-filter-btn-count">{{ $activeFilterCount }}</span>
+                @endif
             </button>
         </div>
 
-        {{-- Filter Panel --}}
-        <div x-show="showFilters" x-cloak x-transition:enter="cit-filter-enter" x-transition:enter-start="cit-filter-enter-start" x-transition:enter-end="cit-filter-enter-end" class="cit-filter-panel">
-            <div class="cit-filter-grid">
-                {{-- Status Filter --}}
+        {{-- Filter Drawer (right side) --}}
+        <div x-show="showFilters" x-cloak
+             class="cit-drawer-backdrop"
+             @click="showFilters = false"
+             x-transition:enter="cit-backdrop-enter"
+             x-transition:enter-start="cit-backdrop-enter-start"
+             x-transition:enter-end="cit-backdrop-enter-end"
+             x-transition:leave="cit-backdrop-leave"
+             x-transition:leave-start="cit-backdrop-leave-start"
+             x-transition:leave-end="cit-backdrop-leave-end"></div>
+
+        <aside x-show="showFilters" x-cloak
+               class="cit-drawer"
+               @keydown.escape.window="showFilters = false"
+               x-transition:enter="cit-drawer-enter"
+               x-transition:enter-start="cit-drawer-enter-start"
+               x-transition:enter-end="cit-drawer-enter-end"
+               x-transition:leave="cit-drawer-leave"
+               x-transition:leave-start="cit-drawer-leave-start"
+               x-transition:leave-end="cit-drawer-leave-end">
+            <header class="cit-drawer-header">
+                <div class="cit-drawer-title-wrap">
+                    <h2 class="cit-drawer-title">Filters</h2>
+                    @if($activeFilterCount > 0)
+                        <span class="cit-drawer-title-count">{{ $activeFilterCount }} active</span>
+                    @endif
+                </div>
+                <button @click="showFilters = false" class="cit-drawer-close" aria-label="Close filters">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </header>
+
+            <div class="cit-drawer-body">
+                {{-- Status Filter (multi-select) --}}
                 <div class="cit-filter-group" x-data="{ open: false }">
                     <label class="cit-filter-label">Status</label>
                     <div class="cit-dropdown" @click.away="open = false">
                         <button class="cit-dropdown-btn" @click="open = !open">
-                            <span>{{ $statusFilter ? ucwords(str_replace('_', ' ', $statusFilter)) : 'All Status' }}</span>
+                            <span>{{ $summarize($statusFilter, $statusOptions, 'All Status') }}</span>
+                            @if(count($statusFilter) >= 2)
+                                <span class="cit-filter-count">{{ count($statusFilter) }}</span>
+                            @endif
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
-                        <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            <div class="cit-dropdown-item {{ !$statusFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', '')" @click="open = false">All Status</div>
-                            <div class="cit-dropdown-item {{ $statusFilter === 'open' ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', 'open')" @click="open = false">Open</div>
-                            <div class="cit-dropdown-item {{ $statusFilter === 'pending_support' ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', 'pending_support')" @click="open = false">Pending Support</div>
-                            <div class="cit-dropdown-item {{ $statusFilter === 'pending_client' ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', 'pending_client')" @click="open = false">Pending Client</div>
-                            <div class="cit-dropdown-item {{ $statusFilter === 'pending_rnd' ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', 'pending_rnd')" @click="open = false">Pending R&D</div>
-                            <div class="cit-dropdown-item {{ $statusFilter === 'closed' ? 'cit-dropdown-selected' : '' }}" wire:click="$set('statusFilter', 'closed')" @click="open = false">Closed</div>
+                        <div x-show="open" x-cloak class="cit-dropdown-menu cit-dropdown-menu--multi">
+                            @foreach($statusOptions as $key => $label)
+                                <div class="cit-dropdown-item cit-dropdown-item--multi {{ in_array($key, $statusFilter) ? 'cit-dropdown-selected' : '' }}"
+                                     wire:click="toggleFilter('status', '{{ $key }}')">
+                                    <span class="cit-checkbox" aria-hidden="true">
+                                        @if(in_array($key, $statusFilter))
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                        @endif
+                                    </span>
+                                    <span>{{ $label }}</span>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
 
-                {{-- Category Filter --}}
+                {{-- Category Filter (multi-select) --}}
                 <div class="cit-filter-group" x-data="{ open: false }">
                     <label class="cit-filter-label">Category</label>
                     <div class="cit-dropdown" @click.away="open = false">
                         <button class="cit-dropdown-btn" @click="open = !open">
-                            <span>{{ $categoryFilter ?: 'All Categories' }}</span>
+                            <span>{{ $summarize($categoryFilter, array_combine($categoryOptions, $categoryOptions), 'All Categories') }}</span>
+                            @if(count($categoryFilter) >= 2)
+                                <span class="cit-filter-count">{{ count($categoryFilter) }}</span>
+                            @endif
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
-                        <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            <div class="cit-dropdown-item {{ !$categoryFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '')" @click="open = false">All Categories</div>
-                            @foreach(['Enhancement', 'Paid Customization', 'Others Inquiry', 'Add on License', 'Add on Module', 'Add on Device'] as $cat)
-                                <div class="cit-dropdown-item {{ $categoryFilter === $cat ? 'cit-dropdown-selected' : '' }}" wire:click="$set('categoryFilter', '{{ $cat }}')" @click="open = false">{{ $cat }}</div>
+                        <div x-show="open" x-cloak class="cit-dropdown-menu cit-dropdown-menu--multi">
+                            @foreach($categoryOptions as $cat)
+                                <div class="cit-dropdown-item cit-dropdown-item--multi {{ in_array($cat, $categoryFilter) ? 'cit-dropdown-selected' : '' }}"
+                                     wire:click="toggleFilter('category', '{{ $cat }}')">
+                                    <span class="cit-checkbox" aria-hidden="true">
+                                        @if(in_array($cat, $categoryFilter))
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                        @endif
+                                    </span>
+                                    <span>{{ $cat }}</span>
+                                </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                {{-- Module Filter --}}
+                {{-- Module Filter (multi-select) --}}
                 <div class="cit-filter-group" x-data="{ open: false }">
                     <label class="cit-filter-label">Module</label>
                     <div class="cit-dropdown" @click.away="open = false">
                         <button class="cit-dropdown-btn" @click="open = !open">
-                            <span>{{ $moduleFilter ?: 'All Modules' }}</span>
+                            <span>{{ $summarize($moduleFilter, array_combine($moduleOptions, $moduleOptions), 'All Modules') }}</span>
+                            @if(count($moduleFilter) >= 2)
+                                <span class="cit-filter-count">{{ count($moduleFilter) }}</span>
+                            @endif
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" :style="open && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
-                        <div x-show="open" x-cloak class="cit-dropdown-menu">
-                            <div class="cit-dropdown-item {{ !$moduleFilter ? 'cit-dropdown-selected' : '' }}" wire:click="$set('moduleFilter', '')" @click="open = false">All Modules</div>
-                            @foreach(['Profile', 'Attendance', 'Leave', 'Claim', 'Payroll'] as $mod)
-                                <div class="cit-dropdown-item {{ $moduleFilter === $mod ? 'cit-dropdown-selected' : '' }}" wire:click="$set('moduleFilter', '{{ $mod }}')" @click="open = false">{{ $mod }}</div>
+                        <div x-show="open" x-cloak class="cit-dropdown-menu cit-dropdown-menu--multi">
+                            @foreach($moduleOptions as $mod)
+                                <div class="cit-dropdown-item cit-dropdown-item--multi {{ in_array($mod, $moduleFilter) ? 'cit-dropdown-selected' : '' }}"
+                                     wire:click="toggleFilter('module', '{{ $mod }}')">
+                                    <span class="cit-checkbox" aria-hidden="true">
+                                        @if(in_array($mod, $moduleFilter))
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                        @endif
+                                    </span>
+                                    <span>{{ $mod }}</span>
+                                </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="cit-filter-actions">
-                <button wire:click="resetFilters" @click="showFilters = false" class="cit-filter-clear">Clear All Filters</button>
-            </div>
-        </div>
+
+            <footer class="cit-drawer-footer">
+                <button wire:click="resetFilters" class="cit-drawer-clear" {{ $activeFilterCount === 0 ? 'disabled' : '' }}>Clear All</button>
+                <button @click="showFilters = false" class="cit-drawer-done">Done</button>
+            </footer>
+        </aside>
 
         {{-- Ticket Table --}}
         @if($tickets->isEmpty())
@@ -165,7 +225,7 @@
                 <div class="cit-empty-icon">
                     <svg width="56" height="56" fill="none" stroke="#CBD5E1" stroke-width="1.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
-                @if($search || $statusFilter || $categoryFilter || $moduleFilter)
+                @if($search || !empty($statusFilter) || !empty($categoryFilter) || !empty($moduleFilter))
                     <div class="cit-empty-title">No tickets match your filters</div>
                     <div class="cit-empty-desc">Try adjusting your search or filters to find what you're looking for.</div>
                     <button wire:click="resetFilters" class="cit-btn-outline" style="margin-top: 12px;">Clear Filters</button>
@@ -191,7 +251,7 @@
             {{-- Desktop Table --}}
             <div class="cit-table-wrap">
                 <div class="cit-table-header-bar">
-                    <span class="cit-table-title">Ticket History</span>
+                    <span class="cit-table-title">Ticket List</span>
                     <span class="cit-table-count">{{ $tickets->count() }} {{ $tickets->count() === 1 ? 'ticket' : 'tickets' }}</span>
                 </div>
                 <div class="cit-table-scroll">
@@ -200,57 +260,22 @@
                             <tr>
                                 <th>Ticket ID</th>
                                 <th>Subject</th>
-                                <th>Category</th>
                                 <th>Module</th>
-                                <th>Priority</th>
                                 <th>Status</th>
-                                <th>SLA</th>
                                 <th>Last Updated</th>
-                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($tickets as $ticket)
                                 @php
-                                    $statusMap = [
-                                        'open' => ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'dot' => '#3B82F6', 'label' => 'Open'],
-                                        'pending_support' => ['bg' => '#FFFBEB', 'text' => '#B45309', 'dot' => '#F59E0B', 'label' => 'Pending Support'],
-                                        'pending_client' => ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'dot' => '#8B5CF6', 'label' => 'Pending Client'],
-                                        'pending_rnd' => ['bg' => '#F3F4F6', 'text' => '#4B5563', 'dot' => '#6B7280', 'label' => 'Pending R&D'],
-                                        'closed' => ['bg' => '#ECFDF5', 'text' => '#047857', 'dot' => '#10B981', 'label' => 'Closed'],
-                                    ];
-                                    $sc = $statusMap[$ticket->status->value] ?? $statusMap['open'];
-
-                                    $priorityMap = [
-                                        'low' => ['bg' => '#F3F4F6', 'text' => '#6B7280'],
-                                        'medium' => ['bg' => '#FFFBEB', 'text' => '#B45309'],
-                                        'high' => ['bg' => '#FEF2F2', 'text' => '#B91C1C'],
-                                        'urgent' => ['bg' => '#EF4444', 'text' => '#FFFFFF'],
-                                    ];
-                                    $pc = $priorityMap[$ticket->priority ?? 'medium'] ?? $priorityMap['medium'];
-
-                                    $slaStatus = $ticket->getSlaStatus();
-                                    $slaMap = [
-                                        'on_track' => ['bg' => '#ECFDF5', 'text' => '#047857', 'border' => '#A7F3D0', 'label' => 'On Track'],
-                                        'at_risk' => ['bg' => '#FFFBEB', 'text' => '#B45309', 'border' => '#FDE68A', 'label' => $ticket->getTimeRemaining()],
-                                        'overdue' => ['bg' => '#FEF2F2', 'text' => '#B91C1C', 'border' => '#FECACA', 'label' => 'Overdue'],
-                                        'resolved' => ['bg' => '#F3F4F6', 'text' => '#6B7280', 'border' => '#E5E7EB', 'label' => 'Resolved'],
-                                    ];
-                                    $sl = $slaMap[$slaStatus] ?? $slaMap['on_track'];
-
+                                    $sc = $statusMap[$ticket->customerFacingStatus()] ?? $statusMap['open'];
                                     $lastReply = $ticket->replies->last();
                                     $lastUpdated = $lastReply ? $lastReply->created_at : $ticket->updated_at;
                                 @endphp
                                 <tr wire:click="openTicketDetail({{ $ticket->id }})" class="cit-table-row" style="animation-delay: {{ $loop->index * 30 }}ms">
                                     <td><span class="cit-ticket-id">{{ $ticket->formatted_ticket_number }}</span></td>
                                     <td><span class="cit-ticket-subject">{{ Str::limit($ticket->subject, 45) }}</span></td>
-                                    <td><span class="cit-meta-text">{{ $ticket->category ?? '-' }}</span></td>
                                     <td><span class="cit-meta-text">{{ $ticket->module ?? '-' }}</span></td>
-                                    <td>
-                                        <span class="cit-badge-sm" style="background:{{ $pc['bg'] }}; color:{{ $pc['text'] }}">
-                                            {{ ucfirst($ticket->priority ?? 'medium') }}
-                                        </span>
-                                    </td>
                                     <td>
                                         @if($ticket->isMerged())
                                             <span class="cit-status-badge" style="background:#FEF3C7; color:#92400E">
@@ -264,20 +289,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="cit-sla-badge {{ $slaStatus === 'overdue' ? 'cit-sla-pulse' : '' }}" style="background:{{ $sl['bg'] }}; color:{{ $sl['text'] }}; border-color:{{ $sl['border'] }}">
-                                            @if($slaStatus === 'overdue')
-                                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                                            @endif
-                                            {{ $sl['label'] }}
-                                        </span>
-                                    </td>
-                                    <td><span class="cit-date-text">{{ $lastUpdated->diffForHumans() }}</span></td>
-                                    <td>
-                                        <span class="cit-view-btn">
-                                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                        </span>
-                                    </td>
+                                    <td><span class="cit-date-text">{{ $lastUpdated->format('d M Y, h:i A') }}</span></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -289,7 +301,9 @@
             <div class="cit-mobile-list">
                 @foreach($tickets as $ticket)
                     @php
-                        $sc = $statusMap[$ticket->status->value] ?? $statusMap['open'];
+                        $sc = $statusMap[$ticket->customerFacingStatus()] ?? $statusMap['open'];
+                        $lastReply = $ticket->replies->last();
+                        $lastUpdated = $lastReply ? $lastReply->created_at : $ticket->updated_at;
                     @endphp
                     <div wire:click="openTicketDetail({{ $ticket->id }})" class="cit-mobile-card" style="animation-delay: {{ $loop->index * 40 }}ms">
                         <div class="cit-mobile-card-top">
@@ -300,17 +314,17 @@
                             </span>
                         </div>
                         <div class="cit-mobile-card-subject">{{ $ticket->subject }}</div>
-                        <div class="cit-mobile-card-meta">
-                            @if($ticket->category)<span class="cit-tag">{{ $ticket->category }}</span>@endif
-                            @if($ticket->module)<span class="cit-tag">{{ $ticket->module }}</span>@endif
-                            <span class="cit-tag">{{ ucfirst($ticket->priority ?? 'medium') }}</span>
-                        </div>
+                        @if($ticket->module)
+                            <div class="cit-mobile-card-meta">
+                                <span class="cit-tag">{{ $ticket->module }}</span>
+                            </div>
+                        @endif
                         <div class="cit-mobile-card-bottom">
                             <span class="cit-reply-count">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                                 {{ $ticket->replies->count() }} {{ $ticket->replies->count() === 1 ? 'reply' : 'replies' }}
                             </span>
-                            <span class="cit-date-text">{{ $ticket->created_at->format('d M Y') }}</span>
+                            <span class="cit-date-text">{{ $lastUpdated->format('d M Y, h:i A') }}</span>
                         </div>
                     </div>
                 @endforeach
@@ -324,13 +338,6 @@
     {{-- ═══════════════════════════════════════════════════════════ --}}
     @if($currentView === 'detail' && $selectedTicket)
     @php
-        $statusMap = [
-            'open' => ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'dot' => '#3B82F6', 'label' => 'Open'],
-            'pending_support' => ['bg' => '#FFFBEB', 'text' => '#B45309', 'dot' => '#F59E0B', 'label' => 'Pending Support'],
-            'pending_client' => ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'dot' => '#8B5CF6', 'label' => 'Pending Client'],
-            'pending_rnd' => ['bg' => '#F3F4F6', 'text' => '#4B5563', 'dot' => '#6B7280', 'label' => 'Pending R&D'],
-            'closed' => ['bg' => '#ECFDF5', 'text' => '#047857', 'dot' => '#10B981', 'label' => 'Closed'],
-        ];
         $priorityMap = [
             'low' => ['bg' => '#F3F4F6', 'text' => '#6B7280'],
             'medium' => ['bg' => '#FFFBEB', 'text' => '#B45309'],
@@ -355,7 +362,7 @@
         </div>
 
         @php
-            $sc = $statusMap[$selectedTicket->status->value] ?? $statusMap['open'];
+            $sc = $statusMap[$selectedTicket->customerFacingStatus()] ?? $statusMap['open'];
             $pc = $priorityMap[$selectedTicket->priority ?? 'medium'] ?? $priorityMap['medium'];
             $slaStatus = $selectedTicket->getSlaStatus();
             $sl = $slaMap[$slaStatus] ?? $slaMap['on_track'];
@@ -372,12 +379,6 @@
                         <div>
                             <div class="cit-detail-title-row">
                                 <h2 class="cit-detail-subject">{{ $selectedTicket->subject }}</h2>
-                                @if($slaStatus === 'overdue')
-                                    <span class="cit-overdue-badge">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                                        Overdue
-                                    </span>
-                                @endif
                             </div>
                             <p class="cit-detail-id">Ticket ID: <span>{{ $selectedTicket->formatted_ticket_number }}</span></p>
                         </div>
@@ -400,22 +401,12 @@
                             @endif
                         </div>
                         <div class="cit-detail-meta-item">
-                            <span class="cit-detail-meta-label">Priority</span>
-                            <span class="cit-badge-sm" style="background:{{ $pc['bg'] }}; color:{{ $pc['text'] }}">
-                                {{ ucfirst($selectedTicket->priority ?? 'medium') }}
-                            </span>
-                        </div>
-                        <div class="cit-detail-meta-item">
                             <span class="cit-detail-meta-label">Category</span>
                             <span class="cit-detail-meta-value">{{ $selectedTicket->category ?? '-' }}</span>
                         </div>
                         <div class="cit-detail-meta-item">
                             <span class="cit-detail-meta-label">Module</span>
                             <span class="cit-detail-meta-value">{{ $selectedTicket->module ?? '-' }}</span>
-                        </div>
-                        <div class="cit-detail-meta-item">
-                            <span class="cit-detail-meta-label">Assigned To</span>
-                            <span class="cit-detail-meta-value">{{ $selectedTicket->implementer_name ?? 'Unassigned' }}</span>
                         </div>
                         <div class="cit-detail-meta-item">
                             <span class="cit-detail-meta-label">Created</span>
@@ -436,32 +427,7 @@
                         </div>
                     @endif
 
-                    {{-- SLA Info --}}
-                    @if($slaStatus !== 'resolved')
-                        <div class="cit-sla-card {{ $slaStatus === 'overdue' ? 'cit-sla-card-overdue' : '' }}">
-                            <div class="cit-sla-card-row">
-                                <div class="cit-sla-card-left">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                    <span>SLA Deadline</span>
-                                </div>
-                                <span class="cit-sla-badge" style="background:{{ $sl['bg'] }}; color:{{ $sl['text'] }}; border-color:{{ $sl['border'] }}">{{ $sl['label'] }}</span>
-                            </div>
-                            <div class="cit-sla-card-date">{{ $selectedTicket->getSlaDeadline()->format('d M Y, h:i A') }}</div>
-                            <div class="cit-sla-card-remaining">{{ $selectedTicket->getTimeRemaining() }}</div>
-                        </div>
-                    @endif
                 </div>
-
-                {{-- Escalation Notice --}}
-                @if($slaStatus === 'overdue')
-                    <div class="cit-escalation-card">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                        <div>
-                            <strong>Escalation Notice</strong>
-                            <p>This ticket has exceeded the SLA deadline. Our team has been notified and is prioritizing your request.</p>
-                        </div>
-                    </div>
-                @endif
             </div>
 
             {{-- RIGHT COLUMN: Thread Activity --}}
@@ -969,6 +935,7 @@
 .cit-stat-label { font-size: 0.72rem; color: #64748B; font-weight: 500; }
 .cit-stat-value { font-size: 1.25rem; font-weight: 700; color: #1E293B; line-height: 1.1; }
 .cit-stat-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.cit-stat-icon--pulse { animation: citPulse 1.8s ease-in-out infinite; }
 
 /* ── Search ── */
 .cit-search-row { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -990,12 +957,93 @@
 .cit-filter-active { background: #F5F3FF; border-color: #C4B5FD; color: #6D28D9; }
 
 /* ── Filter Panel ── */
-.cit-filter-panel { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-.cit-filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.cit-filter-label { display: block; font-size: 0.74rem; font-weight: 600; color: #64748B; margin-bottom: 6px; }
-.cit-filter-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
-.cit-filter-clear { background: none; border: none; color: #1a6dd4; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
-.cit-filter-clear:hover { color: #003c75; text-decoration: underline; }
+.cit-filter-label { display: block; font-size: 0.72rem; font-weight: 600; color: #64748B; margin-bottom: 5px; letter-spacing: 0.02em; }
+
+/* Filters button count badge */
+.cit-filter-btn-count {
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: #1a6dd4; color: #fff; font-size: 0.68rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 4px;
+}
+
+/* ── Right-side Filter Drawer ── */
+.cit-drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 200;
+}
+.cit-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 360px; max-width: 90vw;
+    background: #fff;
+    box-shadow: -16px 0 36px -8px rgba(15, 23, 42, 0.18);
+    z-index: 201;
+    display: flex; flex-direction: column;
+}
+.cit-drawer-header {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #F1F5F9;
+}
+.cit-drawer-title-wrap { display: flex; align-items: baseline; gap: 8px; }
+.cit-drawer-title { font-size: 1rem; font-weight: 700; color: #0F172A; margin: 0; letter-spacing: -0.01em; }
+.cit-drawer-title-count { font-size: 0.7rem; font-weight: 600; color: #1a6dd4; }
+.cit-drawer-close {
+    background: #F1F5F9; border: none; width: 30px; height: 30px;
+    border-radius: 8px; cursor: pointer; color: #475569;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.cit-drawer-close:hover { background: #E2E8F0; color: #0F172A; }
+.cit-drawer-body {
+    flex: 1 1 auto;
+    padding: 18px 20px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 14px;
+}
+.cit-drawer-footer {
+    flex-shrink: 0;
+    padding: 12px 20px;
+    border-top: 1px solid #F1F5F9;
+    display: flex; gap: 10px;
+    background: #FAFBFD;
+}
+.cit-drawer-clear {
+    flex: 1; height: 36px; background: #fff; border: 1px solid #E2E8F0;
+    border-radius: 8px; font-size: 0.8rem; font-weight: 500; color: #475569; cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.cit-drawer-clear:hover:not(:disabled) { background: #F8FAFC; color: #0F172A; border-color: #CBD5E1; }
+.cit-drawer-clear:disabled { opacity: 0.5; cursor: not-allowed; }
+.cit-drawer-done {
+    flex: 1; height: 36px; background: #1a6dd4; border: none;
+    border-radius: 8px; font-size: 0.8rem; color: #fff; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+}
+.cit-drawer-done:hover { background: #003c75; }
+
+/* Drawer-scoped compact dropdown sizing (does NOT affect form-modal dropdowns) */
+.cit-drawer-body .cit-dropdown-btn { height: 34px; padding: 0 12px; border-radius: 7px; font-size: 0.8rem; }
+.cit-drawer-body .cit-dropdown-btn svg { width: 13px; height: 13px; }
+.cit-drawer-body .cit-dropdown-menu { border-radius: 7px; }
+.cit-drawer-body .cit-dropdown-item { padding: 7px 12px; font-size: 0.8rem; }
+.cit-drawer-body .cit-filter-count { min-width: 16px; height: 16px; font-size: 0.65rem; margin-left: 4px; }
+
+/* Drawer transitions */
+.cit-drawer-enter { transition: transform 220ms ease-out; }
+.cit-drawer-enter-start { transform: translateX(100%); }
+.cit-drawer-enter-end { transform: translateX(0); }
+.cit-drawer-leave { transition: transform 180ms ease-in; }
+.cit-drawer-leave-start { transform: translateX(0); }
+.cit-drawer-leave-end { transform: translateX(100%); }
+.cit-backdrop-enter { transition: opacity 200ms ease-out; }
+.cit-backdrop-enter-start { opacity: 0; }
+.cit-backdrop-enter-end { opacity: 1; }
+.cit-backdrop-leave { transition: opacity 150ms ease-in; }
+.cit-backdrop-leave-start { opacity: 1; }
+.cit-backdrop-leave-end { opacity: 0; }
 .cit-filter-enter { transition: all 0.2s ease; }
 .cit-filter-enter-start { opacity: 0; transform: translateY(-8px); }
 .cit-filter-enter-end { opacity: 1; transform: translateY(0); }
@@ -1021,6 +1069,30 @@
 }
 .cit-dropdown-item:hover { background: #EFF6FF; color: #1a6dd4; }
 .cit-dropdown-selected { background: #EFF6FF; color: #1a6dd4; font-weight: 600; }
+
+/* ── Multi-select dropdown (filter panel only) ── */
+.cit-dropdown-menu--multi { max-height: 280px; }
+.cit-dropdown-item--multi {
+    display: flex; align-items: center; gap: 10px;
+}
+.cit-checkbox {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid #CBD5E1; background: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: transparent;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.cit-dropdown-item--multi:hover .cit-checkbox { border-color: #1a6dd4; }
+.cit-dropdown-item--multi.cit-dropdown-selected .cit-checkbox {
+    background: #1a6dd4; border-color: #1a6dd4; color: #fff;
+}
+.cit-dropdown-item--multi.cit-dropdown-selected { background: #F1F6FE; color: #1a6dd4; font-weight: 600; }
+.cit-filter-count {
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: #1a6dd4; color: #fff; font-size: 0.7rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-right: auto; margin-left: 6px;
+}
 
 /* ── Table ── */
 .cit-table-wrap { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
@@ -1050,7 +1122,6 @@
 .cit-ticket-subject { font-size: 0.84rem; font-weight: 500; color: #1E293B; }
 .cit-meta-text { font-size: 0.8rem; color: #64748B; }
 .cit-date-text { font-size: 0.78rem; color: #94A3B8; }
-.cit-view-btn { color: #1a6dd4; cursor: pointer; }
 
 /* ── Badges ── */
 .cit-status-badge {
@@ -1058,13 +1129,6 @@
     padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;
 }
 .cit-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.cit-badge-sm { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 0.72rem; font-weight: 600; }
-.cit-sla-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
-    border: 1px solid transparent; white-space: nowrap;
-}
-.cit-sla-pulse { animation: citPulse 2s infinite; }
 .cit-tag { font-size: 0.7rem; font-weight: 500; color: #64748B; background: #F1F5F9; padding: 2px 8px; border-radius: 4px; }
 
 /* ── Mobile Card List ── */
@@ -1128,11 +1192,6 @@
 .cit-detail-header-top { margin-bottom: 16px; }
 .cit-detail-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cit-detail-subject { font-size: 1.15rem; font-weight: 700; color: #1E293B; margin: 0; }
-.cit-overdue-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 10px; background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;
-    border-radius: 6px; font-size: 0.72rem; font-weight: 600; animation: citPulse 2s infinite;
-}
 .cit-detail-id { font-size: 0.84rem; color: #64748B; margin-top: 4px; }
 .cit-detail-id span { color: #1a6dd4; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 .cit-detail-meta-grid {
@@ -1142,18 +1201,6 @@
 .cit-detail-meta-item { display: flex; flex-direction: column; gap: 3px; }
 .cit-detail-meta-label { font-size: 0.7rem; font-weight: 600; color: #94A3B8; }
 .cit-detail-meta-value { font-size: 0.82rem; color: #334155; }
-
-/* ── SLA Card ── */
-.cit-sla-card {
-    margin-top: 14px; padding: 12px 16px; border-radius: 10px;
-    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-    border: 1px solid #E0E7FF;
-}
-.cit-sla-card-overdue { background: linear-gradient(135deg, #FEF2F2 0%, #FFFBEB 100%); border-color: #FECACA; }
-.cit-sla-card-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.cit-sla-card-left { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #475569; }
-.cit-sla-card-date { font-size: 0.8rem; color: #334155; }
-.cit-sla-card-remaining { font-size: 0.72rem; color: #64748B; margin-top: 2px; }
 
 /* ── Follow-up alert ── */
 .cit-detail-followup-alert {
@@ -1453,7 +1500,7 @@
 .cit-reply-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
 .cit-reply-send { font-size: 0.82rem; }
 
-/* ── Closed / Escalation ── */
+/* ── Closed ── */
 .cit-closed-notice {
     margin-top: 0; padding: 14px 18px; background: #ECFDF5; border: 1px solid #A7F3D0;
     border-radius: 0; display: flex; align-items: center; gap: 8px;
@@ -1466,13 +1513,6 @@
 }
 .cit-reopen-btn:hover { background: #5a6fd6; }
 .cit-reopen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.cit-escalation-card {
-    display: flex; gap: 12px; padding: 14px 18px; background: #FEF2F2;
-    border: 1px solid #FECACA; border-radius: 12px; color: #991B1B;
-}
-.cit-escalation-card strong { font-size: 0.84rem; display: block; margin-bottom: 2px; }
-.cit-escalation-card p { font-size: 0.78rem; margin: 0; opacity: 0.85; }
-.cit-escalation-card svg { flex-shrink: 0; margin-top: 2px; }
 
 /* ── File List ── */
 .cit-file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
@@ -1662,7 +1702,6 @@ body.cit-drawer-open .main-header { display: none !important; }
     .cit-stats-grid { grid-template-columns: repeat(2, 1fr); }
     .cit-table-wrap { display: none; }
     .cit-mobile-list { display: flex; }
-    .cit-filter-grid { grid-template-columns: 1fr; }
     .cit-detail-meta-grid { grid-template-columns: repeat(2, 1fr); }
     .cit-header { flex-direction: column; }
     .cit-search-row { flex-direction: column; }

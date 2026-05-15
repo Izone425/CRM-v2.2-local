@@ -15,15 +15,22 @@ class CustomerImplementerThread extends Component
 {
     use WithFileUploads;
 
+    public const STATUS_MAP = [
+        'open'           => ['bg' => '#EFF6FF', 'text' => '#1D4ED8', 'dot' => '#3B82F6', 'label' => 'Open'],
+        'awaiting_reply' => ['bg' => '#FFFBEB', 'text' => '#B45309', 'dot' => '#F59E0B', 'label' => 'Awaiting Reply'],
+        'in_progress'    => ['bg' => '#F5F3FF', 'text' => '#6D28D9', 'dot' => '#8B5CF6', 'label' => 'In Progress'],
+        'closed'         => ['bg' => '#ECFDF5', 'text' => '#047857', 'dot' => '#10B981', 'label' => 'Closed'],
+    ];
+
     // View state
     public string $currentView = 'dashboard';
     public ?int $selectedTicketId = null;
 
     // Dashboard filters
     public string $search = '';
-    public string $statusFilter = '';
-    public string $categoryFilter = '';
-    public string $moduleFilter = '';
+    public array $statusFilter = [];
+    public array $categoryFilter = [];
+    public array $moduleFilter = [];
 
     // Create ticket form
     public bool $showCreateModal = false;
@@ -65,8 +72,7 @@ class CustomerImplementerThread extends Component
         $query = ImplementerTicket::where('lead_id', $customer->lead_id)
             ->with(['customer', 'implementerUser', 'mergedInto', 'replies' => function ($q) {
                 $q->where('is_internal_note', false);
-            }])
-            ->orderBy('created_at', 'desc');
+            }]);
 
         // Search filter
         if ($this->search) {
@@ -79,45 +85,55 @@ class CustomerImplementerThread extends Component
             });
         }
 
-        // Status filter
-        if ($this->statusFilter) {
-            if ($this->statusFilter === 'open') {
-                $query->whereIn('status', ['open', 'pending_rnd']);
-            } else {
-                $query->where('status', $this->statusFilter);
-            }
+        // Category filter (multi-select)
+        if (!empty($this->categoryFilter)) {
+            $query->whereIn('category', $this->categoryFilter);
         }
 
-        // Category filter
-        if ($this->categoryFilter) {
-            $query->whereRaw('LOWER(category) = ?', [strtolower($this->categoryFilter)]);
+        // Module filter (multi-select)
+        if (!empty($this->moduleFilter)) {
+            $query->whereIn('module', $this->moduleFilter);
         }
 
-        // Module filter
-        if ($this->moduleFilter) {
-            $query->whereRaw('LOWER(module) = ?', [strtolower($this->moduleFilter)]);
+        $tickets = $query->get();
+
+        // Status filter (multi-select) is applied on the derived customer-facing status,
+        // which crosses SQL boundaries (DB 'open' may map to either 'open' or
+        // 'awaiting_reply' depending on last reply sender).
+        if (!empty($this->statusFilter)) {
+            $tickets = $tickets->filter(
+                fn ($t) => in_array($t->customerFacingStatus(), $this->statusFilter, true)
+            )->values();
         }
 
-        return $query->get();
+        // Order by latest activity: newest non-internal reply, else ticket updated_at.
+        // The `replies` relation is ASC by created_at, so ->last() is the most recent.
+        return $tickets->sortByDesc(function ($t) {
+            $last = $t->replies->last();
+            return $last ? $last->created_at : $t->updated_at;
+        })->values();
     }
 
-    public function getStatusCounts()
+    public function getStatusCounts(): array
     {
         $customer = $this->getCustomer();
+        $counts = ['open' => 0, 'awaiting_reply' => 0, 'in_progress' => 0, 'closed' => 0, 'total' => 0];
 
         if (!$customer || !$customer->lead_id) {
-            return ['open' => 0, 'pending_support' => 0, 'pending_client' => 0, 'closed' => 0, 'total' => 0];
+            return $counts;
         }
 
-        $tickets = ImplementerTicket::where('lead_id', $customer->lead_id)->get();
+        $tickets = ImplementerTicket::where('lead_id', $customer->lead_id)
+            ->whereNull('merged_into_ticket_id')
+            ->with(['replies' => fn ($q) => $q->where('is_internal_note', false)->orderBy('created_at', 'asc')])
+            ->get();
 
-        return [
-            'open' => $tickets->whereIn('status', [ImplementerTicketStatus::OPEN, ImplementerTicketStatus::PENDING_RND])->count(),
-            'pending_support' => $tickets->where('status', ImplementerTicketStatus::PENDING_SUPPORT)->count(),
-            'pending_client' => $tickets->where('status', ImplementerTicketStatus::PENDING_CLIENT)->count(),
-            'closed' => $tickets->where('status', ImplementerTicketStatus::CLOSED)->count(),
-            'total' => $tickets->count(),
-        ];
+        $counts['total'] = $tickets->count();
+        foreach ($tickets as $ticket) {
+            $key = $ticket->customerFacingStatus();
+            $counts[$key] = ($counts[$key] ?? 0) + 1;
+        }
+        return $counts;
     }
 
     public function getSelectedTicket()
@@ -160,17 +176,34 @@ class CustomerImplementerThread extends Component
     }
 
     // Filters
-    public function filterByStatus($status)
+    public function toggleFilter(string $type, string $value): void
     {
-        $this->statusFilter = $this->statusFilter === $status ? '' : $status;
+        $prop = match ($type) {
+            'status'   => 'statusFilter',
+            'category' => 'categoryFilter',
+            'module'   => 'moduleFilter',
+            default    => null,
+        };
+        if ($prop === null) {
+            return;
+        }
+
+        $this->$prop = in_array($value, $this->$prop, true)
+            ? array_values(array_diff($this->$prop, [$value]))
+            : [...$this->$prop, $value];
     }
 
-    public function resetFilters()
+    public function filterByStatus($status): void
+    {
+        $this->toggleFilter('status', $status);
+    }
+
+    public function resetFilters(): void
     {
         $this->search = '';
-        $this->statusFilter = '';
-        $this->categoryFilter = '';
-        $this->moduleFilter = '';
+        $this->statusFilter = [];
+        $this->categoryFilter = [];
+        $this->moduleFilter = [];
     }
 
     // Create ticket
@@ -398,6 +431,7 @@ class CustomerImplementerThread extends Component
             'statusCounts' => $this->getStatusCounts(),
             'selectedTicket' => $this->getSelectedTicket(),
             'followupCount' => $this->getFollowupCount(),
+            'statusMap' => self::STATUS_MAP,
         ]);
     }
 }

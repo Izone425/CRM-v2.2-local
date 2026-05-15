@@ -314,4 +314,48 @@ class ImplementerTicket extends Model
         $responseDeadline = $this->created_at->copy()->addHours($hours);
         return $this->first_responded_at->lte($responseDeadline);
     }
+
+    /**
+     * Customer-portal-friendly status key derived from the raw enum + reply direction.
+     *
+     * Returns one of: 'open', 'awaiting_reply', 'in_progress', 'closed'.
+     * - closed                              → 'closed'
+     * - pending_support | pending_rnd       → 'in_progress'
+     * - pending_client                      → 'open'   (ball in client's court)
+     * - open + last reply by Customer       → 'awaiting_reply'
+     * - open + last reply by User (impl)    → 'open'
+     * - open + no replies                   → 'awaiting_reply'   (assume customer-created)
+     *
+     * Uses the already-loaded `replies` relation when present to avoid N+1.
+     */
+    public function customerFacingStatus(): string
+    {
+        if ($this->status === ImplementerTicketStatus::CLOSED) {
+            return 'closed';
+        }
+        if (in_array($this->status, [ImplementerTicketStatus::PENDING_SUPPORT, ImplementerTicketStatus::PENDING_RND], true)) {
+            return 'in_progress';
+        }
+        if ($this->status === ImplementerTicketStatus::PENDING_CLIENT) {
+            return 'open';
+        }
+
+        if ($this->relationLoaded('replies')) {
+            $lastReply = $this->replies
+                ->filter(fn ($r) => !$r->is_internal_note)
+                ->sortByDesc('created_at')
+                ->first();
+        } else {
+            $lastReply = $this->replies()
+                ->where('is_internal_note', false)
+                ->latest('created_at')
+                ->first();
+        }
+
+        if (!$lastReply) {
+            return 'awaiting_reply';
+        }
+
+        return $lastReply->sender_type === Customer::class ? 'awaiting_reply' : 'open';
+    }
 }

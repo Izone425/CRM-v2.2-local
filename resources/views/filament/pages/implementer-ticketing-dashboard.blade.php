@@ -2018,7 +2018,6 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
         .imp-detail-avatar.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1D4ED8; }
-        .imp-detail-avatar.purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); color: #6D28D9; }
         .imp-detail-avatar.yellow { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; }
         .imp-detail-name {
             font-size: 13px;
@@ -2149,9 +2148,6 @@
         }
         .imp-detail-prop-label { color: #94A3B8; font-weight: 500; }
         .imp-detail-prop-value { color: #1A1D26; font-weight: 500; }
-        .imp-detail-prop-value.priority-high { color: #DC2626; font-weight: 600; }
-        .imp-detail-prop-value.priority-medium { color: #D97706; font-weight: 600; }
-        .imp-detail-prop-value.priority-low { color: #2563EB; font-weight: 600; }
 
         /* Right Panel - Thread */
         .imp-detail-thread-panel {
@@ -4196,17 +4192,6 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="imp-detail-person">
-                                        <div class="imp-detail-avatar purple">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 13px; height: 13px;">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="imp-detail-name">{{ $selectedTicket->implementerUser?->name ?? $selectedTicket->implementer_name ?? 'Unassigned' }}</p>
-                                            <p class="imp-detail-sublabel">Implementer</p>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4264,12 +4249,6 @@
                         <div class="imp-detail-section">
                             <label class="imp-detail-label">DETAILS</label>
                             <div class="imp-detail-props-card">
-                                <div class="imp-detail-prop-row">
-                                    <span class="imp-detail-prop-label">Priority:</span>
-                                    <span class="imp-detail-prop-value priority-{{ strtolower($selectedTicket->priority ?? 'medium') }}">
-                                        {{ ucfirst($selectedTicket->priority ?? 'Medium') }}
-                                    </span>
-                                </div>
                                 <div class="imp-detail-prop-row">
                                     <span class="imp-detail-prop-label">Category:</span>
                                     <span class="imp-detail-prop-value">{{ $selectedTicket->category ?? '-' }}</span>
