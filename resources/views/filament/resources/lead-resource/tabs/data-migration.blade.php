@@ -640,7 +640,11 @@
             <div class="dm-card">
                 <div class="dm-card-header">
                     <div class="dm-card-icon" style="background: {{ $section['color'] }}15; color: {{ $section['color'] }};">
-                        <i class="{{ $section['icon'] }}"></i>
+                        @if(!empty($section['icon_component']))
+                            <x-dynamic-component :component="$section['icon_component']" width="20" height="20" />
+                        @else
+                            <i class="{{ $section['icon'] }}"></i>
+                        @endif
                     </div>
                     <div class="dm-card-title">{{ $section['label'] }}</div>
                 </div>

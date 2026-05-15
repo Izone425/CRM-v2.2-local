@@ -211,8 +211,8 @@
         .dmt-download-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 16px;
+            justify-content: center;
+            padding: 7px 9px;
             border: none;
             border-radius: 8px;
             background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
@@ -220,15 +220,61 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: padding .25s ease, box-shadow .25s ease, transform .15s ease;
             flex-shrink: 0;
+            overflow: hidden;
         }
         .dmt-download-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(26, 109, 212, 0.4);
+            padding: 7px 14px;
         }
         .dmt-download-btn i {
             font-size: 11px;
+        }
+        .dmt-guide-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 9px;
+            background: rgba(26, 109, 212, 0.08);
+            color: #1a6dd4;
+            border: 1px solid rgba(26, 109, 212, 0.25);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: padding .25s ease, background-color .15s ease, border-color .15s ease, box-shadow .25s ease, transform .15s ease;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .dmt-guide-btn:hover {
+            background: rgba(26, 109, 212, 0.14);
+            border-color: rgba(26, 109, 212, 0.45);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(26, 109, 212, 0.18);
+            padding: 7px 14px;
+        }
+        .dmt-guide-btn i {
+            font-size: 11px;
+        }
+        .dmt-btn-label {
+            display: inline-block;
+            max-width: 0;
+            opacity: 0;
+            margin-left: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: max-width .25s ease, opacity .2s ease, margin-left .25s ease;
+        }
+        .dmt-download-btn:hover .dmt-btn-label,
+        .dmt-guide-btn:hover .dmt-btn-label,
+        .dmt-download-btn:focus-visible .dmt-btn-label,
+        .dmt-guide-btn:focus-visible .dmt-btn-label {
+            max-width: 96px;
+            opacity: 1;
+            margin-left: 6px;
         }
         .dmt-upload-btn {
             display: inline-flex;
@@ -564,7 +610,11 @@
                 <div class="dmt-card {{ $sectionKey === 'payroll' ? 'dmt-card--payroll' : '' }} {{ !$section['enabled'] ? 'dmt-card--disabled' : '' }}">
                     <div class="dmt-card-header">
                         <div class="dmt-card-icon" style="background: {{ $section['color'] }}15; color: {{ $section['color'] }};">
-                            <i class="{{ $section['icon'] }}"></i>
+                            @if(!empty($section['icon_component']))
+                                <x-dynamic-component :component="$section['icon_component']" width="20" height="20" />
+                            @else
+                                <i class="{{ $section['icon'] }}"></i>
+                            @endif
                         </div>
                         <div class="dmt-card-name">{{ $section['label'] }}</div>
                         @unless($section['enabled'])
@@ -599,8 +649,23 @@
                                 </div>
                                 <div class="dmt-sub-item-actions">
                                     @if($item['exists'])
-                                        <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')" class="dmt-download-btn">
-                                            <i class="fas fa-download"></i> Template
+                                        @if(!empty($item['guide_url']))
+                                            <a href="{{ $item['guide_url'] }}"
+                                               target="_blank"
+                                               rel="noopener"
+                                               class="dmt-guide-btn"
+                                               aria-label="Open filling guide in a new tab"
+                                               title="Guide">
+                                                <i class="fas fa-book-open"></i>
+                                                <span class="dmt-btn-label">Guide</span>
+                                            </a>
+                                        @endif
+                                        <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')"
+                                                class="dmt-download-btn"
+                                                aria-label="Download template"
+                                                title="Template">
+                                            <i class="fas fa-download"></i>
+                                            <span class="dmt-btn-label">Template</span>
                                         </button>
                                     @else
                                         <span class="dmt-coming-soon">Coming soon</span>

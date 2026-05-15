@@ -491,25 +491,44 @@
     .download-excel-button {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
+        justify-content: center;
+        padding: 12px 14px;
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
         font-weight: 600;
         border-radius: 8px;
         border: none;
         cursor: pointer;
-        transition: all 0.3s ease;
+        overflow: hidden;
+        transition: padding .25s ease, transform .15s ease, box-shadow .25s ease;
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .download-excel-button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        padding: 12px 22px;
     }
 
     .download-excel-button:active {
         transform: translateY(0);
+    }
+
+    .download-excel-label {
+        display: inline-block;
+        max-width: 0;
+        opacity: 0;
+        margin-left: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        transition: max-width .25s ease, opacity .2s ease, margin-left .25s ease;
+    }
+
+    .download-excel-button:hover .download-excel-label,
+    .download-excel-button:focus-visible .download-excel-label {
+        max-width: 220px;
+        opacity: 1;
+        margin-left: 8px;
     }
 
     .project-progress-container {
@@ -595,12 +614,15 @@
                 Expand All Phases
             </label>
         </div>
-        <button wire:click="downloadProjectPlan" class="download-excel-button">
+        <button wire:click="downloadProjectPlan"
+                class="download-excel-button"
+                aria-label="Download project plan"
+                title="Download Project Plan">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
                 <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
             </svg>
-            Download Project Plan
+            <span class="download-excel-label">Download Project Plan</span>
         </button>
     </div>
 @endif

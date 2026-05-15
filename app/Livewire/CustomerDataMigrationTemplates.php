@@ -21,6 +21,13 @@ class CustomerDataMigrationTemplates extends Component
         'payroll'    => 'tp',
     ];
 
+    private const GUIDE_MAP = [
+        'profile.import-user'          => '26 - Import User File Guideline - Data Migration Explanation.pdf',
+        'payroll.employee-information' => '34 - Import Employee Particulars Guideline.pdf',
+        'payroll.employee-salary-data' => '36 - Import Employee Salary Data Guideline.pdf',
+        'payroll.accumulated-item-ea'  => '38 - Import Employee Accumulated Items Guideline.pdf',
+    ];
+
     protected string $storagePath = 'templates/data-migration-v1';
 
     public ?string $uploadingSection = null;
@@ -85,6 +92,11 @@ class CustomerDataMigrationTemplates extends Component
                 $versions = $allFiles[$versionKey] ?? collect();
                 $latest = $versions->first();
 
+                $guideKey = $sectionKey . '.' . $itemKey;
+                $guideUrl = (isset(self::GUIDE_MAP[$guideKey]) && $this->moduleEnabled($sectionKey))
+                    ? route('customer.project-file-guide.view', ['key' => $guideKey])
+                    : null;
+
                 $items[$itemKey] = array_merge($item, [
                     'exists' => $exists,
                     'size' => $exists ? $this->formatFileSize(filesize($path)) : null,
@@ -92,12 +104,14 @@ class CustomerDataMigrationTemplates extends Component
                     'status' => $latest ? $latest->status : null,
                     'implementerRemark' => $latest ? $latest->implementer_remark : null,
                     'versions' => $versions,
+                    'guide_url' => $guideUrl,
                 ]);
             }
 
             $sections[$sectionKey] = [
                 'label' => $section['label'],
                 'icon' => $section['icon'],
+                'icon_component' => $section['icon_component'] ?? null,
                 'color' => $section['color'],
                 'enabled' => $this->moduleEnabled($sectionKey),
                 'items' => $items,

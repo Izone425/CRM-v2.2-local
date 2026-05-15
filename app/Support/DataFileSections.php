@@ -10,6 +10,7 @@ class DataFileSections
             'profile' => [
                 'label' => 'Profile',
                 'icon' => 'fas fa-user',
+                'icon_component' => 'icons.timetec-profile',
                 'color' => '#7C3AED',
                 'items' => [
                     'import-user' => ['label' => 'Import User', 'file' => 'profile-import-user.xlsx'],
@@ -18,6 +19,7 @@ class DataFileSections
             'attendance' => [
                 'label' => 'Attendance',
                 'icon' => 'fas fa-calendar-check',
+                'icon_component' => 'icons.timetec-attendance',
                 'color' => '#6366F1',
                 'items' => [
                     'clocking-schedule' => ['label' => 'Clocking Schedule', 'file' => 'attendance-clocking-schedule.xlsx'],
@@ -26,6 +28,7 @@ class DataFileSections
             'leave' => [
                 'label' => 'Leave',
                 'icon' => 'fas fa-umbrella-beach',
+                'icon_component' => 'icons.timetec-leave',
                 'color' => '#EF4444',
                 'items' => [
                     'leave-policy' => ['label' => 'Leave Policy', 'file' => 'leave-leave-policy.xlsx'],
@@ -34,6 +37,7 @@ class DataFileSections
             'claim' => [
                 'label' => 'Claim',
                 'icon' => 'fas fa-money-bill-wave',
+                'icon_component' => 'icons.timetec-claim',
                 'color' => '#F59E0B',
                 'items' => [
                     'claim-policy' => ['label' => 'Claim Policy', 'file' => 'claim-claim-policy.xlsx'],
@@ -42,6 +46,7 @@ class DataFileSections
             'payroll' => [
                 'label' => 'Payroll',
                 'icon' => 'fas fa-file-invoice-dollar',
+                'icon_component' => 'icons.timetec-payroll',
                 'color' => '#10B981',
                 'items' => [
                     'employee-information' => ['label' => 'Payroll Employee Information', 'file' => 'payroll-employee-information.xlsx'],

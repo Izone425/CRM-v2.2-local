@@ -537,6 +537,42 @@ Route::prefix('customer')->name('customer.')->group(function () {
             abort_unless(file_exists($path), 404);
             return response()->download($path, $downloadName);
         })->name('onboarding-template.download');
+
+        // Per-item filling guide PDFs surfaced beside each "Template" button on
+        // the Project File page. Files live at base_path('Project File Guide').
+        Route::get('/project-file-guide/{key}', function (string $key) {
+            $map = [
+                'profile.import-user'          => '26 - Import User File Guideline - Data Migration Explanation.pdf',
+                'payroll.employee-information' => '34 - Import Employee Particulars Guideline.pdf',
+                'payroll.employee-salary-data' => '36 - Import Employee Salary Data Guideline.pdf',
+                'payroll.accumulated-item-ea'  => '38 - Import Employee Accumulated Items Guideline.pdf',
+            ];
+            abort_unless(isset($map[$key]), 404);
+
+            [$sectionKey] = explode('.', $key, 2);
+            $flagMap = ['attendance' => 'ta', 'leave' => 'tl', 'claim' => 'tc', 'payroll' => 'tp'];
+            if (isset($flagMap[$sectionKey])) {
+                $customer = auth('customer')->user();
+                $handover = null;
+                if ($customer?->sw_id) {
+                    $handover = \App\Models\SoftwareHandover::find($customer->sw_id);
+                }
+                if (!$handover && $customer?->lead_id) {
+                    $handover = \App\Models\SoftwareHandover::where('lead_id', $customer->lead_id)
+                        ->orderByDesc('id')
+                        ->first();
+                }
+                abort_unless($handover && (bool) $handover->{$flagMap[$sectionKey]}, 403);
+            }
+
+            $path = base_path('Project File Guide/' . $map[$key]);
+            abort_unless(file_exists($path), 404);
+
+            return response()->file($path, [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]);
+        })->name('project-file-guide.view');
     });
 
     // Training file download (global training materials for all customers)
