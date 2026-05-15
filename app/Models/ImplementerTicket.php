@@ -21,6 +21,7 @@ class ImplementerTicket extends Model
         'implementer_name',
         'lead_id',
         'software_handover_id',
+        'is_kickoff_thread',
         'subject',
         'description',
         'status',
@@ -48,6 +49,7 @@ class ImplementerTicket extends Model
         'pending_client_since' => 'datetime',
         'followup_sent_at' => 'datetime',
         'is_overdue' => 'boolean',
+        'is_kickoff_thread' => 'boolean',
         'merged_at' => 'datetime',
     ];
 
@@ -58,27 +60,54 @@ class ImplementerTicket extends Model
     protected static function booted(): void
     {
         static::created(function (ImplementerTicket $ticket) {
-            $swId = $ticket->software_handover_id;
-
-            if ($swId) {
-                $sequence = ImplementerTicket::where('software_handover_id', $swId)
-                    ->where('id', '<=', $ticket->id)
-                    ->count();
-
-                $ticket->update([
-                    'ticket_number' => 'SW_'
-                        . str_pad((string) $swId, 6, '0', STR_PAD_LEFT)
-                        . '_IMP'
-                        . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT),
-                ]);
-                return;
+            if (!empty($ticket->ticket_number)) {
+                return; // already set (e.g. by a migration backfill)
             }
 
-            $year = $ticket->created_at ? $ticket->created_at->format('y') : date('y');
-            $ticket->update([
-                'ticket_number' => 'IMP-' . $year . str_pad($ticket->id, 4, '0', STR_PAD_LEFT),
-            ]);
+            \Illuminate\Support\Facades\DB::transaction(function () use ($ticket) {
+                if ($ticket->software_handover_id && $ticket->softwareHandover) {
+                    $sequence = self::nextSequenceForHandover($ticket);
+                    $padded = str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+                    $ticket->ticket_number = "{$ticket->softwareHandover->project_code}_{$padded}";
+                } else {
+                    $year = $ticket->created_at ? $ticket->created_at->format('y') : date('y');
+                    $idPadded = str_pad((string) $ticket->id, 4, '0', STR_PAD_LEFT);
+                    $ticket->ticket_number = "IMP-{$year}{$idPadded}";
+                }
+                $ticket->saveQuietly();
+            });
         });
+    }
+
+    /**
+     * Compute the next per-handover sequence number for this ticket.
+     *
+     * Slot 1 is reserved for the Kick-Off auto-thread; manual tickets start at 2
+     * even when no Kick-Off thread exists yet. Wrap calls in a transaction with
+     * lockForUpdate() so concurrent creates serialise.
+     */
+    private static function nextSequenceForHandover(ImplementerTicket $ticket): int
+    {
+        if ($ticket->is_kickoff_thread) {
+            return 1;
+        }
+
+        $existingNumbers = self::where('software_handover_id', $ticket->software_handover_id)
+            ->where('id', '!=', $ticket->id)
+            ->lockForUpdate()
+            ->pluck('ticket_number')
+            ->filter()
+            ->all();
+
+        $maxSeq = 1;
+        foreach ($existingNumbers as $num) {
+            $tail = substr($num, strrpos($num, '_') + 1);
+            if (ctype_digit($tail)) {
+                $maxSeq = max($maxSeq, (int) $tail);
+            }
+        }
+
+        return max(2, $maxSeq + 1);
     }
 
     public function customer(): BelongsTo
@@ -132,11 +161,10 @@ class ImplementerTicket extends Model
             return $this->ticket_number;
         }
 
-        if ($this->software_handover_id) {
-            return 'SW_'
-                . str_pad((string) $this->software_handover_id, 6, '0', STR_PAD_LEFT)
-                . '_IMP'
-                . str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+        if ($this->software_handover_id && $this->softwareHandover) {
+            $sequence = $this->is_kickoff_thread ? 1 : max(2, (int) $this->id);
+            $padded = str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+            return $this->softwareHandover->project_code . '_' . $padded;
         }
 
         $year = $this->created_at ? $this->created_at->format('y') : date('y');

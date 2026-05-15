@@ -2883,6 +2883,7 @@ class ImplementerActions
                     'implementer_name'     => $implementer->name,
                     'lead_id'              => $softwareHandover->lead_id,
                     'software_handover_id' => $softwareHandover->id,
+                    'is_kickoff_thread'    => true,
                     'subject'              => $resolvedSubject,
                     'description'          => $resolvedContent,
                     'status'               => 'open',

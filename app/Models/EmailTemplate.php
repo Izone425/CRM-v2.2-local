@@ -50,7 +50,7 @@ class EmailTemplate extends Model
     {
         return [
             '[Client Name]' => 'Customer/client name',
-            '[Ticket ID]' => 'Ticket number (e.g. IMP-2501)',
+            '[Ticket ID]' => 'Ticket number (e.g. SW_260005_0001)',
             '[Implementer Name]' => 'Assigned implementer name',
             '[Company Name]' => 'Customer company name',
             '[Category]' => 'Ticket category',
