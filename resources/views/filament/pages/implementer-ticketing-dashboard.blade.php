@@ -2696,12 +2696,12 @@
 
         /* Reply Box */
         .imp-detail-reply-box {
-            border-top: 1px solid #E2E5EB;
+            border-bottom: 1px solid #E2E5EB;
             padding: 14px 20px;
             background: #FFFFFF;
             flex-shrink: 0;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
-            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border-radius: 0;
         }
 
         /* Collapsed reply pill (mirrors customer cit-reply-collapsed) */
@@ -2712,24 +2712,24 @@
             width: 100%;
             padding: 12px 20px;
             border: none;
-            border-top: 1px solid #E2E5EB;
+            border-bottom: 1px solid #E2E5EB;
             background: #FFFFFF;
-            border-radius: 0 0 12px 12px;
+            border-radius: 0;
             cursor: pointer;
             text-align: left;
             transition: background 0.18s ease, box-shadow 0.18s ease;
             flex-shrink: 0;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.025);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.025);
             font-family: inherit;
         }
         .imp-reply-collapsed:hover {
             background: linear-gradient(180deg, #F8F6FF 0%, #FFFFFF 100%);
-            box-shadow: 0 -3px 12px rgba(99,102,241,0.06);
+            box-shadow: 0 3px 12px rgba(99,102,241,0.06);
         }
         .imp-reply-collapsed:focus-visible {
             outline: none;
             background: #F4F0FF;
-            box-shadow: 0 -2px 8px rgba(107,91,203,0.12);
+            box-shadow: 0 2px 8px rgba(107,91,203,0.12);
         }
         .imp-reply-collapsed-avatar {
             width: 28px;
@@ -2952,8 +2952,7 @@
             width: 100%;
             padding: 12px;
             border: 1px solid #E2E5EB;
-            border-top: none;
-            border-radius: 0 0 10px 10px;
+            border-radius: 10px;
             font-size: 13.5px;
             font-family: inherit;
             min-height: 120px;
@@ -4323,6 +4322,166 @@
                             </button>
                         </div>
 
+                        <!-- Reply Composer (collapsed pill OR expanded panel) -->
+                        @php
+                            $replyUserInitial = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
+                            $pendingReplyAttachments = !empty($replyAttachments) ? count($replyAttachments) : 0;
+                        @endphp
+                        <div x-data="{
+                                exec(command, value = null) {
+                                    document.execCommand(command, false, value);
+                                    this.$refs.replyEditor.focus();
+                                },
+                                isActive(command) {
+                                    return document.queryCommandState(command);
+                                },
+                                insertLink() {
+                                    const url = prompt('Enter URL:');
+                                    if (url) this.exec('createLink', url);
+                                },
+                                handlePaste(e) {
+                                    e.preventDefault();
+                                    const html = e.clipboardData.getData('text/html');
+                                    const text = e.clipboardData.getData('text/plain');
+                                    document.execCommand('insertHTML', false, html || text);
+                                },
+                                replyOpen: false,
+                                showCcBcc: false,
+                                syncAndSubmit() {
+                                    $wire.set('replyMessage', this.$refs.replyEditor.innerHTML);
+                                    $wire.submitReply();
+                                }
+                             }"
+                             x-init="
+                                $wire.on('replyTemplateApplied', () => {
+                                    replyOpen = true;
+                                    $nextTick(() => { $refs.replyEditor.innerHTML = $wire.replyMessage || ''; });
+                                });
+                                $wire.on('replyEditorReset', () => {
+                                    $refs.replyEditor.innerHTML = '';
+                                    showCcBcc = false;
+                                    replyOpen = false;
+                                });
+                             "
+                             @keydown.escape.window="if (replyOpen) replyOpen = false"
+                             style="flex-shrink: 0;"
+                        >
+                            <!-- Collapsed: single pill -->
+                            <button type="button"
+                                    x-show="!replyOpen"
+                                    @click="replyOpen = true; $nextTick(() => $refs.replyEditor && $refs.replyEditor.focus())"
+                                    class="imp-reply-collapsed"
+                                    aria-label="Open reply composer">
+                                <span class="imp-reply-collapsed-avatar">{{ $replyUserInitial }}</span>
+                                <span class="imp-reply-collapsed-prompt">{{ $isInternalNote ? 'Click to add internal note...' : 'Click to reply to client...' }}</span>
+                                @if($pendingReplyAttachments > 0)
+                                    <span class="imp-reply-collapsed-meta">
+                                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                                        {{ $pendingReplyAttachments }} attached
+                                    </span>
+                                @endif
+                                <span class="imp-reply-collapsed-icon">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                </span>
+                            </button>
+
+                            <!-- Expanded: full composer -->
+                            <div class="imp-detail-reply-box" x-show="replyOpen" x-collapse x-cloak>
+                            <div class="imp-detail-reply-header">
+                                <label class="imp-detail-reply-label">
+                                    {{ $isInternalNote ? 'Internal Note (Private)' : 'Reply to Client' }}
+                                </label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label class="imp-detail-internal-toggle">
+                                        <input type="checkbox" wire:model.live="isInternalNote">
+                                        <span>Internal Note</span>
+                                    </label>
+                                    <button type="button" @click="replyOpen = false" title="Close (Esc)" aria-label="Close composer" class="imp-reply-minimize" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: none; background: none; border-radius: 5px; cursor: pointer; transition: all 0.15s;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <!-- TO / CC / BCC fields (hidden when Internal Note) -->
+                            <div class="imp-detail-reply-email-fields" x-show="!$wire.isInternalNote" x-cloak>
+                                <div class="imp-detail-reply-field-row">
+                                    <label>To</label>
+                                    <input type="email" wire:model="replyTo" readonly>
+                                    <button type="button" class="imp-ccbcc-toggle" @click="showCcBcc = !showCcBcc" x-text="showCcBcc ? 'Hide CC/BCC' : 'CC/BCC'"></button>
+                                </div>
+                                <div x-show="showCcBcc" x-collapse>
+                                    <div class="imp-detail-reply-field-row" style="margin-top: 6px;">
+                                        <label>CC</label>
+                                        <input type="text" wire:model="replyCc" placeholder="cc@example.com">
+                                    </div>
+                                    <div class="imp-detail-reply-field-row" style="margin-top: 6px;">
+                                        <label>BCC</label>
+                                        <input type="text" wire:model="replyBcc" placeholder="bcc@example.com">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Email Template selector (hidden when Internal Note) -->
+                            <div class="imp-detail-reply-field-row" x-show="!$wire.isInternalNote" x-cloak style="padding-bottom: 8px;">
+                                <label>Email Template</label>
+                                <select wire:model="replyEmailTemplate" wire:change="applyReplyTemplate($event.target.value)">
+                                    <option value="">No Template</option>
+                                    @foreach($this->emailTemplates as $tmpl)
+                                        <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Rich text editor -->
+                            <div wire:ignore>
+                                <div class="imp-detail-reply-editor {{ $isInternalNote ? 'internal' : '' }}"
+                                     contenteditable="true"
+                                     x-ref="replyEditor"
+                                     @paste="handlePaste($event)"
+                                     data-placeholder="{{ $isInternalNote ? 'Add internal notes, troubleshooting steps, or team coordination notes...' : 'Type your response to the client here...' }}"></div>
+                            </div>
+
+                            @if(!empty($replyAttachments))
+                                <div class="imp-drawer-file-list" style="margin-top: 8px;">
+                                    @foreach($replyAttachments as $index => $file)
+                                        <div class="imp-drawer-file-item">
+                                            <div class="imp-drawer-file-info">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px; color: #9CA3AF;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                                                </svg>
+                                                <span>{{ $file->getClientOriginalName() }}</span>
+                                                <span class="imp-drawer-file-size">({{ number_format($file->getSize() / 1024, 1) }} KB)</span>
+                                            </div>
+                                            <button type="button" class="imp-drawer-file-remove" wire:click="removeReplyAttachment({{ $index }})">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <div class="imp-detail-reply-footer">
+                                <div class="imp-detail-reply-left"></div>
+                                <button @click="syncAndSubmit()"
+                                        wire:loading.attr="disabled"
+                                        wire:target="submitReply"
+                                        class="imp-detail-send-btn {{ $isInternalNote ? 'internal' : '' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                    <span wire:loading.remove wire:target="submitReply">
+                                        {{ $isInternalNote ? 'Save Internal Note' : 'Send & Update Status' }}
+                                    </span>
+                                    <span wire:loading wire:target="submitReply">Sending...</span>
+                                </button>
+                            </div>
+
+                            </div><!-- end .imp-detail-reply-box -->
+                        </div><!-- end reply composer x-data wrapper -->
+
                         <!-- Conversation Thread -->
                         <div class="imp-detail-thread">
                             @if($selectedTicket->replies->count() > 0)
@@ -4443,184 +4602,6 @@
                                 </div>
                             @endif
                         </div>
-
-                        <!-- Reply Composer (collapsed pill OR expanded panel) -->
-                        @php
-                            $replyUserInitial = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
-                            $pendingReplyAttachments = !empty($replyAttachments) ? count($replyAttachments) : 0;
-                        @endphp
-                        <div x-data="{
-                                exec(command, value = null) {
-                                    document.execCommand(command, false, value);
-                                    this.$refs.replyEditor.focus();
-                                },
-                                isActive(command) {
-                                    return document.queryCommandState(command);
-                                },
-                                insertLink() {
-                                    const url = prompt('Enter URL:');
-                                    if (url) this.exec('createLink', url);
-                                },
-                                handlePaste(e) {
-                                    e.preventDefault();
-                                    const html = e.clipboardData.getData('text/html');
-                                    const text = e.clipboardData.getData('text/plain');
-                                    document.execCommand('insertHTML', false, html || text);
-                                },
-                                replyOpen: false,
-                                showCcBcc: false,
-                                syncAndSubmit() {
-                                    $wire.set('replyMessage', this.$refs.replyEditor.innerHTML);
-                                    $wire.submitReply();
-                                }
-                             }"
-                             x-init="
-                                $wire.on('replyTemplateApplied', () => {
-                                    replyOpen = true;
-                                    $nextTick(() => { $refs.replyEditor.innerHTML = $wire.replyMessage || ''; });
-                                });
-                                $wire.on('replyEditorReset', () => {
-                                    $refs.replyEditor.innerHTML = '';
-                                    showCcBcc = false;
-                                    replyOpen = false;
-                                });
-                             "
-                             @keydown.escape.window="if (replyOpen) replyOpen = false"
-                             style="flex-shrink: 0;"
-                        >
-                            <!-- Collapsed: single pill -->
-                            <button type="button"
-                                    x-show="!replyOpen"
-                                    @click="replyOpen = true; $nextTick(() => $refs.replyEditor && $refs.replyEditor.focus())"
-                                    class="imp-reply-collapsed"
-                                    aria-label="Open reply composer">
-                                <span class="imp-reply-collapsed-avatar">{{ $replyUserInitial }}</span>
-                                <span class="imp-reply-collapsed-prompt">{{ $isInternalNote ? 'Click to add internal note...' : 'Click to reply to client...' }}</span>
-                                @if($pendingReplyAttachments > 0)
-                                    <span class="imp-reply-collapsed-meta">
-                                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                                        {{ $pendingReplyAttachments }} attached
-                                    </span>
-                                @endif
-                                <span class="imp-reply-collapsed-icon">
-                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                                </span>
-                            </button>
-
-                            <!-- Expanded: full composer -->
-                            <div class="imp-detail-reply-box" x-show="replyOpen" x-collapse x-cloak>
-                            <div class="imp-detail-reply-header">
-                                <label class="imp-detail-reply-label">
-                                    {{ $isInternalNote ? 'Internal Note (Private)' : 'Reply to Client' }}
-                                </label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label class="imp-detail-internal-toggle">
-                                        <input type="checkbox" wire:model.live="isInternalNote">
-                                        <span>Internal Note</span>
-                                    </label>
-                                    <button type="button" @click="replyOpen = false" title="Minimize (Esc)" class="imp-reply-minimize" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: none; background: none; border-radius: 5px; cursor: pointer; transition: all 0.15s;">
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-
-
-                            <!-- TO / CC / BCC fields (hidden when Internal Note) -->
-                            <div class="imp-detail-reply-email-fields" x-show="!$wire.isInternalNote" x-cloak>
-                                <div class="imp-detail-reply-field-row">
-                                    <label>To</label>
-                                    <input type="email" wire:model="replyTo" readonly>
-                                    <button type="button" class="imp-ccbcc-toggle" @click="showCcBcc = !showCcBcc" x-text="showCcBcc ? 'Hide CC/BCC' : 'CC/BCC'"></button>
-                                </div>
-                                <div x-show="showCcBcc" x-collapse>
-                                    <div class="imp-detail-reply-field-row" style="margin-top: 6px;">
-                                        <label>CC</label>
-                                        <input type="text" wire:model="replyCc" placeholder="cc@example.com">
-                                    </div>
-                                    <div class="imp-detail-reply-field-row" style="margin-top: 6px;">
-                                        <label>BCC</label>
-                                        <input type="text" wire:model="replyBcc" placeholder="bcc@example.com">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Email Template selector (hidden when Internal Note) -->
-                            <div class="imp-detail-reply-field-row" x-show="!$wire.isInternalNote" x-cloak style="padding-bottom: 8px;">
-                                <label>Email Template</label>
-                                <select wire:model="replyEmailTemplate" wire:change="applyReplyTemplate($event.target.value)">
-                                    <option value="">No Template</option>
-                                    @foreach($this->emailTemplates as $tmpl)
-                                        <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Rich text toolbar -->
-                            <div class="imp-detail-reply-toolbar">
-                                <button type="button" title="Bold" @mousedown.prevent="exec('bold')" :class="{ 'imp-toolbar-active': isActive('bold') }">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3.744h-.753v8.25h7.125a4.125 4.125 0 000-8.25H6.75zm0 0v8.25m0 0h7.875a4.875 4.875 0 010 9.75H6.75v-9.75z" /></svg>
-                                </button>
-                                <button type="button" title="Italic" @mousedown.prevent="exec('italic')" :class="{ 'imp-toolbar-active': isActive('italic') }">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5.248 20.246H9.05m0 0h3.696m-3.696 0l5.893-16.502m0 0H11.25m3.696 0h3.803" /></svg>
-                                </button>
-                                <button type="button" title="Link" @mousedown.prevent="insertLink()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path stroke-linecap="round" stroke-linejoin="round" d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
-                                </button>
-                                <div class="imp-toolbar-divider"></div>
-                                <button type="button" title="Attach" @mousedown.prevent="document.getElementById('imp-reply-file-upload').click()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 14px; height: 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" /></svg>
-                                </button>
-                                <input type="file" id="imp-reply-file-upload" wire:model="replyAttachments" multiple accept=".pdf,.png,.jpg,.jpeg,.xlsx" style="display: none;">
-                            </div>
-
-                            <!-- Rich text editor -->
-                            <div wire:ignore>
-                                <div class="imp-detail-reply-editor {{ $isInternalNote ? 'internal' : '' }}"
-                                     contenteditable="true"
-                                     x-ref="replyEditor"
-                                     @paste="handlePaste($event)"
-                                     data-placeholder="{{ $isInternalNote ? 'Add internal notes, troubleshooting steps, or team coordination notes...' : 'Type your response to the client here...' }}"></div>
-                            </div>
-
-                            @if(!empty($replyAttachments))
-                                <div class="imp-drawer-file-list" style="margin-top: 8px;">
-                                    @foreach($replyAttachments as $index => $file)
-                                        <div class="imp-drawer-file-item">
-                                            <div class="imp-drawer-file-info">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px; color: #9CA3AF;">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
-                                                </svg>
-                                                <span>{{ $file->getClientOriginalName() }}</span>
-                                                <span class="imp-drawer-file-size">({{ number_format($file->getSize() / 1024, 1) }} KB)</span>
-                                            </div>
-                                            <button type="button" class="imp-drawer-file-remove" wire:click="removeReplyAttachment({{ $index }})">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            <div class="imp-detail-reply-footer">
-                                <div class="imp-detail-reply-left"></div>
-                                <button @click="syncAndSubmit()"
-                                        wire:loading.attr="disabled"
-                                        wire:target="submitReply"
-                                        class="imp-detail-send-btn {{ $isInternalNote ? 'internal' : '' }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 16px; height: 16px;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                    </svg>
-                                    <span wire:loading.remove wire:target="submitReply">
-                                        {{ $isInternalNote ? 'Save Internal Note' : 'Send & Update Status' }}
-                                    </span>
-                                    <span wire:loading wire:target="submitReply">Sending...</span>
-                                </button>
-                            </div>
-
-                            </div><!-- end .imp-detail-reply-box -->
-                        </div><!-- end reply composer x-data wrapper -->
                     </div><!-- end .imp-detail-thread-panel -->
                 </div><!-- end .imp-detail-content -->
     </div><!-- end .imp-fullpage-detail -->

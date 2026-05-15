@@ -467,68 +467,11 @@
             {{-- RIGHT COLUMN: Thread Activity --}}
             <div class="cit-detail-right" x-data="{ threadSearch: '' }">
 
-                {{-- Thread Title --}}
-                <div class="cit-thread-title">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                    Thread Activity
-                </div>
-
                 {{-- Thread Search Bar --}}
                 <div class="cit-thread-search">
                     <svg class="cit-thread-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                     <input type="text" x-model="threadSearch" placeholder="Search thread..." />
                     <button x-show="threadSearch" @click="threadSearch = ''" class="cit-thread-search-clear" x-cloak>&times;</button>
-                </div>
-
-                {{-- Thread Messages --}}
-                <div class="cit-thread-area" x-ref="threadArea">
-                    @forelse($selectedTicket->replies as $reply)
-                        @php
-                            $isCustomer = $reply->sender_type === 'App\Models\Customer';
-                        @endphp
-                        <div class="cit-bubble {{ $isCustomer ? 'cit-bubble-customer' : 'cit-bubble-staff' }}"
-                             style="animation-delay: {{ $loop->index * 50 }}ms"
-                             x-bind:class="{ 'cit-msg-dimmed': threadSearch && !$el.textContent.toLowerCase().includes(threadSearch.toLowerCase()), 'cit-msg-highlight': threadSearch && $el.textContent.toLowerCase().includes(threadSearch.toLowerCase()) }">
-                            <div class="cit-bubble-header">
-                                <div class="cit-bubble-avatar {{ $isCustomer ? 'blue' : 'purple' }}">
-                                    @if($isCustomer)
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    @else
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    @endif
-                                </div>
-                                <div class="cit-bubble-info">
-                                    <span class="cit-bubble-name">{{ $reply->sender_name }}</span>
-                                    <span class="cit-bubble-badge {{ $isCustomer ? 'blue' : 'purple' }}">{{ $reply->getSenderTypeLabel() }}</span>
-                                    @if(!empty($reply->thread_label))
-                                        @php
-                                            $displayLabel = preg_match('/^\s*follow[\s\-]?up\b/i', $reply->thread_label)
-                                                ? 'Follow Up'
-                                                : $reply->thread_label;
-                                        @endphp
-                                        <span class="cit-bubble-badge cit-bubble-badge--thread-label" title="{{ $displayLabel }}">{{ $displayLabel }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="cit-bubble-body">{!! $reply->message !!}</div>
-                            @if($reply->attachments && count($reply->attachments))
-                                <div class="cit-attachment-list">
-                                    @foreach($reply->attachments as $att)
-                                        <a href="{{ Storage::disk('public')->url($att) }}" target="_blank" class="cit-attachment-chip">
-                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                                            {{ basename($att) }}
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endif
-                            <span class="cit-bubble-time">{{ $reply->created_at->format('d M Y, h:i A') }}</span>
-                        </div>
-                    @empty
-                        <div class="cit-thread-empty">
-                            <svg width="32" height="32" fill="none" stroke="#CBD5E1" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                            <span>No replies yet. Start the conversation!</span>
-                        </div>
-                    @endforelse
                 </div>
 
                 {{-- Reply Section: collapsed bar by default, expands on click --}}
@@ -566,24 +509,11 @@
                      x-transition:enter-end="cit-reply-enter-end"
                      @keydown.escape.window="if(replyOpen) closeReply()"
                      style="display: none;">
-                    <div class="cit-reply-toolbar" wire:ignore>
-                        <button type="button" @click="exec('bold')" title="Bold" class="cit-toolbar-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>
-                        </button>
-                        <button type="button" @click="exec('italic')" title="Italic" class="cit-toolbar-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>
-                        </button>
-                        <button type="button" @click="insertLink()" title="Link" class="cit-toolbar-btn">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-                        </button>
-                        <span class="cit-toolbar-divider"></span>
-                        <button type="button" @click="$refs.replyFileInput.click()" title="Attach File" class="cit-toolbar-btn">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                        </button>
-                        <button type="button" @click="closeReply()" title="Minimize (Esc)" class="cit-toolbar-btn cit-reply-minimize">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
-                        </button>
-                    </div>
+                    <button type="button" @click="closeReply()" title="Close (Esc)" class="cit-reply-close" aria-label="Close composer">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
 
                     <div wire:ignore>
                         <div x-ref="replyEditor"
@@ -636,6 +566,56 @@
                         @endif
                     </div>
                 @endif
+
+                {{-- Thread Messages --}}
+                <div class="cit-thread-area" x-ref="threadArea">
+                    @forelse($selectedTicket->replies as $reply)
+                        @php
+                            $isCustomer = $reply->sender_type === 'App\Models\Customer';
+                        @endphp
+                        <div class="cit-bubble {{ $isCustomer ? 'cit-bubble-customer' : 'cit-bubble-staff' }}"
+                             style="animation-delay: {{ $loop->index * 50 }}ms"
+                             x-bind:class="{ 'cit-msg-dimmed': threadSearch && !$el.textContent.toLowerCase().includes(threadSearch.toLowerCase()), 'cit-msg-highlight': threadSearch && $el.textContent.toLowerCase().includes(threadSearch.toLowerCase()) }">
+                            <div class="cit-bubble-header">
+                                <div class="cit-bubble-avatar {{ $isCustomer ? 'blue' : 'purple' }}">
+                                    @if($isCustomer)
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    @else
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    @endif
+                                </div>
+                                <div class="cit-bubble-info">
+                                    <span class="cit-bubble-name">{{ $reply->sender_name }}</span>
+                                    @if(!empty($reply->thread_label))
+                                        @php
+                                            $displayLabel = preg_match('/^\s*follow[\s\-]?up\b/i', $reply->thread_label)
+                                                ? 'Follow Up'
+                                                : $reply->thread_label;
+                                        @endphp
+                                        <span class="cit-bubble-badge cit-bubble-badge--thread-label" title="{{ $displayLabel }}">{{ $displayLabel }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="cit-bubble-body">{!! $reply->message !!}</div>
+                            @if($reply->attachments && count($reply->attachments))
+                                <div class="cit-attachment-list">
+                                    @foreach($reply->attachments as $att)
+                                        <a href="{{ Storage::disk('public')->url($att) }}" target="_blank" class="cit-attachment-chip">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                                            {{ basename($att) }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                            <span class="cit-bubble-time">{{ $reply->created_at->format('d M Y, h:i A') }}</span>
+                        </div>
+                    @empty
+                        <div class="cit-thread-empty">
+                            <svg width="32" height="32" fill="none" stroke="#CBD5E1" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            <span>No replies yet. Start the conversation!</span>
+                        </div>
+                    @endforelse
+                </div>
             </div>
 
         </div>
@@ -1338,24 +1318,24 @@
     width: 100%;
     padding: 12px 16px;
     border: none;
-    border-top: 1px solid #E2E5EB;
+    border-bottom: 1px solid #E2E5EB;
     background: #FFFFFF;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0;
     cursor: pointer;
     text-align: left;
     transition: background 0.18s ease, box-shadow 0.18s ease;
     flex-shrink: 0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.025);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.025);
     font-family: inherit;
 }
 .cit-reply-collapsed:hover {
     background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
-    box-shadow: 0 -3px 12px rgba(26,109,212,0.06);
+    box-shadow: 0 3px 12px rgba(26,109,212,0.06);
 }
 .cit-reply-collapsed:focus-visible {
     outline: none;
     background: #F0F4FF;
-    box-shadow: 0 -2px 8px rgba(26,109,212,0.12);
+    box-shadow: 0 2px 8px rgba(26,109,212,0.12);
 }
 .cit-reply-collapsed-avatar {
     width: 28px; height: 28px; border-radius: 50%;
@@ -1422,7 +1402,7 @@
 }
 .cit-reply-enter-start {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(-8px);
     max-height: 0;
 }
 .cit-reply-enter-end {
@@ -1433,29 +1413,36 @@
 
 /* ── Reply Box ── */
 .cit-reply-box {
-    border-top: 1px solid #E2E5EB;
+    position: relative;
+    border-bottom: 1px solid #E2E5EB;
     padding: 14px 16px;
     background: #FFFFFF;
     flex-shrink: 0;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
-    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border-radius: 0;
 }
-.cit-reply-toolbar {
-    display: flex; align-items: center; gap: 2px;
-    padding: 6px 8px; background: #F9FAFB; border: 1px solid #E2E8F0;
-    border-radius: 8px 8px 0 0; border-bottom: none;
+.cit-reply-close {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 5px;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    z-index: 2;
 }
-.cit-toolbar-btn {
-    width: 30px; height: 28px; display: flex; align-items: center; justify-content: center;
-    border: none; background: none; border-radius: 5px; color: #64748B;
-    cursor: pointer; transition: all 0.1s;
-}
-.cit-toolbar-btn:hover { background: #E5E7EB; color: #1E293B; }
-.cit-toolbar-divider { width: 1px; height: 18px; background: #E2E8F0; margin: 0 4px; }
+.cit-reply-close:hover { background: #FEE2E2; color: #DC2626; }
 .cit-reply-editor {
     min-height: 80px; max-height: 180px; overflow-y: auto;
-    padding: 10px 12px; border: 1px solid #E2E8F0; border-top: none;
-    border-radius: 0 0 8px 8px; font-size: 0.84rem; color: #334155;
+    padding: 10px 36px 10px 12px; border: 1px solid #E2E8F0;
+    border-radius: 8px; font-size: 0.84rem; color: #334155;
     line-height: 1.6; outline: none; background: #fff;
 }
 .cit-reply-editor:focus { border-color: #1a6dd4; box-shadow: 0 0 0 2px rgba(26,109,212,0.08); }
@@ -1469,7 +1456,7 @@
 /* ── Closed / Escalation ── */
 .cit-closed-notice {
     margin-top: 0; padding: 14px 18px; background: #ECFDF5; border: 1px solid #A7F3D0;
-    border-radius: 0 0 12px 12px; display: flex; align-items: center; gap: 8px;
+    border-radius: 0; display: flex; align-items: center; gap: 8px;
     font-size: 0.84rem; color: #047857; font-weight: 500;
 }
 .cit-reopen-btn {
