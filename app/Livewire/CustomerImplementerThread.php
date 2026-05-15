@@ -131,7 +131,9 @@ class CustomerImplementerThread extends Component
             'implementerUser',
             'mergedInto',
             'replies' => function ($q) {
-                $q->where('is_internal_note', false)->with('sender');
+                $q->where('is_internal_note', false)
+                  ->with('sender')
+                  ->reorder('created_at', 'desc');
             },
         ])->find($this->selectedTicketId);
     }

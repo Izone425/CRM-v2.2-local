@@ -975,7 +975,7 @@ class ImplementerTicketingDashboard extends Page
         $selectedTicket = null;
         if ($this->selectedTicketId) {
             $selectedTicket = ImplementerTicket::with(['customer', 'implementerUser', 'mergedInto', 'mergedFrom.replies.sender', 'replies' => function ($q) {
-                $q->orderBy('created_at', 'desc');
+                $q->reorder('created_at', 'desc');
             }, 'replies.sender'])->find($this->selectedTicketId);
         }
 

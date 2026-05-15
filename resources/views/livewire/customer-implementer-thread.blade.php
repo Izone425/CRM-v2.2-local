@@ -344,7 +344,7 @@
             'resolved' => ['bg' => '#F3F4F6', 'text' => '#6B7280', 'border' => '#E5E7EB', 'label' => 'Resolved'],
         ];
     @endphp
-    <div class="cit-detail" x-init="$nextTick(() => { if($refs.threadArea) $refs.threadArea.scrollTop = $refs.threadArea.scrollHeight })">
+    <div class="cit-detail">
 
         {{-- Top Bar --}}
         <div class="cit-detail-topbar">
