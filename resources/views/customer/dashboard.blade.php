@@ -682,13 +682,10 @@
                 $hasProjectPlan = $projectPlansCount > 0;
             }
         }
-        // Implementer Thread notification badge count (Open + Waiting on You)
-        $impThreadBadgeCount = 0;
-        if ($customer && $customer->lead_id) {
-            $impThreadBadgeCount = \App\Models\ImplementerTicket::where('lead_id', $customer->lead_id)
-                ->whereIn('status', ['open', 'pending_rnd', 'pending_client'])
-                ->count();
-        }
+        // Implementer Thread badge: matches the "Open Tickets" card definition.
+        $impThreadBadgeCount = ($customer && $customer->lead_id)
+            ? \App\Models\ImplementerTicket::customerOpenCountForLead($customer->lead_id)
+            : 0;
 
         $hasKickOffBooking = $customer?->hasBookedKickOff() ?? false;
     @endphp
@@ -986,11 +983,9 @@
             if (sub.style.display === 'none') {
                 sub.style.display = 'block';
                 chevron.classList.add('open');
-                localStorage.setItem(group + 'Open', 'true');
             } else {
                 sub.style.display = 'none';
                 chevron.classList.remove('open');
-                localStorage.setItem(group + 'Open', 'false');
             }
         }
 
@@ -1005,16 +1000,6 @@
             document.querySelectorAll('.menu-item').forEach(button => {
                 button.classList.remove('active');
             });
-
-            // Auto-expand parent group if sub-item selected
-            const parentGroup = getGroupForTab(tab);
-            if (parentGroup) {
-                const sub = document.getElementById(parentGroup + '-sub');
-                const chevron = document.getElementById(parentGroup + '-chevron');
-                if (sub) sub.style.display = 'block';
-                if (chevron) chevron.classList.add('open');
-                localStorage.setItem(parentGroup + 'Open', 'true');
-            }
 
             // Highlight parent group headers
             document.querySelectorAll('.menu-group-header').forEach(header => {
@@ -1089,25 +1074,11 @@
                 content.style.setProperty('display', 'none', 'important');
             });
 
-            // Restore all group states
-            ['implementation', 'training', 'support', 'commercial'].forEach(function(group) {
-                const tabs = groupMap[group] || [];
-                const shouldOpen = localStorage.getItem(group + 'Open') === 'true' || tabs.includes(activeTab);
-                if (shouldOpen) {
-                    const sub = document.getElementById(group + '-sub');
-                    const chevron = document.getElementById(group + '-chevron');
-                    if (sub) sub.style.display = 'block';
-                    if (chevron) chevron.classList.add('open');
-                }
+            // Clear any leftover group-open flags from prior visits so old state
+            // never leaks back after the mouseleave-collapse policy was introduced.
+            ['implementationOpen', 'trainingOpen', 'supportOpen', 'commercialOpen'].forEach(function (k) {
+                localStorage.removeItem(k);
             });
-
-            // Always expand Implementation on first load if no saved state
-            if (!localStorage.getItem('implementationOpen')) {
-                const sub = document.getElementById('implementation-sub');
-                const chevron = document.getElementById('implementation-chevron');
-                if (sub) sub.style.display = 'block';
-                if (chevron) chevron.classList.add('open');
-            }
 
             switchTab(activeTab);
 
@@ -1121,6 +1092,22 @@
                     switchTab(this.dataset.tab);
                 });
             });
+
+            // Collapse every group when the cursor leaves the sidebar so the
+            // next hover-in starts from a clean rail. Driven off the DOM so new
+            // collapsible groups are picked up without touching this code.
+            const sidebarEl = document.querySelector('.sidebar');
+            if (sidebarEl) {
+                sidebarEl.addEventListener('mouseleave', function () {
+                    document.querySelectorAll('.menu-group-header[data-group]').forEach(function (header) {
+                        const group = header.getAttribute('data-group');
+                        const sub = document.getElementById(group + '-sub');
+                        const chevron = document.getElementById(group + '-chevron');
+                        if (sub) sub.style.display = 'none';
+                        if (chevron) chevron.classList.remove('open');
+                    });
+                });
+            }
 
             // Open specific ticket from notification deep link
             if (urlTicket && activeTab === 'impThread') {

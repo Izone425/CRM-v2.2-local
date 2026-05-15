@@ -358,4 +358,23 @@ class ImplementerTicket extends Model
 
         return $lastReply->sender_type === Customer::class ? 'awaiting_reply' : 'open';
     }
+
+    /**
+     * Count tickets that the customer sees as "Open" for a given lead.
+     * Mirrors the "Open Tickets" stat card in CustomerImplementerThread so the
+     * customer-portal sidebar badge and that card share one source of truth.
+     */
+    public static function customerOpenCountForLead(int $leadId): int
+    {
+        return static::where('lead_id', $leadId)
+            ->whereNull('merged_into_ticket_id')
+            ->whereIn('status', [
+                ImplementerTicketStatus::OPEN,
+                ImplementerTicketStatus::PENDING_CLIENT,
+            ])
+            ->with(['replies' => fn ($q) => $q->where('is_internal_note', false)->orderBy('created_at', 'asc')])
+            ->get()
+            ->filter(fn ($t) => $t->customerFacingStatus() === 'open')
+            ->count();
+    }
 }
