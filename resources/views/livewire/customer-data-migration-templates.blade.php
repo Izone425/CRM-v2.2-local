@@ -209,72 +209,109 @@
             flex-shrink: 0;
         }
         .dmt-download-btn {
+            position: relative;
+            z-index: 1;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             padding: 7px 9px;
-            border: none;
+            background: #f0f7ff;
+            color: #003c75;
+            border: 1px solid rgba(0, 60, 117, 0.18);
             border-radius: 8px;
-            background: linear-gradient(135deg, #1a6dd4 0%, #003c75 100%);
-            color: #fff;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: padding .25s ease, box-shadow .25s ease, transform .15s ease;
+            transition: background-color .15s ease, border-color .15s ease, box-shadow .25s ease, transform .15s ease;
             flex-shrink: 0;
-            overflow: hidden;
         }
         .dmt-download-btn:hover {
+            background: #e2efff;
+            border-color: rgba(0, 60, 117, 0.32);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(26, 109, 212, 0.4);
-            padding: 7px 14px;
+            box-shadow: 0 2px 8px rgba(0, 60, 117, 0.14);
         }
         .dmt-download-btn i {
             font-size: 11px;
         }
         .dmt-guide-btn {
+            position: relative;
+            z-index: 1;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             padding: 7px 9px;
-            background: rgba(26, 109, 212, 0.08);
-            color: #1a6dd4;
-            border: 1px solid rgba(26, 109, 212, 0.25);
+            background: #f0f7ff;
+            color: #003c75;
+            border: 1px solid rgba(0, 60, 117, 0.18);
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
-            transition: padding .25s ease, background-color .15s ease, border-color .15s ease, box-shadow .25s ease, transform .15s ease;
+            transition: background-color .15s ease, border-color .15s ease, box-shadow .25s ease, transform .15s ease;
             flex-shrink: 0;
-            overflow: hidden;
         }
         .dmt-guide-btn:hover {
-            background: rgba(26, 109, 212, 0.14);
-            border-color: rgba(26, 109, 212, 0.45);
+            background: #e2efff;
+            border-color: rgba(0, 60, 117, 0.32);
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(26, 109, 212, 0.18);
-            padding: 7px 14px;
+            box-shadow: 0 2px 8px rgba(0, 60, 117, 0.14);
         }
         .dmt-guide-btn i {
             font-size: 11px;
         }
-        .dmt-btn-label {
-            display: inline-block;
-            max-width: 0;
-            opacity: 0;
-            margin-left: 0;
-            overflow: hidden;
+        .dmt-download-btn::after,
+        .dmt-guide-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: calc(100% + 8px);
+            top: 50%;
+            background: #1e293b;
+            color: #f1f5f9;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            padding: 6px 10px;
+            border-radius: 6px;
             white-space: nowrap;
-            transition: max-width .25s ease, opacity .2s ease, margin-left .25s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(4px, -50%);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            box-shadow: 0 6px 18px -8px rgba(15, 23, 42, 0.5);
+            z-index: 10;
         }
-        .dmt-download-btn:hover .dmt-btn-label,
-        .dmt-guide-btn:hover .dmt-btn-label,
-        .dmt-download-btn:focus-visible .dmt-btn-label,
-        .dmt-guide-btn:focus-visible .dmt-btn-label {
-            max-width: 96px;
+        .dmt-download-btn::before,
+        .dmt-guide-btn::before {
+            content: '';
+            position: absolute;
+            right: calc(100% + 2px);
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 6px solid #1e293b;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(4px, -50%);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 10;
+        }
+        .dmt-download-btn:hover::after,
+        .dmt-download-btn:focus-visible::after,
+        .dmt-guide-btn:hover::after,
+        .dmt-guide-btn:focus-visible::after {
             opacity: 1;
-            margin-left: 6px;
+            transform: translate(0, -50%);
+        }
+        .dmt-download-btn:hover::before,
+        .dmt-download-btn:focus-visible::before,
+        .dmt-guide-btn:hover::before,
+        .dmt-guide-btn:focus-visible::before {
+            opacity: 1;
+            transform: translate(0, -50%);
         }
         .dmt-upload-btn {
             display: inline-flex;
@@ -654,18 +691,16 @@
                                                target="_blank"
                                                rel="noopener"
                                                class="dmt-guide-btn"
-                                               aria-label="Open filling guide in a new tab"
-                                               title="Guide">
+                                               data-tooltip="Open filling guide"
+                                               aria-label="Open filling guide in a new tab">
                                                 <i class="fas fa-book-open"></i>
-                                                <span class="dmt-btn-label">Guide</span>
                                             </a>
                                         @endif
                                         <button wire:click="downloadTemplate('{{ $sectionKey }}', '{{ $itemKey }}')"
                                                 class="dmt-download-btn"
-                                                aria-label="Download template"
-                                                title="Template">
+                                                data-tooltip="Download template"
+                                                aria-label="Download template">
                                             <i class="fas fa-download"></i>
-                                            <span class="dmt-btn-label">Template</span>
                                         </button>
                                     @else
                                         <span class="dmt-coming-soon">Coming soon</span>

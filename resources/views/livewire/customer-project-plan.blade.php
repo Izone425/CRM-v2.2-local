@@ -489,6 +489,8 @@
     }
 
     .download-excel-button {
+        position: relative;
+        z-index: 1;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -499,36 +501,61 @@
         border-radius: 8px;
         border: none;
         cursor: pointer;
-        overflow: hidden;
-        transition: padding .25s ease, transform .15s ease, box-shadow .25s ease;
+        transition: transform .15s ease, box-shadow .25s ease;
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .download-excel-button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-        padding: 12px 22px;
     }
 
     .download-excel-button:active {
         transform: translateY(0);
     }
 
-    .download-excel-label {
-        display: inline-block;
-        max-width: 0;
-        opacity: 0;
-        margin-left: 0;
-        overflow: hidden;
+    .download-excel-button::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        background: #1e293b;
+        color: #f1f5f9;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding: 6px 10px;
+        border-radius: 6px;
         white-space: nowrap;
-        transition: max-width .25s ease, opacity .2s ease, margin-left .25s ease;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        box-shadow: 0 6px 18px -8px rgba(15, 23, 42, 0.5);
+        z-index: 10;
     }
-
-    .download-excel-button:hover .download-excel-label,
-    .download-excel-button:focus-visible .download-excel-label {
-        max-width: 220px;
+    .download-excel-button::before {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 16px;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 6px solid #1e293b;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-4px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 10;
+    }
+    .download-excel-button:hover::after,
+    .download-excel-button:focus-visible::after,
+    .download-excel-button:hover::before,
+    .download-excel-button:focus-visible::before {
         opacity: 1;
-        margin-left: 8px;
+        transform: translateY(0);
     }
 
     .project-progress-container {
@@ -616,13 +643,12 @@
         </div>
         <button wire:click="downloadProjectPlan"
                 class="download-excel-button"
-                aria-label="Download project plan"
-                title="Download Project Plan">
+                data-tooltip="Download Project Plan"
+                aria-label="Download Project Plan">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
                 <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
             </svg>
-            <span class="download-excel-label">Download Project Plan</span>
         </button>
     </div>
 @endif

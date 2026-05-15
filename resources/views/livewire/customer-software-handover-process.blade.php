@@ -133,6 +133,7 @@
     }
     .cshp-icon-btn {
         position: relative;
+        z-index: 5;
         width: 40px;
         height: 40px;
         border-radius: 12px;
