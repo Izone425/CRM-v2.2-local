@@ -538,8 +538,14 @@
                     @forelse($selectedTicket->replies as $reply)
                         @php
                             $isCustomer = $reply->sender_type === 'App\Models\Customer';
+                            $bodyText = is_string($reply->message) ? strip_tags($reply->message) : '';
+                            $isLong = mb_strlen($bodyText) > 240;
+                            $displayLabel = !empty($reply->thread_label)
+                                ? (preg_match('/^\s*follow[\s\-]?up\b/i', $reply->thread_label) ? 'Follow Up' : $reply->thread_label)
+                                : null;
                         @endphp
                         <div class="cit-bubble {{ $isCustomer ? 'cit-bubble-customer' : 'cit-bubble-staff' }}"
+                             x-data="{ expanded: false }"
                              style="animation-delay: {{ $loop->index * 50 }}ms"
                              x-bind:class="{ 'cit-msg-dimmed': threadSearch && !$el.textContent.toLowerCase().includes(threadSearch.toLowerCase()), 'cit-msg-highlight': threadSearch && $el.textContent.toLowerCase().includes(threadSearch.toLowerCase()) }">
                             <div class="cit-bubble-header">
@@ -552,17 +558,20 @@
                                 </div>
                                 <div class="cit-bubble-info">
                                     <span class="cit-bubble-name">{{ $reply->sender_name }}</span>
-                                    @if(!empty($reply->thread_label))
-                                        @php
-                                            $displayLabel = preg_match('/^\s*follow[\s\-]?up\b/i', $reply->thread_label)
-                                                ? 'Follow Up'
-                                                : $reply->thread_label;
-                                        @endphp
+                                    @if($displayLabel)
                                         <span class="cit-bubble-badge cit-bubble-badge--thread-label" title="{{ $displayLabel }}">{{ $displayLabel }}</span>
                                     @endif
                                 </div>
+                                <time class="cit-bubble-time-inline" datetime="{{ $reply->created_at->toIso8601String() }}">{{ $reply->created_at->format('d M Y, h:i A') }}</time>
                             </div>
-                            <div class="cit-bubble-body">{!! $reply->message !!}</div>
+                            <div class="cit-bubble-body {{ $isLong ? 'cit-bubble-body--long' : '' }}"
+                                 :class="{ 'is-expanded': expanded }">{!! $reply->message !!}</div>
+                            @if($isLong)
+                                <button type="button"
+                                        class="cit-bubble-toggle"
+                                        @click="expanded = !expanded"
+                                        x-text="expanded ? 'Show less' : 'Show more'"></button>
+                            @endif
                             @if($reply->attachments && count($reply->attachments))
                                 <div class="cit-attachment-list">
                                     @foreach($reply->attachments as $att)
@@ -573,7 +582,6 @@
                                     @endforeach
                                 </div>
                             @endif
-                            <span class="cit-bubble-time">{{ $reply->created_at->format('d M Y, h:i A') }}</span>
                         </div>
                     @empty
                         <div class="cit-thread-empty">
@@ -1325,6 +1333,15 @@
 }
 .cit-bubble-customer .cit-bubble-header { flex-direction: row-reverse; }
 .cit-bubble-customer .cit-bubble-info { flex-direction: row-reverse; }
+.cit-bubble-time-inline {
+    flex-shrink: 0;
+    font-size: 10.5px;
+    color: #94A3B8;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
 .cit-bubble-avatar {
     width: 30px; height: 30px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -1333,7 +1350,7 @@
 .cit-bubble-avatar svg { width: 14px !important; height: 14px !important; }
 .cit-bubble-avatar.blue { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1D4ED8; }
 .cit-bubble-avatar.purple { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); color: #6D28D9; }
-.cit-bubble-info { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cit-bubble-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .cit-bubble-name { font-size: 12px; font-weight: 700; color: #1A1D26; }
 .cit-bubble-badge { font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
 .cit-bubble-badge.blue { background: #DBEAFE; color: #1E40AF; }
@@ -1341,9 +1358,50 @@
 .cit-bubble-badge.cit-bubble-badge--thread-label { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cit-bubble-body { font-size: clamp(12.5px, 0.85vw + 4px, 13.75px); color: #334155; line-height: 1.65; word-wrap: break-word; }
 .cit-bubble-body p { margin: 0 0 6px; }
-.cit-bubble-time { font-size: 10px; color: #94A3B8; display: block; margin-top: 6px; font-weight: 500; }
-.cit-bubble-customer .cit-bubble-time { text-align: right; }
-.cit-bubble-staff .cit-bubble-time { text-align: left; }
+
+/* Long-message collapse: clamp body + fade to bubble color */
+.cit-bubble-body--long:not(.is-expanded) {
+    max-height: 84px; /* ~3 lines at line-height 1.65 × 13.5px */
+    overflow: hidden;
+    position: relative;
+}
+.cit-bubble-body--long:not(.is-expanded)::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 28px;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, #FFFFFF);
+}
+.cit-bubble-customer .cit-bubble-body--long:not(.is-expanded)::after {
+    background: linear-gradient(180deg, rgba(219, 234, 254, 0), #DBEAFE);
+}
+.cit-bubble-staff .cit-bubble-body--long:not(.is-expanded)::after {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0), #FFFFFF);
+}
+.cit-bubble-body--long.is-expanded { max-height: none; }
+
+/* Show more / Show less pill */
+.cit-bubble-toggle {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 10px;
+    background: rgba(15, 23, 42, 0.05);
+    border: none;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1a6dd4;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+    line-height: 1.6;
+}
+.cit-bubble-toggle:hover { background: rgba(26, 109, 212, 0.12); color: #1554a8; }
+.cit-bubble-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 109, 212, 0.3);
+}
 
 /* ── Search Highlighting ── */
 .cit-msg-dimmed { opacity: 0.08 !important; pointer-events: none; transition: opacity 0.3s ease; }
