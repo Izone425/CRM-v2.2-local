@@ -1153,15 +1153,16 @@
 .cit-empty-title { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
 .cit-empty-desc { font-size: 0.82rem; color: #94A3B8; max-width: 360px; margin: 0 auto; }
 
-/* ── Detail View: 2-Column Layout ── */
+/* ── Detail View: 2-Column Layout (viewport-fit shell) ── */
 .cit-detail {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    height: calc(100vh - 112px); /* .main-wrapper 80 + .tab-content 32 reserved */
     min-height: 0;
     overflow: hidden;
     margin: 0 -32px;
     padding: 8px 16px 0;
+    box-sizing: border-box;
 }
 .cit-detail-topbar { flex-shrink: 0; padding: 4px 0 8px; }
 .cit-back-btn {
@@ -1191,7 +1192,7 @@
 .cit-detail-header { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px 24px; margin-bottom: 0; }
 .cit-detail-header-top { margin-bottom: 16px; }
 .cit-detail-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.cit-detail-subject { font-size: 1.15rem; font-weight: 700; color: #1E293B; margin: 0; }
+.cit-detail-subject { font-size: clamp(0.98rem, 1vw + 0.5rem, 1.15rem); font-weight: 700; color: #1E293B; margin: 0; line-height: 1.3; }
 .cit-detail-id { font-size: 0.84rem; color: #64748B; margin-top: 4px; }
 .cit-detail-id span { color: #1a6dd4; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 .cit-detail-meta-grid {
@@ -1299,7 +1300,7 @@
 
 /* ── WhatsApp-Style Bubbles ── */
 .cit-bubble {
-    max-width: 75%;
+    max-width: min(75%, 720px); /* cap line-length on wide displays */
     padding: 10px 14px;
     position: relative;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
@@ -1338,7 +1339,7 @@
 .cit-bubble-badge.blue { background: #DBEAFE; color: #1E40AF; }
 .cit-bubble-badge.purple { background: #EDE9FE; color: #5B21B6; }
 .cit-bubble-badge.cit-bubble-badge--thread-label { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cit-bubble-body { font-size: 13.5px; color: #334155; line-height: 1.65; word-wrap: break-word; }
+.cit-bubble-body { font-size: clamp(12.5px, 0.85vw + 4px, 13.75px); color: #334155; line-height: 1.65; word-wrap: break-word; }
 .cit-bubble-body p { margin: 0 0 6px; }
 .cit-bubble-time { font-size: 10px; color: #94A3B8; display: block; margin-top: 6px; font-weight: 500; }
 .cit-bubble-customer .cit-bubble-time { text-align: right; }
@@ -1691,7 +1692,19 @@ body.cit-drawer-open .main-header { display: none !important; }
 @keyframes citSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes citPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-/* ── Responsive ── */
+/* ── Responsive — desktop tuning ── */
+/* Standard desktop and below: shrink left card to keep the thread readable */
+@media (max-width: 1280px) {
+    .cit-detail-left { width: 300px; }
+}
+/* Cramped laptop (1366×768): main-wrapper padding drops by 8px,
+   reserving 72+32=104px instead of 80+32=112px. Shrink left card further. */
+@media (max-width: 1024px) {
+    .cit-detail { height: calc(100vh - 104px); }
+    .cit-detail-left { width: 260px; }
+}
+
+/* ── Responsive — tablet/mobile fallback (stacked) ── */
 @media (max-width: 900px) {
     .cit-detail { height: auto; overflow: visible; margin: 0; padding: 0; }
     .cit-detail-columns { flex-direction: column; overflow-y: auto; }
